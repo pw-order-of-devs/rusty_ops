@@ -1,0 +1,26 @@
+[package]
+name = "rusty_server"
+version = "0.0.1"
+rust-version = "1.75"
+edition = "2021"
+authors = [ "Paweł Walus <pawel.walus@protonmail.com>" ]
+description = "rusty_ops - ci/cd sustem"
+keywords = ["ci", "cd", "ops"]
+homepage = "https://github.com/pw-order-of-devs"
+repository = "https://github.com/pw-order-of-devs/rusty_ops"
+license = "MIT OR Apache-2.0"
+readme = "../README.md"
+
+[[bin]]
+name = "rusty_server"
+path = "src/main.rs"
+
+[dependencies]
+commons = { path = "../commons" }
+
+async-graphql = "7.0"
+async-graphql-poem = "7.0"
+poem = "2.0"
+tokio = { version = "1.36", features = ["full"] }
+log = "0.4"
+log4rs = "1.3"

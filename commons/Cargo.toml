@@ -1,0 +1,15 @@
+[package]
+name = "commons"
+version = "0.0.1"
+rust-version = "1.75"
+edition = "2021"
+authors = [ "Paweł Walus <pawel.walus@protonmail.com>" ]
+description = "rusty_ops - commons module"
+
+[lib]
+name = "commons"
+path = "src/lib.rs"
+
+[dependencies]
+log = "0.4"
+log4rs = "1.3"
