@@ -18,29 +18,19 @@
 
 use std::error::Error;
 
-use async_graphql::{EmptyMutation, EmptySubscription, Object, Schema};
 use async_graphql_poem::GraphQL;
 use poem::{listener::TcpListener, Route, Server};
 
-struct Query;
-
-#[Object]
-impl Query {
-    async fn howdy(&self) -> &'static str {
-        "partner"
-    }
-}
+mod gql;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     commons::logger::init();
-
-    // create the schema
-    let schema = Schema::build(Query, EmptyMutation, EmptySubscription).finish();
+    let db = persist::init().await;
 
     // start the http server
     let app = Route::new()
-        .at("/ws", GraphQL::new(schema.clone()));
+        .at("/ws", GraphQL::new(gql::build_schema(db)));
 
     log::info!("Server is listening at: http://localhost:8000/ws");
     Server::new(TcpListener::bind("0.0.0.0:8000"))

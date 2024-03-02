@@ -16,5 +16,8 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+/// crate errors
+pub mod errors;
+
 /// logging configuration
 pub mod logger;

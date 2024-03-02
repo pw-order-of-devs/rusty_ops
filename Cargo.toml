@@ -1,4 +1,4 @@
 [workspace]
-members = ["rusty_*", "commons"]
-default-members = ["rusty_*", "commons"]
+members = ["rusty_*", "commons", "domain", "persist"]
+default-members = ["rusty_*", "commons", "domain", "persist"]
 resolver = "2"

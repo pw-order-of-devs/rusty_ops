@@ -11,5 +11,7 @@ name = "commons"
 path = "src/lib.rs"
 
 [dependencies]
+async-graphql = "7.0"
+mongodb = "2.8"
 log = "0.4"
 log4rs = "1.3"

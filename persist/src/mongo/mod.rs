@@ -1,13 +1,18 @@
 use std::time::Duration;
+use futures_util::StreamExt;
 
-use mongodb::{Client, options::ClientOptions};
+use mongodb::{bson, Client, Collection, options::ClientOptions};
+use mongodb::bson::{Bson, Document, to_bson, to_document, uuid};
 use mongodb::options::Credential;
 
-use crate::Persistence;
+use commons::errors::ROError;
+use domain::RODomainItem;
+
+use crate::{Persistence, PersistenceBuilder};
 
 pub struct MongoDBClient {
-    _database: String,
-    _client: Client,
+    database: String,
+    client: Client,
 }
 
 impl MongoDBClient {
@@ -20,8 +25,8 @@ impl MongoDBClient {
         client_options.min_pool_size = Some(8);
         client_options.max_pool_size = Some(24);
         Self {
-            _database: std::env::var("MONGODB_DATABASE").unwrap_or("".to_string()),
-            _client: Client::with_options(client_options).expect("error while building mongodb client"),
+            database: std::env::var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
+            client: Client::with_options(client_options).expect("error while building mongodb client"),
         }
     }
 
@@ -32,8 +37,10 @@ impl MongoDBClient {
     }
 
     fn get_credential() -> Credential {
-        let user = std::env::var("MONGODB_USER").expect("MONGODB_USER variable must be set");
-        let pass = std::env::var("MONGODB_PASSWORD").expect("MONGODB_PASSWORD variable must be set");
+        let user = std::env::var("MONGODB_USER")
+            .expect("MONGODB_USER variable is required");
+        let pass = std::env::var("MONGODB_PASSWORD")
+            .expect("MONGODB_PASSWORD variable is required");
         Credential::builder()
             .username(user)
             .password(pass)
@@ -42,9 +49,58 @@ impl MongoDBClient {
 }
 
 #[allow(clippy::manual_async_fn)]
-impl Persistence for MongoDBClient {
+impl PersistenceBuilder for MongoDBClient {
+    type PersistentType = MongoDBClient;
 
     async fn build() -> Self {
         Self::build_client().await
+    }
+}
+
+impl Persistence for MongoDBClient {
+
+    async fn get_all<T: RODomainItem>(&self, index: &str) -> Result<Vec<T>, ROError> {
+        let collection: Collection<T> = self.client.database(&self.database)
+            .collection(index);
+        let mut cursor = collection.find(None, None).await?;
+
+        let mut result: Vec<T> = Vec::new();
+        while let Some(doc) = cursor.next().await {
+            let document = to_document(&doc?)?;
+            let document: T = bson::from_document(document)?;
+            result.push(document);
+        }
+        Ok(result)
+    }
+
+    async fn create<T: RODomainItem>(&self, index: &str, item: &T) -> Result<String, ROError> {
+        let collection: Collection<Document> = self.client.database(&self.database)
+            .collection(index);
+        let mut document = match to_bson(&item)? {
+            Bson::Document(document) => document,
+            _ => return Err(ROError {}),
+        };
+
+        let id = uuid::Uuid::new().to_string();
+        document.insert("id", &id);
+
+        match collection.insert_one(document, None).await {
+            Ok(_) => Ok(id),
+            Err(_) => Err(ROError {}),
+        }
+    }
+
+    async fn delete<T: RODomainItem>(&self, index: &str, item: &T) -> Result<u64, ROError> {
+        let collection: Collection<Document> = self.client.database(&self.database)
+            .collection(index);
+        let document = match to_bson(&item)? {
+            Bson::Document(document) => document,
+            _ => return Err(ROError {}),
+        };
+
+        match collection.delete_many(document, None).await {
+            Ok(result) => Ok(result.deleted_count),
+            Err(_) => Err(ROError {}),
+        }
     }
 }
