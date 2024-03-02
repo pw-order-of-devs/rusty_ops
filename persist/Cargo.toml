@@ -1,0 +1,15 @@
+[package]
+name = "persist"
+version = "0.0.1"
+rust-version = "1.75"
+edition = "2021"
+authors = [ "Paweł Walus <pawel.walus@protonmail.com>" ]
+description = "rusty_ops - persistence module"
+
+[lib]
+name = "persist"
+path = "src/lib.rs"
+
+[dependencies]
+mongodb = "2.8"
+futures-util = "0.3.30"
