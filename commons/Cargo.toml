@@ -17,6 +17,6 @@ path = "src/lib.rs"
 
 [dependencies]
 async-graphql.workspace = true
-mongodb.workspace = true
 log.workspace = true
 log4rs.workspace = true
+mongodb.workspace = true

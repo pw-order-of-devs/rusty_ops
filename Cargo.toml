@@ -17,11 +17,11 @@ readme = "README.md"
 [workspace.dependencies]
 async-graphql = "7.0"
 async-graphql-poem = "7.0"
-poem = "2.0"
-mongodb = "2.8"
-serde = { version = "1.0.197", features = ["derive"] }
-tokio = { version = "1.36", features = ["full"] }
-futures-util = "0.3.30"
+futures-util = "0.3"
+leptos = { version = "0.6", features = ["csr"] }
 log = "0.4"
 log4rs = "1.3"
-
+mongodb = "2.8"
+poem = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+tokio = { version = "1.36", features = ["full"] }

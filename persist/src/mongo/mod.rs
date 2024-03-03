@@ -10,6 +10,8 @@ use domain::RODomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
 
+/// Represents a `MongoDB` client.
+#[derive(Debug)]
 pub struct MongoDBClient {
     database: String,
     client: Client,
@@ -31,8 +33,8 @@ impl MongoDBClient {
     }
 
     fn get_conn_string() -> String {
-        let host = std::env::var("MONGODB_HOST").unwrap_or("localhost".to_string());
-        let port = std::env::var("MONGODB_PORT").unwrap_or("27017".to_string());
+        let host = std::env::var("MONGODB_HOST").unwrap_or_else(|_| "localhost".to_string());
+        let port = std::env::var("MONGODB_PORT").unwrap_or_else(|_| "27017".to_string());
         format!("mongodb://{host}:{port}")
     }
 
@@ -50,7 +52,7 @@ impl MongoDBClient {
 
 #[allow(clippy::manual_async_fn)]
 impl PersistenceBuilder for MongoDBClient {
-    type PersistentType = MongoDBClient;
+    type PersistentType = Self;
 
     async fn build() -> Self {
         Self::build_client().await
@@ -74,19 +76,15 @@ impl Persistence for MongoDBClient {
         let collection = self.client.database(&self.database)
             .collection::<T>(index);
 
-        match collection.find_one(doc! { "id": id }, None).await? {
-            Some(doc) => Ok(Some(doc)),
-            None => Ok(None),
-        }
+        collection.find_one(doc! { "id": id }, None).await?
+            .map_or_else(|| Ok(None), |doc| Ok(Some(doc)))
     }
 
     async fn create<T: RODomainItem>(&self, index: &str, item: &T) -> Result<String, ROError> {
         let collection = self.client.database(&self.database)
             .collection::<Document>(index);
-        let mut document = match to_bson(&item)? {
-            Bson::Document(document) => document,
-            _ => return Err(ROError {}),
-        };
+        let Bson::Document(mut document) = to_bson(&item)?
+            else { return Err(ROError {}) };
 
         let id = uuid::Uuid::new().to_string();
         document.insert("id", &id);
@@ -101,9 +99,7 @@ impl Persistence for MongoDBClient {
         let collection = self.client.database(&self.database)
             .collection::<Document>(index);
 
-        match collection.delete_one(doc! { "id": id }, None).await {
-            Ok(result) => Ok(result.deleted_count),
-            Err(_) => Err(ROError {}),
-        }
+        collection.delete_one(doc! { "id": id }, None).await
+            .map_or(Err(ROError {}), |result| Ok(result.deleted_count))
     }
 }

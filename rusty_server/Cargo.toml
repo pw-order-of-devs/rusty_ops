@@ -22,7 +22,6 @@ persist = { path = "../persist" }
 
 async-graphql.workspace = true
 async-graphql-poem.workspace = true
+log.workspace = true
 poem.workspace = true
 tokio.workspace = true
-log.workspace = true
-log4rs.workspace = true

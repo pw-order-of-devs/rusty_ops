@@ -1,4 +1,4 @@
-//! Commons for `rusty_ops`
+//! Commons module for `rusty_ops`
 
 #![forbid(unsafe_code)]
 #![deny(clippy::all)]

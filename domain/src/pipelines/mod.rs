@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::RODomainItem;
 
+/// S struct representing a pipeline.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct Pipeline {
     id: String,
@@ -14,6 +15,7 @@ pub struct Pipeline {
     job_id: String,
 }
 
+/// A struct representing the registration of a pipeline.
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
 pub struct RegisterPipeline {
     name: String,
