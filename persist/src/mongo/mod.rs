@@ -1,8 +1,8 @@
 use std::time::Duration;
 use futures_util::StreamExt;
 
-use mongodb::{bson, Client, Collection, options::ClientOptions};
-use mongodb::bson::{Bson, Document, to_bson, to_document, uuid};
+use mongodb::{Client, options::ClientOptions};
+use mongodb::bson::{Bson, doc, Document, to_bson, uuid};
 use mongodb::options::Credential;
 
 use commons::errors::ROError;
@@ -60,22 +60,29 @@ impl PersistenceBuilder for MongoDBClient {
 impl Persistence for MongoDBClient {
 
     async fn get_all<T: RODomainItem>(&self, index: &str) -> Result<Vec<T>, ROError> {
-        let collection: Collection<T> = self.client.database(&self.database)
-            .collection(index);
-        let mut cursor = collection.find(None, None).await?;
+        let mut cursor = self.client.database(&self.database)
+            .collection::<T>(index).find(None, None).await?;
 
         let mut result: Vec<T> = Vec::new();
         while let Some(doc) = cursor.next().await {
-            let document = to_document(&doc?)?;
-            let document: T = bson::from_document(document)?;
-            result.push(document);
+            result.push(doc?);
         }
         Ok(result)
     }
 
+    async fn get_by_id<T: RODomainItem>(&self, index: &str, id: &str) -> Result<Option<T>, ROError> {
+        let collection = self.client.database(&self.database)
+            .collection::<T>(index);
+
+        match collection.find_one(doc! { "id": id }, None).await? {
+            Some(doc) => Ok(Some(doc)),
+            None => Ok(None),
+        }
+    }
+
     async fn create<T: RODomainItem>(&self, index: &str, item: &T) -> Result<String, ROError> {
-        let collection: Collection<Document> = self.client.database(&self.database)
-            .collection(index);
+        let collection = self.client.database(&self.database)
+            .collection::<Document>(index);
         let mut document = match to_bson(&item)? {
             Bson::Document(document) => document,
             _ => return Err(ROError {}),
@@ -90,15 +97,11 @@ impl Persistence for MongoDBClient {
         }
     }
 
-    async fn delete<T: RODomainItem>(&self, index: &str, item: &T) -> Result<u64, ROError> {
-        let collection: Collection<Document> = self.client.database(&self.database)
-            .collection(index);
-        let document = match to_bson(&item)? {
-            Bson::Document(document) => document,
-            _ => return Err(ROError {}),
-        };
+    async fn delete(&self, index: &str, id: &str) -> Result<u64, ROError> {
+        let collection = self.client.database(&self.database)
+            .collection::<Document>(index);
 
-        match collection.delete_many(document, None).await {
+        match collection.delete_one(doc! { "id": id }, None).await {
             Ok(result) => Ok(result.deleted_count),
             Err(_) => Err(ROError {}),
         }

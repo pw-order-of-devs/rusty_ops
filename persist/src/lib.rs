@@ -36,9 +36,11 @@ pub trait Persistence: Send + Sync {
 
     fn get_all<T: RODomainItem>(&self, index: &str) -> impl Future<Output=Result<Vec<T>, ROError>> + Send;
 
+    fn get_by_id<T: RODomainItem>(&self, index: &str, id: &str) -> impl Future<Output=Result<Option<T>, ROError>> + Send;
+
     fn create<T: RODomainItem>(&self, index: &str, item: &T) -> impl Future<Output=Result<String, ROError>> + Send;
 
-    fn delete<T: RODomainItem>(&self, index: &str, item: &T) -> impl Future<Output=Result<u64, ROError>> + Send;
+    fn delete(&self, index: &str, id: &str) -> impl Future<Output=Result<u64, ROError>> + Send;
 }
 
 pub async fn init() -> impl Persistence + Send + Sync {
