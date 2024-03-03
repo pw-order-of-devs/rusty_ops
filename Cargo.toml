@@ -2,3 +2,26 @@
 members = ["rusty_*", "commons", "domain", "persist"]
 default-members = ["rusty_*", "commons", "domain", "persist"]
 resolver = "2"
+
+[workspace.package]
+version = "0.0.1"
+rust-version = "1.75"
+edition = "2021"
+authors = [ "Paweł Walus <pawel.walus@protonmail.com>" ]
+homepage = "https://github.com/pw-order-of-devs"
+repository = "https://github.com/pw-order-of-devs/rusty_ops"
+keywords = ["ci", "cd", "ops"]
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+
+[workspace.dependencies]
+async-graphql = "7.0"
+async-graphql-poem = "7.0"
+poem = "2.0"
+mongodb = "2.8"
+serde = { version = "1.0.197", features = ["derive"] }
+tokio = { version = "1.36", features = ["full"] }
+futures-util = "0.3.30"
+log = "0.4"
+log4rs = "1.3"
+

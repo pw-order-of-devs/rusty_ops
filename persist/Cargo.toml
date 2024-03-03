@@ -1,9 +1,14 @@
 [package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
 name = "persist"
-version = "0.0.1"
-rust-version = "1.75"
-edition = "2021"
-authors = [ "Paweł Walus <pawel.walus@protonmail.com>" ]
 description = "rusty_ops - persistence module"
 
 [lib]
@@ -14,5 +19,5 @@ path = "src/lib.rs"
 commons = { path = "../commons" }
 domain = { path = "../domain" }
 
-mongodb = "2.8"
-futures-util = "0.3.30"
+mongodb.workspace = true
+futures-util.workspace = true

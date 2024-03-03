@@ -1,9 +1,14 @@
 [package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
 name = "domain"
-version = "0.0.1"
-rust-version = "1.75"
-edition = "2021"
-authors = [ "Paweł Walus <pawel.walus@protonmail.com>" ]
 description = "rusty_ops - domain module"
 
 [lib]
@@ -11,6 +16,6 @@ name = "domain"
 path = "src/lib.rs"
 
 [dependencies]
-async-graphql = "7.0"
-mongodb = "2.8"
-serde = { version = "1.0.197", features = ["derive"] }
+async-graphql.workspace = true
+mongodb.workspace = true
+serde.workspace = true
