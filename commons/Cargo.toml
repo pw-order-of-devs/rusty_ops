@@ -15,8 +15,16 @@ description = "rusty_ops - commons module"
 name = "commons"
 path = "src/lib.rs"
 
+[features]
+errors = []
+gloo = ["gloo-net"]
+logging = ["log", "log4rs"]
+mongo = ["mongodb"]
+
 [dependencies]
 async-graphql.workspace = true
-log.workspace = true
-log4rs.workspace = true
-mongodb.workspace = true
+gloo-net = { workspace = true, optional = true }
+log = { workspace = true, optional = true }
+log4rs = { workspace = true, optional = true }
+mongodb = { workspace = true, optional = true }
+serde_json.workspace = true

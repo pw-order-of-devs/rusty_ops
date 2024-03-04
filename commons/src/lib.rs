@@ -17,7 +17,9 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 /// crate errors
+#[cfg(feature = "errors")]
 pub mod errors;
 
 /// logging configuration
+#[cfg(feature = "logging")]
 pub mod logger;

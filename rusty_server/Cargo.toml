@@ -16,8 +16,8 @@ name = "rusty_server"
 path = "src/main.rs"
 
 [dependencies]
-commons = { path = "../commons" }
-domain = { path = "../domain" }
+commons = { path = "../commons", features = ["errors", "logging", "mongo"] }
+domain = { path = "../domain", features = ["mongo"] }
 persist = { path = "../persist" }
 
 async-graphql.workspace = true

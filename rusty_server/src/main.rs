@@ -19,7 +19,9 @@
 use std::error::Error;
 
 use async_graphql_poem::GraphQL;
-use poem::{listener::TcpListener, Route, Server};
+use poem::{EndpointExt, listener::TcpListener, Route, Server};
+use poem::http::Method;
+use poem::middleware::Cors;
 
 mod gql;
 
@@ -28,11 +30,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
     commons::logger::init();
     let db = persist::init().await;
 
+    let cors = Cors::new()
+        .allow_methods(vec![Method::POST, Method::OPTIONS])
+        .allow_origin("http://localhost:8080")
+        .allow_header("content-type")
+        .allow_credentials(true);
+
     // start the http server
     let app = Route::new()
-        .at("/ws", GraphQL::new(gql::build_schema(db)));
+        .at("/graphql", GraphQL::new(gql::build_schema(db)))
+        .with(cors);
 
-    log::info!("Server is listening at: http://localhost:8000/ws");
+    log::info!("Server is listening at: :8000/graphql");
     Server::new(TcpListener::bind("0.0.0.0:8000"))
         .run(app)
         .await?;

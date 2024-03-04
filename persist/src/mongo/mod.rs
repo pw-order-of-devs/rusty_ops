@@ -2,11 +2,11 @@ use std::time::Duration;
 use futures_util::StreamExt;
 
 use mongodb::{Client, options::ClientOptions};
-use mongodb::bson::{Bson, doc, Document, to_bson, uuid};
+use mongodb::bson::{Bson, doc, Document, to_bson};
 use mongodb::options::Credential;
 
-use commons::errors::ROError;
-use domain::RODomainItem;
+use commons::errors::RustyError;
+use domain::RustyDomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
 
@@ -61,7 +61,7 @@ impl PersistenceBuilder for MongoDBClient {
 
 impl Persistence for MongoDBClient {
 
-    async fn get_all<T: RODomainItem>(&self, index: &str) -> Result<Vec<T>, ROError> {
+    async fn get_all<T: RustyDomainItem>(&self, index: &str) -> Result<Vec<T>, RustyError> {
         let mut cursor = self.client.database(&self.database)
             .collection::<T>(index).find(None, None).await?;
 
@@ -72,7 +72,7 @@ impl Persistence for MongoDBClient {
         Ok(result)
     }
 
-    async fn get_by_id<T: RODomainItem>(&self, index: &str, id: &str) -> Result<Option<T>, ROError> {
+    async fn get_by_id<T: RustyDomainItem>(&self, index: &str, id: &str) -> Result<Option<T>, RustyError> {
         let collection = self.client.database(&self.database)
             .collection::<T>(index);
 
@@ -80,26 +80,23 @@ impl Persistence for MongoDBClient {
             .map_or_else(|| Ok(None), |doc| Ok(Some(doc)))
     }
 
-    async fn create<T: RODomainItem>(&self, index: &str, item: &T) -> Result<String, ROError> {
+    async fn create<T: RustyDomainItem>(&self, index: &str, item: &T) -> Result<String, RustyError> {
         let collection = self.client.database(&self.database)
             .collection::<Document>(index);
-        let Bson::Document(mut document) = to_bson(&item)?
-            else { return Err(ROError {}) };
-
-        let id = uuid::Uuid::new().to_string();
-        document.insert("id", &id);
+        let Bson::Document(document) = to_bson(&item)?
+            else { return Err(RustyError {}) };
 
         match collection.insert_one(document, None).await {
-            Ok(_) => Ok(id),
-            Err(_) => Err(ROError {}),
+            Ok(_) => Ok(item.id()),
+            Err(_) => Err(RustyError {}),
         }
     }
 
-    async fn delete(&self, index: &str, id: &str) -> Result<u64, ROError> {
+    async fn delete(&self, index: &str, id: &str) -> Result<u64, RustyError> {
         let collection = self.client.database(&self.database)
             .collection::<Document>(index);
 
         collection.delete_one(doc! { "id": id }, None).await
-            .map_or(Err(ROError {}), |result| Ok(result.deleted_count))
+            .map_or(Err(RustyError {}), |result| Ok(result.deleted_count))
     }
 }

@@ -1,0 +1,77 @@
+$backgroundColor: #1f1f1f;
+$primaryColor: #e0e0e0;
+
+@font-face {
+    font-family: '3270 Nerd Font Mono';
+    src: url('../static/fonts/3270NerdFontMono-Regular.woff') format('woff');
+    src: url('../static/fonts/3270NerdFontMono-Regular.woff2') format('woffw');
+    font-weight: normal; font-style: normal;
+}
+
+body {
+    margin: 80px auto;
+    background-color: $backgroundColor;
+    color: $primaryColor;
+    cursor: default;
+}
+
+.page {
+    padding: 30px;
+
+    .title {
+        font-size: 24px;
+    }
+}
+
+.grid-page {
+    .container {
+        margin-top: 20px;
+        display: inline-grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        width: 100%;
+        gap: 10px;
+
+        .card {
+            padding: 15px;
+            border: $primaryColor solid 1px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            background-color: #2e2e2e;
+        }
+    }
+}
+
+.header {
+    display: flex;
+    padding: 10px;
+    position: fixed;
+    top: 0;
+    width: 100%;
+
+    image {
+        justify-items: center;
+    }
+
+    .title {
+        display: inline-flex;
+        font-size: 48px;
+        font-family: "3270 Nerd Font Mono", serif;
+        justify-items: center;
+        margin-left: 30px;
+    }
+
+    box-shadow: 0 0 0 0.2px $primaryColor;
+}
+
+.footer {
+    display: none;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+
+    box-shadow: 0 0 0 0.2px $primaryColor;
+}

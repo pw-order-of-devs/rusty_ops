@@ -15,7 +15,11 @@ description = "rusty_ops - domain module"
 name = "domain"
 path = "src/lib.rs"
 
+[features]
+mongo = ["mongodb", "uuid"]
+
 [dependencies]
 async-graphql.workspace = true
-mongodb.workspace = true
+mongodb = { workspace = true, optional = true }
 serde.workspace = true
+uuid = { workspace = true, optional = true }

@@ -1,7 +1,7 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 
-use crate::RODomainItem;
+use crate::RustyDomainItem;
 
 /// S struct representing a pipeline.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
@@ -25,5 +25,16 @@ pub struct RegisterPipeline {
     job_id: String,
 }
 
-impl RODomainItem for Pipeline {}
-impl RODomainItem for RegisterPipeline {}
+impl RustyDomainItem for Pipeline {
+
+    fn id(&self) -> String {
+        self.clone().id
+    }
+}
+
+impl RustyDomainItem for RegisterPipeline {
+
+    fn id(&self) -> String {
+        todo!()
+    }
+}

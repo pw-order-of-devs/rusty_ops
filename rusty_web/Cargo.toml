@@ -1,0 +1,27 @@
+[package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+name = "rusty_web"
+description = "rusty_ops - web ui"
+
+[[bin]]
+name = "rusty_web"
+path = "src/main.rs"
+
+[dependencies]
+commons = { path = "../commons", features = ["errors", "gloo"] }
+domain = { path = "../domain" }
+
+gloo-net.workspace = true
+leptos = { workspace = true, features = ["csr"] }
+leptos_meta = { workspace = true, features = ["csr"] }
+leptos_router = { workspace = true, features = ["csr"] }
+serde.workspace = true
+serde_json.workspace = true
