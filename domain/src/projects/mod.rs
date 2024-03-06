@@ -11,8 +11,10 @@ pub struct Project {
     pub id: String,
     /// project name
     pub name: String,
-    url: Option<String>,
-    jobs: Option<Vec<Job>>,
+    /// project url
+    pub url: Option<String>,
+    /// project jobs
+    pub jobs: Option<Vec<Job>>,
 }
 
 /// A struct representing the registration of a project.

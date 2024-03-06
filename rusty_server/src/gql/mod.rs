@@ -19,6 +19,13 @@ fn get_db_client<'a>(ctx: &Context<'a>) -> Result<&'a impl Persistence> {
     }
 }
 
+fn is_field_requested<'a>(ctx: &Context<'a>, field: &str) -> bool {
+    ctx.field()
+        .selection_set()
+        .find(|f| f.name() == field)
+        .is_some()
+}
+
 const PROJECTS_INDEX: &str = "projects";
 const JOBS_INDEX: &str = "jobs";
 
@@ -29,24 +36,45 @@ impl Query {
 
     // projects interface
     async fn get_projects(&self, ctx: &Context<'_>) -> Result<Vec<Project>, RustyError> {
-        log::info!("handling `get_projects` request");
+        log::debug!("handling `get_projects` request");
         let db = get_db_client(ctx)?;
-        db.get_all::<Project>(PROJECTS_INDEX).await
+        let mut entries = db.get_all::<Project>(PROJECTS_INDEX).await?;
+
+        if is_field_requested(ctx, "jobs") {
+            for item in &mut entries {
+                let jobs = db.get_all::<Job>(JOBS_INDEX).await?
+                    .into_iter().filter(|job| job.project_id == item.clone().id)
+                    .collect::<Vec<Job>>();
+                if !jobs.is_empty() { item.jobs = Some(jobs); }
+            };
+        }
+        Ok(entries)
     }
 
     async fn get_project_by_id(&self, ctx: &Context<'_>, id: String) -> Result<Option<Project>, RustyError> {
-        log::info!("handling `get_project_by_id` request");
-        get_db_client(ctx)?.get_by_id(PROJECTS_INDEX, &id).await
+        log::debug!("handling `get_project_by_id` request");
+        let db = get_db_client(ctx)?;
+        let entry = db.get_by_id::<Project>(PROJECTS_INDEX, &id).await?;
+        if entry.is_none() { return Ok(entry) }
+
+        let mut entry = entry.clone().unwrap();
+        if is_field_requested(ctx, "jobs") {
+            let jobs = db.get_all::<Job>(JOBS_INDEX).await?
+                .into_iter().filter(|job| job.project_id == entry.clone().id)
+                .collect::<Vec<Job>>();
+            if !jobs.is_empty() { entry.jobs = Some(jobs); }
+        }
+        Ok(Some(entry))
     }
 
     // jobs interface
     async fn get_jobs(&self, ctx: &Context<'_>) -> Result<Vec<Job>, RustyError> {
-        log::info!("handling `get_jobs` request");
+        log::debug!("handling `get_jobs` request");
         get_db_client(ctx)?.get_all(JOBS_INDEX).await
     }
 
     async fn get_job_by_id(&self, ctx: &Context<'_>, id: String) -> Result<Option<Job>, RustyError> {
-        log::info!("handling `get_job_by_id` request");
+        log::debug!("handling `get_job_by_id` request");
         get_db_client(ctx)?.get_by_id(JOBS_INDEX, &id).await
     }
 }

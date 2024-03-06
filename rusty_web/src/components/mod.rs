@@ -1,3 +1,6 @@
+/// # Fallback component - error handler
+pub mod fallback;
+
 /// # Footer component
 pub mod footer;
 

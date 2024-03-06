@@ -21,7 +21,7 @@ use leptos_meta::{provide_meta_context, Stylesheet};
 use leptos_router::{Route, Router, Routes};
 
 use crate::components::header::Header;
-use crate::pages::projects::Projects;
+use crate::pages::projects::{view::ProjectView, list::ProjectsList};
 
 /// Server API module.
 pub mod api;
@@ -45,7 +45,9 @@ fn App() -> impl IntoView {
         <Header/>
         <Router>
             <Routes>
-                <Route path="" view=  move || view! { <Projects/> }/>
+                <Route path="/projects" view=ProjectsList/>
+                <Route path="/projects/:id" view=ProjectView/>
+                <Route path="/*any" view=|| view! { <h1>"Not Found"</h1> }/>
             </Routes>
         </Router>
     }

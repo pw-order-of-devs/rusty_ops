@@ -12,6 +12,7 @@ pub struct Pipeline {
     // shared: Shared,
     // conditions: Vec<Condition>,
     // stages: Vec<Stage>,
+    #[serde(rename(deserialize = "job_id", deserialize = "job_id"))]
     job_id: String,
 }
 
@@ -22,6 +23,7 @@ pub struct RegisterPipeline {
     // conditions: Vec<Condition>,
     // shared: Shared,
     // stages: Vec<Stage>,
+    #[serde(rename(deserialize = "job_id", deserialize = "job_id"))]
     job_id: String,
 }
 

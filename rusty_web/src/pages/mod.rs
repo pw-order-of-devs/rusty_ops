@@ -1,2 +1,2 @@
-/// Web page for managing projects.
+/// Web pages for managing projects.
 pub mod projects;

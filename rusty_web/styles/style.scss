@@ -1,47 +1,91 @@
 $backgroundColor: #1f1f1f;
 $primaryColor: #e0e0e0;
+$gridGap: 10px;
+$full: 100%;
 
 @font-face {
     font-family: '3270 Nerd Font Mono';
-    src: url('../static/fonts/3270NerdFontMono-Regular.woff') format('woff');
-    src: url('../static/fonts/3270NerdFontMono-Regular.woff2') format('woffw');
+    src: url('/static/fonts/3270NerdFontMono-Regular.woff') format('woff');
+    src: url('/static/fonts/3270NerdFontMono-Regular.woff2') format('woffw');
     font-weight: normal; font-style: normal;
 }
 
 body {
-    margin: 80px auto;
     background-color: $backgroundColor;
     color: $primaryColor;
     cursor: default;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+}
+
+a {
+    -webkit-user-drag: none;
 }
 
 .page {
-    padding: 30px;
+    padding: 120px 30px 30px;
 
     .title {
         font-size: 24px;
     }
-}
 
-.grid-page {
     .container {
-        margin-top: 20px;
         display: inline-grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        width: 100%;
-        gap: 10px;
+        margin-top: 20px;
+        width: $full;
+        gap: $gridGap;
 
         .card {
             padding: 15px;
             border: $primaryColor solid 1px;
             border-radius: 5px;
-            cursor: pointer;
+            color: white;
+            overflow: hidden;
+
+            .text-field {
+                display: -webkit-box;
+                -webkit-line-clamp: 3;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
         }
 
-        .card:hover {
-            background-color: #2e2e2e;
+        .button {
+            cursor: pointer;
+            text-decoration: none;
         }
     }
+}
+
+.list-page {
+    .container {
+        grid-template-columns: 1fr 1fr 1fr;
+
+        .button:hover {
+            background-color: #2e2e2e;
+        }
+
+        .button:active {
+            background-color: #3d3d3d;
+        }
+    }
+}
+
+.view-page {
+    .container {
+        grid-template-columns: 1fr 3fr;
+    }
+}
+
+.project-jobs {
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: $gridGap;
 }
 
 .header {
@@ -49,7 +93,8 @@ body {
     padding: 10px;
     position: fixed;
     top: 0;
-    width: 100%;
+    width: $full;
+    background-color: $backgroundColor;
 
     image {
         justify-items: center;
@@ -71,7 +116,7 @@ body {
     padding: 10px;
     position: fixed;
     bottom: 0;
-    width: 100%;
+    width: $full;
 
     box-shadow: 0 0 0 0.2px $primaryColor;
 }
