@@ -1,0 +1,26 @@
+@import "variables";
+
+.header {
+  display: flex;
+  padding: 10px;
+  position: fixed;
+  top: 0;
+  width: $full;
+  background-color: $backgroundColor;
+
+  image {
+    justify-items: center;
+  }
+
+  .title {
+    display: inline-flex;
+    color: $primaryColor;
+    font-size: 48px;
+    font-family: "3270 Nerd Font Mono", sans-serif;
+    justify-items: center;
+    margin-left: 30px;
+    text-decoration: none;
+  }
+
+  box-shadow: 0 0 0 0.2px $primaryColor;
+}

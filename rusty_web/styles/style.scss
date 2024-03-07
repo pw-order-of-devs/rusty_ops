@@ -1,14 +1,10 @@
-$backgroundColor: #1f1f1f;
-$primaryColor: #e0e0e0;
-$gridGap: 10px;
-$full: 100%;
+@import "variables";
+@import "fonts";
 
-@font-face {
-    font-family: '3270 Nerd Font Mono';
-    src: url('/static/fonts/3270NerdFontMono-Regular.woff') format('woff');
-    src: url('/static/fonts/3270NerdFontMono-Regular.woff2') format('woffw');
-    font-weight: normal; font-style: normal;
-}
+@import "header";
+@import "page";
+@import "home";
+@import "project";
 
 body {
     background-color: $backgroundColor;
@@ -20,103 +16,9 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     -webkit-user-select: none;
+    font-family: sans-serif;
 }
 
 a {
     -webkit-user-drag: none;
-}
-
-.page {
-    padding: 120px 30px 30px;
-
-    .title {
-        font-size: 24px;
-    }
-
-    .container {
-        display: inline-grid;
-        margin-top: 20px;
-        width: $full;
-        gap: $gridGap;
-
-        .card {
-            padding: 15px;
-            border: $primaryColor solid 1px;
-            border-radius: 5px;
-            color: white;
-            overflow: hidden;
-
-            .text-field {
-                display: -webkit-box;
-                -webkit-line-clamp: 3;
-                -webkit-box-orient: vertical;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-        }
-
-        .button {
-            cursor: pointer;
-            text-decoration: none;
-        }
-    }
-}
-
-.list-page {
-    .container {
-        grid-template-columns: 1fr 1fr 1fr;
-
-        .button:hover {
-            background-color: #2e2e2e;
-        }
-
-        .button:active {
-            background-color: #3d3d3d;
-        }
-    }
-}
-
-.view-page {
-    .container {
-        grid-template-columns: 1fr 3fr;
-    }
-}
-
-.project-jobs {
-    display: inline-grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: $gridGap;
-}
-
-.header {
-    display: flex;
-    padding: 10px;
-    position: fixed;
-    top: 0;
-    width: $full;
-    background-color: $backgroundColor;
-
-    image {
-        justify-items: center;
-    }
-
-    .title {
-        display: inline-flex;
-        font-size: 48px;
-        font-family: "3270 Nerd Font Mono", serif;
-        justify-items: center;
-        margin-left: 30px;
-    }
-
-    box-shadow: 0 0 0 0.2px $primaryColor;
-}
-
-.footer {
-    display: none;
-    padding: 10px;
-    position: fixed;
-    bottom: 0;
-    width: $full;
-
-    box-shadow: 0 0 0 0.2px $primaryColor;
 }

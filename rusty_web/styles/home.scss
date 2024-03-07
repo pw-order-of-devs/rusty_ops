@@ -1,0 +1,27 @@
+@import "variables";
+
+.home-page {
+    .container {
+        .row {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+        }
+    }
+
+    .app-name {
+        font-size: 100px;
+        font-family: "3270 Nerd Font Mono", sans-serif;
+        margin-left: 20px;
+    }
+
+    .app-link {
+        font-size: 28px;
+        text-decoration: underline!important;
+        padding: 0 $gridGap;
+
+        &:not(:last-child) {
+            border-right: $primaryColor 0.1em solid;
+        }
+    }
+}
