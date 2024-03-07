@@ -17,8 +17,10 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use std::future::Future;
+use serde_json::Value;
 
 use commons::errors::RustyError;
+use domain::filters::search::SearchFilter;
 use domain::RustyDomainItem;
 
 use crate::mongo::MongoDBClient;
@@ -114,7 +116,12 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn get_all<T: RustyDomainItem>(&self, index: &str) -> impl Future<Output=Result<Vec<T>, RustyError>> + Send;
+    fn get_all<T: RustyDomainItem>(
+        &self,
+        index: &str,
+        filter: Option<Value>,
+        options: Option<SearchFilter>,
+    ) -> impl Future<Output=Result<Vec<T>, RustyError>> + Send;
 
     /// Retrieves an item by index and ID.
     ///
@@ -134,7 +141,11 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn get_by_id<T: RustyDomainItem>(&self, index: &str, id: &str) -> impl Future<Output=Result<Option<T>, RustyError>> + Send;
+    fn get_by_id<T: RustyDomainItem>(
+        &self,
+        index: &str,
+        id: &str,
+    ) -> impl Future<Output=Result<Option<T>, RustyError>> + Send;
 
     /// Creates a new item in the specified index.
     ///
@@ -152,7 +163,11 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn create<T: RustyDomainItem>(&self, index: &str, item: &T) -> impl Future<Output=Result<String, RustyError>> + Send;
+    fn create<T: RustyDomainItem>(
+        &self,
+        index: &str,
+        item: &T,
+    ) -> impl Future<Output=Result<String, RustyError>> + Send;
 
     /// Deletes an item from the database.
     ///
@@ -170,7 +185,11 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn delete(&self, index: &str, id: &str) -> impl Future<Output=Result<u64, RustyError>> + Send;
+    fn delete(
+        &self,
+        index: &str,
+        id: &str,
+    ) -> impl Future<Output=Result<u64, RustyError>> + Send;
 }
 
 /// Initializes the persistence layer based on the configured database type.

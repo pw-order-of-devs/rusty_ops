@@ -24,7 +24,7 @@ pub fn ProjectView() -> impl IntoView {
                         "other metadata about the project"
                     </div>
                     <div class="project-jobs"> {
-                        data.clone().jobs.unwrap_or(vec![]).iter()
+                        data.clone().jobs.unwrap_or_default().iter()
                             .map(|job| view! {
                                 <div class="card">
                                     <div> { job.clone().name } </div>

@@ -22,3 +22,4 @@ domain = { path = "../domain", features = ["mongodb"] }
 futures-util.workspace = true
 log.workspace = true
 mongodb.workspace = true
+serde_json.workspace = true

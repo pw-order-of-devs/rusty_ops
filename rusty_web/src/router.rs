@@ -6,6 +6,7 @@ use crate::pages::projects::list::ProjectsList;
 use crate::pages::projects::view::ProjectView;
 
 #[component]
+#[must_use]
 pub fn RustyRouter() -> impl IntoView {
     view! {
         <Router>

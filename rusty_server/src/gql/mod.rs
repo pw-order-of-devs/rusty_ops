@@ -1,6 +1,8 @@
 use async_graphql::{Context, EmptySubscription, Object, Result, Schema};
+use serde_json::{json, Value};
 
 use commons::errors::RustyError;
+use domain::filters::search::SearchFilter;
 use domain::jobs::{Job, RegisterJob};
 use domain::projects::{Project, RegisterProject};
 use persist::{DbType, Persistence, mongo::MongoDBClient};
@@ -19,11 +21,10 @@ fn get_db_client<'a>(ctx: &Context<'a>) -> Result<&'a impl Persistence> {
     }
 }
 
-fn is_field_requested<'a>(ctx: &Context<'a>, field: &str) -> bool {
+fn is_field_requested(ctx: &Context<'_>, field: &str) -> bool {
     ctx.field()
         .selection_set()
-        .find(|f| f.name() == field)
-        .is_some()
+        .any(|f| f.name() == field)
 }
 
 const PROJECTS_INDEX: &str = "projects";
@@ -35,16 +36,14 @@ pub struct Query;
 impl Query {
 
     // projects interface
-    async fn get_projects(&self, ctx: &Context<'_>) -> Result<Vec<Project>, RustyError> {
+    async fn get_projects(&self, ctx: &Context<'_>, filter: Option<Value>, options: Option<SearchFilter>) -> Result<Vec<Project>, RustyError> {
         log::debug!("handling `get_projects` request");
         let db = get_db_client(ctx)?;
-        let mut entries = db.get_all::<Project>(PROJECTS_INDEX).await?;
+        let mut entries = db.get_all::<Project>(PROJECTS_INDEX, filter, options).await?;
 
         if is_field_requested(ctx, "jobs") {
             for item in &mut entries {
-                let jobs = db.get_all::<Job>(JOBS_INDEX).await?
-                    .into_iter().filter(|job| job.project_id == item.clone().id)
-                    .collect::<Vec<Job>>();
+                let jobs = db.get_all::<Job>(JOBS_INDEX, Some(json!({ "project_id": item.clone().id })), None).await?;
                 if !jobs.is_empty() { item.jobs = Some(jobs); }
             };
         }
@@ -60,18 +59,16 @@ impl Query {
 
         let mut entry = entry.clone().unwrap();
         if is_field_requested(ctx, "jobs") {
-            let jobs = db.get_all::<Job>(JOBS_INDEX).await?
-                .into_iter().filter(|job| job.project_id == entry.clone().id)
-                .collect::<Vec<Job>>();
+            let jobs = db.get_all::<Job>(JOBS_INDEX, Some(json!({ "project_id": entry.clone().id })), None).await?;
             if !jobs.is_empty() { entry.jobs = Some(jobs); }
         }
         Ok(Some(entry))
     }
 
     // jobs interface
-    async fn get_jobs(&self, ctx: &Context<'_>) -> Result<Vec<Job>, RustyError> {
+    async fn get_jobs(&self, ctx: &Context<'_>, filter: Option<Value>, options: Option<SearchFilter>) -> Result<Vec<Job>, RustyError> {
         log::debug!("handling `get_jobs` request");
-        let entries = get_db_client(ctx)?.get_all(JOBS_INDEX).await?;
+        let entries = get_db_client(ctx)?.get_all(JOBS_INDEX, filter, options).await?;
         log::debug!("`get_jobs`: found {} entries", entries.len());
         Ok(entries)
     }

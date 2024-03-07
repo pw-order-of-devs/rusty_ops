@@ -14,7 +14,7 @@ pub fn fallback(errors: RwSignal<Errors>) -> HtmlElement<Div> {
     errors.with(|errors| {
         errors
             .iter()
-            .for_each(|(_, e)| leptos::leptos_dom::log!("{e:?}"))
+            .for_each(|(_, e)| leptos::leptos_dom::log!("{e:?}"));
     });
     // it should parse the errors and display actual message
     view! {

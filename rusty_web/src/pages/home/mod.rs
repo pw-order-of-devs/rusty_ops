@@ -2,6 +2,7 @@ use leptos::{component, IntoView, view};
 
 /// Landing page.
 #[component]
+#[must_use]
 pub fn Home() -> impl IntoView {
     view! {
         <div class="page home-page">

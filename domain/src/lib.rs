@@ -16,6 +16,9 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+/// # Filters Module
+pub mod filters;
+
 /// # Jobs Module
 pub mod jobs;
 

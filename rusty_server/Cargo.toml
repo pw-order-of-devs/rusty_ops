@@ -24,4 +24,5 @@ async-graphql.workspace = true
 async-graphql-poem.workspace = true
 log.workspace = true
 poem.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
