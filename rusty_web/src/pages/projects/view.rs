@@ -29,7 +29,7 @@ pub fn ProjectView() -> impl IntoView {
                                 <div class="card">
                                     <div> { job.clone().name } </div>
                                     <br />
-                                    <div class="text-field"> { job.clone().description.unwrap_or("".to_string()).repeat(20) } </div>
+                                    <div class="text-field"> { job.clone().description } </div>
                                 </div>
                             }).collect_view()
                     } </div>
