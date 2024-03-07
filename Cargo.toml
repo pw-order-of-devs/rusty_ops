@@ -30,3 +30,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1.36", features = ["full"] }
 uuid = "1.7"
+wasm-bindgen = "0.2"

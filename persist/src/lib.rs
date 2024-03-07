@@ -39,17 +39,17 @@ pub enum DbType {
 
 impl DbType {
 
-    /// Parses the `DATABASE_TYPE` environment variable and returns the corresponding `DbType` value.
+    /// Parses the `RUSTY_PERSISTENCE` environment variable and returns the corresponding `DbType` value.
     ///
     /// # Panics
-    /// if the `DATABASE_TYPE` variable is not set or if the value is not supported.
+    /// if the `RUSTY_PERSISTENCE` variable is not set or if the value is not supported.
     ///
     /// # Returns
-    /// - `DbType::MongoDb` if the `DATABASE_TYPE` value is `mongodb` or `mongo_db`
+    /// - `DbType::MongoDb` if the `RUSTY_PERSISTENCE` value is `mongodb` or `mongo_db`
     #[must_use]
     pub fn parse() -> Self {
-        let db_type = std::env::var("DATABASE_TYPE")
-            .expect("DATABASE_TYPE variable is required")
+        let db_type = std::env::var("RUSTY_PERSISTENCE")
+            .expect("RUSTY_PERSISTENCE variable is required")
             .to_lowercase();
 
         match db_type.as_str() {

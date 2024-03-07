@@ -17,11 +17,10 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use leptos::{component, IntoView, mount_to_body, view};
-use leptos_meta::{provide_meta_context, Stylesheet};
-use leptos_router::{Route, Router, Routes};
+use leptos_meta::provide_meta_context;
 
 use crate::components::header::Header;
-use crate::pages::projects::{view::ProjectView, list::ProjectsList};
+use crate::router::RustyRouter;
 
 /// Server API module.
 pub mod api;
@@ -32,6 +31,9 @@ pub mod components;
 /// Module containing pages.
 pub mod pages;
 
+/// Module containing routes definitions.
+pub mod router;
+
 fn main() {
     mount_to_body(|| view! { <App/> });
 }
@@ -41,14 +43,7 @@ fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        <Stylesheet id="leptos" href="/styles/style.scss"/>
         <Header/>
-        <Router>
-            <Routes>
-                <Route path="/projects" view=ProjectsList/>
-                <Route path="/projects/:id" view=ProjectView/>
-                <Route path="/*any" view=|| view! { <h1>"Not Found"</h1> }/>
-            </Routes>
-        </Router>
+        <RustyRouter/>
     }
 }

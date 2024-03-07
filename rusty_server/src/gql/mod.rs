@@ -48,6 +48,7 @@ impl Query {
                 if !jobs.is_empty() { item.jobs = Some(jobs); }
             };
         }
+        log::debug!("`get_projects`: found {} entries", entries.len());
         Ok(entries)
     }
 
@@ -70,7 +71,9 @@ impl Query {
     // jobs interface
     async fn get_jobs(&self, ctx: &Context<'_>) -> Result<Vec<Job>, RustyError> {
         log::debug!("handling `get_jobs` request");
-        get_db_client(ctx)?.get_all(JOBS_INDEX).await
+        let entries = get_db_client(ctx)?.get_all(JOBS_INDEX).await?;
+        log::debug!("`get_jobs`: found {} entries", entries.len());
+        Ok(entries)
     }
 
     async fn get_job_by_id(&self, ctx: &Context<'_>, id: String) -> Result<Option<Job>, RustyError> {

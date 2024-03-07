@@ -16,8 +16,9 @@ name = "persist"
 path = "src/lib.rs"
 
 [dependencies]
-commons = { path = "../commons" }
-domain = { path = "../domain" }
+commons = { path = "../commons", features = ["errors", "logging", "mongo"] }
+domain = { path = "../domain", features = ["mongodb"] }
 
-mongodb.workspace = true
 futures-util.workspace = true
+log.workspace = true
+mongodb.workspace = true
