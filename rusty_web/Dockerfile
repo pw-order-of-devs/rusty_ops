@@ -16,7 +16,7 @@ COPY rusty_web/ rusty_web/
 WORKDIR /usr/src/app/rusty_web
 RUN trunk build --release
 
-FROM nginx:alpine
+FROM nginx:1.25.4-alpine3.18
 
 COPY --from=builder /usr/src/app/rusty_web/dist /usr/share/nginx/html
 COPY --from=builder /usr/src/app/rusty_web/nginx.conf /etc/nginx/conf.d/default.conf

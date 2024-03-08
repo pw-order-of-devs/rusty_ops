@@ -15,7 +15,7 @@ COPY rusty_server/ rusty_server/
 
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
-FROM scratch as final-stage
+FROM alpine:3.19 as final-stage
 
 COPY --from=build-stage /usr/app/src/target/x86_64-unknown-linux-musl/release/rusty_server /app/
 CMD ["/app/rusty_server"]
