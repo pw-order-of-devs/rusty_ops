@@ -2,7 +2,7 @@ use async_graphql::{Context, EmptySubscription, Object, Result, Schema};
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchFilter;
+use domain::filters::search::SearchOptions;
 use domain::jobs::{Job, RegisterJob};
 use domain::projects::{Project, RegisterProject};
 use persist::{DbType, Persistence, mongo::MongoDBClient};
@@ -36,7 +36,7 @@ pub struct Query;
 impl Query {
 
     // projects interface
-    async fn get_projects(&self, ctx: &Context<'_>, filter: Option<Value>, options: Option<SearchFilter>) -> Result<Vec<Project>, RustyError> {
+    async fn get_projects(&self, ctx: &Context<'_>, filter: Option<Value>, options: Option<SearchOptions>) -> Result<Vec<Project>, RustyError> {
         log::debug!("handling `get_projects` request");
         let db = get_db_client(ctx)?;
         let mut entries = db.get_all::<Project>(PROJECTS_INDEX, filter, options).await?;
@@ -66,7 +66,7 @@ impl Query {
     }
 
     // jobs interface
-    async fn get_jobs(&self, ctx: &Context<'_>, filter: Option<Value>, options: Option<SearchFilter>) -> Result<Vec<Job>, RustyError> {
+    async fn get_jobs(&self, ctx: &Context<'_>, filter: Option<Value>, options: Option<SearchOptions>) -> Result<Vec<Job>, RustyError> {
         log::debug!("handling `get_jobs` request");
         let entries = get_db_client(ctx)?.get_all(JOBS_INDEX, filter, options).await?;
         log::debug!("`get_jobs`: found {} entries", entries.len());

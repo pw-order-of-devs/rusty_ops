@@ -3,11 +3,11 @@ use futures_util::StreamExt;
 
 use mongodb::{Client, options::ClientOptions};
 use mongodb::bson::{Bson, doc, Document, to_bson};
-use mongodb::options::Credential;
+use mongodb::options::{Credential, FindOptions};
 use serde_json::{Map, Value};
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchFilter;
+use domain::filters::search::SearchOptions;
 use domain::RustyDomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
@@ -67,18 +67,12 @@ impl Persistence for MongoDBClient {
         &self,
         index: &str,
         filter: Option<Value>,
-        options: Option<SearchFilter>,
+        options: Option<SearchOptions>,
     ) -> Result<Vec<T>, RustyError> {
-        let filter = if let Some(filter) = filter {
-            match to_bson(&filter.as_object().unwrap_or(&Map::new()).clone())? {
-                Bson::Document(doc) => Some(doc),
-                _ => None,
-            }
-        } else { None };
-        let options = Some(options.unwrap_or_default().into());
-
         let mut cursor = self.client.database(&self.database)
-            .collection::<T>(index).find(filter, options).await?;
+            .collection::<T>(index)
+            .find(parse_filter(&filter)?, parse_options(&options))
+            .await?;
 
         let mut result: Vec<T> = Vec::new();
         while let Some(doc) = cursor.next().await {
@@ -125,5 +119,32 @@ impl Persistence for MongoDBClient {
 
         collection.delete_one(doc! { "id": id }, None).await
             .map_or(Err(RustyError {}), |result| Ok(result.deleted_count))
+    }
+}
+
+fn parse_filter(filter: &Option<Value>) -> Result<Option<Document>, RustyError> {
+    match filter {
+        None => Ok(None),
+        Some(value) => {
+            match to_bson(&value.as_object().unwrap_or(&Map::new()).clone())? {
+                Bson::Document(doc) => Ok(Some(doc)),
+                _ => Ok(None),
+            }
+        }
+    }
+}
+
+fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
+    match options {
+        None => None,
+        Some(value) => {
+            let page_number = value.page_number.unwrap_or(1);
+            let page_number = if page_number > 0 { page_number } else { 1 };
+            let page_size = value.page_size.unwrap_or(20);
+            let mut options = FindOptions::default();
+            options.limit = Some(page_size.try_into().unwrap_or(i64::MAX));
+            options.skip = Some((page_number - 1) * page_size);
+            Some(options)
+        }
     }
 }

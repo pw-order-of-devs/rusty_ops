@@ -1,8 +1,9 @@
-FROM rust:1.75 as build-stage
+FROM rust:1.75-alpine as build-stage
+
+RUN apk add --no-cache build-base
 
 RUN rustup default stable
-RUN rustup target add x86_64-unknown-linux-gnu
-
+RUN rustup target add x86_64-unknown-linux-musl
 WORKDIR /usr/app/src
 
 COPY Cargo.toml .
@@ -12,13 +13,9 @@ COPY domain/ domain/
 COPY persist/ persist/
 COPY rusty_server/ rusty_server/
 
-RUN cargo build --release
+RUN cargo build --release --target x86_64-unknown-linux-musl
 
-FROM debian:stable-slim as final-stage
+FROM scratch as final-stage
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates libc-bin libc6 \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=build-stage /usr/app/src/target/release/rusty_server /app/
+COPY --from=build-stage /usr/app/src/target/x86_64-unknown-linux-musl/release/rusty_server /app/
 CMD ["/app/rusty_server"]

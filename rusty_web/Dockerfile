@@ -19,5 +19,4 @@ RUN trunk build --release
 FROM nginx:alpine
 
 COPY --from=builder /usr/src/app/rusty_web/dist /usr/share/nginx/html
-
 COPY --from=builder /usr/src/app/rusty_web/nginx.conf /etc/nginx/conf.d/default.conf

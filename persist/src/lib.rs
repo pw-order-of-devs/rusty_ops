@@ -20,7 +20,7 @@ use std::future::Future;
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchFilter;
+use domain::filters::search::SearchOptions;
 use domain::RustyDomainItem;
 
 use crate::mongo::MongoDBClient;
@@ -120,7 +120,7 @@ pub trait Persistence: Send + Sync {
         &self,
         index: &str,
         filter: Option<Value>,
-        options: Option<SearchFilter>,
+        options: Option<SearchOptions>,
     ) -> impl Future<Output=Result<Vec<T>, RustyError>> + Send;
 
     /// Retrieves an item by index and ID.
