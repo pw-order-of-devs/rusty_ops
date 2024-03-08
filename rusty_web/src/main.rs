@@ -34,6 +34,9 @@ pub mod pages;
 /// Module containing routes definitions.
 pub mod router;
 
+/// Module containing utility functions.
+pub mod utils;
+
 fn main() {
     mount_to_body(|| view! { <App/> });
 }

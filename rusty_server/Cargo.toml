@@ -22,6 +22,7 @@ persist = { path = "../persist" }
 
 async-graphql.workspace = true
 async-graphql-poem.workspace = true
+chrono.workspace = true
 log.workspace = true
 poem.workspace = true
 serde_json.workspace = true

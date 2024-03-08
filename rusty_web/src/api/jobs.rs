@@ -2,9 +2,9 @@ use gloo_net::http::Request;
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::projects::Project;
+use domain::jobs::Job;
 
-/// Function to retrieve projects from a GraphQL endpoint.
+/// Function to retrieve jobs for project from a GraphQL endpoint.
 ///
 /// # Errors
 ///
@@ -12,14 +12,18 @@ use domain::projects::Project;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
+pub async fn get_jobs_for_project(project_id: String) -> Result<Vec<Job>, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getProjects {{
+            getJobs(filter: {{
+                project_id: "{}"
+            }}) {{
                 id
                 name
+                description
+                projectId
             }}
-        }}"#),
+        }}"#, project_id),
         "variables": {}
     });
 
@@ -29,11 +33,11 @@ pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
         .send().await?
         .text().await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Vec<Project>>(json_data["data"]["getProjects"].clone())
+    serde_json::from_value::<Vec<Job>>(json_data["data"]["getJobs"].clone())
         .map_or(Err(RustyError {}), Ok)
 }
 
-/// Function to retrieve a project from a GraphQL endpoint by id.
+/// Function to retrieve a job from a GraphQL endpoint by id.
 ///
 /// # Errors
 ///
@@ -41,13 +45,14 @@ pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_project(id: String) -> Result<Project, RustyError> {
+pub async fn get_job(id: String) -> Result<Job, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getProjectById(id: "{}") {{
+            getJobById(id: "{}") {{
                 id
                 name
-                url
+                description
+                projectId
             }}
         }}"#, id),
         "variables": {}
@@ -59,6 +64,6 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
         .send().await?
         .text().await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Project>(json_data["data"]["getProjectById"].clone())
+    serde_json::from_value::<Job>(json_data["data"]["getJobById"].clone())
         .map_or(Err(RustyError {}), Ok)
 }

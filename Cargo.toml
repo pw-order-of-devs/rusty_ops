@@ -17,6 +17,7 @@ readme = "README.md"
 [workspace.dependencies]
 async-graphql = "7.0"
 async-graphql-poem = "7.0"
+chrono = "0.4"
 futures-util = "0.3"
 gloo-net = "0.5"
 leptos = "0.6"

@@ -1,0 +1,25 @@
+@import "variables";
+
+.error-page {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: "3270 Nerd Font Mono", sans-serif;
+
+    .error-code {
+        font-size: 256px;
+    }
+
+    .error-message {
+        font-size: 64px;
+    }
+
+    .back-home {
+        margin-top: 20px;
+        font-size: 32px;
+        text-decoration: none;
+        color: $primaryColor;
+    }
+}

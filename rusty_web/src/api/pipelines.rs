@@ -2,9 +2,9 @@ use gloo_net::http::Request;
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::projects::Project;
+use domain::pipelines::Pipeline;
 
-/// Function to retrieve projects from a GraphQL endpoint.
+/// Function to retrieve pipelines for job from a GraphQL endpoint.
 ///
 /// # Errors
 ///
@@ -12,14 +12,19 @@ use domain::projects::Project;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
+pub async fn get_pipelines_for_job(job_id: String) -> Result<Vec<Pipeline>, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getProjects {{
+            getPipelines(filter: {{
+                job_id: "{}"
+            }}) {{
                 id
-                name
+                number
+                startDate
+                status
+                jobId
             }}
-        }}"#),
+        }}"#, job_id),
         "variables": {}
     });
 
@@ -29,11 +34,11 @@ pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
         .send().await?
         .text().await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Vec<Project>>(json_data["data"]["getProjects"].clone())
+    serde_json::from_value::<Vec<Pipeline>>(json_data["data"]["getPipelines"].clone())
         .map_or(Err(RustyError {}), Ok)
 }
 
-/// Function to retrieve a project from a GraphQL endpoint by id.
+/// Function to retrieve last pipeline for job from a GraphQL endpoint.
 ///
 /// # Errors
 ///
@@ -41,15 +46,23 @@ pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_project(id: String) -> Result<Project, RustyError> {
+pub async fn get_last_pipeline_for_job(job_id: String) -> Result<Option<Pipeline>, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getProjectById(id: "{}") {{
+            getPipelines(filter: {{
+                job_id: "{}"
+            }}, options: {{
+                sortMode: "DESCENDING",
+                sortField: "number",
+                pageSize: 1
+            }}) {{
                 id
-                name
-                url
+                number
+                startDate
+                status
+                jobId
             }}
-        }}"#, id),
+        }}"#, job_id),
         "variables": {}
     });
 
@@ -59,6 +72,7 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
         .send().await?
         .text().await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Project>(json_data["data"]["getProjectById"].clone())
-        .map_or(Err(RustyError {}), Ok)
+    let entries = serde_json::from_value::<Vec<Pipeline>>(json_data["data"]["getPipelines"].clone())
+        .map_or(Err(RustyError {}), Ok)?;
+    Ok(if entries.len() == 1 { entries.first().cloned() } else { None })
 }

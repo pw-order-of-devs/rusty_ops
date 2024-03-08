@@ -1,7 +1,6 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 
-use crate::jobs::Job;
 use crate::RustyDomainItem;
 
 /// A struct representing a project.
@@ -13,8 +12,6 @@ pub struct Project {
     pub name: String,
     /// project url
     pub url: Option<String>,
-    /// project jobs
-    pub jobs: Option<Vec<Job>>,
 }
 
 /// A struct representing the registration of a project.
@@ -30,7 +27,6 @@ impl From<&RegisterProject> for Project {
             id: Self::generate_id(),
             name: value.clone().name,
             url: Some(value.clone().url),
-            jobs: None,
         }
     }
 }

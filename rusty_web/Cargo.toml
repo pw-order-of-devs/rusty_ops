@@ -19,6 +19,7 @@ path = "src/main.rs"
 commons = { path = "../commons", features = ["errors", "gloo"] }
 domain = { path = "../domain" }
 
+chrono.workspace = true
 gloo-net.workspace = true
 leptos = { workspace = true, features = ["csr"] }
 leptos_meta = { workspace = true, features = ["csr"] }

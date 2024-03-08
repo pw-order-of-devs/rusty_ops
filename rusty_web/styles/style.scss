@@ -1,10 +1,12 @@
 @import "variables";
 @import "fonts";
 
+@import "errors";
 @import "header";
-@import "page";
 @import "home";
-@import "project";
+@import "jobs";
+@import "page";
+@import "projects";
 
 body {
     background-color: $backgroundColor;
