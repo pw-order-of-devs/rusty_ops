@@ -5,4 +5,5 @@ Cargo.lock
 *.pdb
 /scripts
 /target
+rusty_web/dist/
 .idea
