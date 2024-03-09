@@ -1,8 +1,9 @@
-use gloo_net::http::Request;
 use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::jobs::Job;
+
+use crate::api::client::gloo_post;
 
 /// Function to retrieve jobs for project from a GraphQL endpoint.
 ///
@@ -27,13 +28,7 @@ pub async fn get_jobs_for_project(project_id: String) -> Result<Vec<Job>, RustyE
         "variables": {}
     });
 
-    let data = Request::post("http://localhost:8000/graphql")
-        .header("Content-Type", "application/json")
-        .json(&payload)?
-        .send()
-        .await?
-        .text()
-        .await?;
+    let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     serde_json::from_value::<Vec<Job>>(json_data["data"]["getJobs"].clone()).map_err(|err| {
         RustyError::SerializationError {
@@ -63,13 +58,7 @@ pub async fn get_job(id: String) -> Result<Job, RustyError> {
         "variables": {}
     });
 
-    let data = Request::post("http://localhost:8000/graphql")
-        .header("Content-Type", "application/json")
-        .json(&payload)?
-        .send()
-        .await?
-        .text()
-        .await?;
+    let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     serde_json::from_value::<Job>(json_data["data"]["getJobById"].clone()).map_err(|err| {
         RustyError::SerializationError {

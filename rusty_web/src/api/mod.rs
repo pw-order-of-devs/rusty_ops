@@ -1,3 +1,6 @@
+/// Server API client wrapper.
+pub mod client;
+
 /// Server API for jobs.
 pub mod jobs;
 

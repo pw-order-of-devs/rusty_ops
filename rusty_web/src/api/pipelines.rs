@@ -1,8 +1,9 @@
-use gloo_net::http::Request;
 use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::pipelines::Pipeline;
+
+use crate::api::client::gloo_post;
 
 /// Function to retrieve pipelines for job from a GraphQL endpoint.
 ///
@@ -28,13 +29,7 @@ pub async fn get_pipelines_for_job(job_id: String) -> Result<Vec<Pipeline>, Rust
         "variables": {}
     });
 
-    let data = Request::post("http://localhost:8000/graphql")
-        .header("Content-Type", "application/json")
-        .json(&payload)?
-        .send()
-        .await?
-        .text()
-        .await?;
+    let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     serde_json::from_value::<Vec<Pipeline>>(json_data["data"]["getPipelines"].clone()).map_err(
         |err| RustyError::SerializationError {
@@ -71,13 +66,7 @@ pub async fn get_last_pipeline_for_job(job_id: String) -> Result<Option<Pipeline
         "variables": {}
     });
 
-    let data = Request::post("http://localhost:8000/graphql")
-        .header("Content-Type", "application/json")
-        .json(&payload)?
-        .send()
-        .await?
-        .text()
-        .await?;
+    let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     let entries =
         serde_json::from_value::<Vec<Pipeline>>(json_data["data"]["getPipelines"].clone())
