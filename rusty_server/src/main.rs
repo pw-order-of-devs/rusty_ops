@@ -18,7 +18,7 @@
 
 use async_graphql_poem::GraphQL;
 use poem::http::Method;
-use poem::middleware::Cors;
+use poem::middleware::{Cors, SetHeader};
 use poem::{listener::TcpListener, EndpointExt, Route, Server};
 
 mod gql;
@@ -28,10 +28,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     commons::logger::init();
     let db = persist::init().await;
 
+    // extract allowed origin for cors
+    let origin = std::env::var("CORS_ALLOW_ORIGIN")
+        .unwrap_or_else(|_| "http://localhost:8080".to_string());
     // start the http server
     let app = Route::new()
         .at("/graphql", GraphQL::new(gql::build_schema(db)))
-        .with(cors_config());
+        .with(SetHeader::new().overriding("Access-Control-Allow-Origin", &origin))
+        .with(cors_config(&origin));
 
     let host = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = std::env::var("SERVER_PORT").unwrap_or_else(|_| "8000".to_string());
@@ -42,15 +46,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn cors_config() -> Cors {
-    let origins = std::env::var("CORS_ALLOW_ORIGINS")
-        .unwrap_or_else(|_| "http://localhost:8080".to_string())
-        .split(',')
-        .map(str::to_string)
-        .collect::<Vec<String>>();
+fn cors_config(origin: &str) -> Cors {
     Cors::new()
         .allow_methods(vec![Method::POST, Method::OPTIONS])
-        .allow_origins(origins)
-        .allow_header("content-type")
+        .allow_origin(origin)
+        .allow_header("*")
         .allow_credentials(true)
 }

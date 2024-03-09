@@ -15,7 +15,7 @@ fn main() {
     for (key, value) in env::vars() {
         if key.starts_with("APP_") {
             let line = format!(
-                "\n/// * geneated *\npub const {}: &'static str = \"{}\";\n",
+                "\n/// * generated field *\npub const {}: &'static str = \"{}\";\n",
                 key, value.replace("\"", "\\\"")
             );
             f.write_all(line.as_bytes()).unwrap();
