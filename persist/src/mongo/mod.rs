@@ -1,9 +1,9 @@
 use std::time::Duration;
-use futures_util::StreamExt;
 
-use mongodb::{Client, options::ClientOptions};
-use mongodb::bson::{Bson, doc, Document, to_bson};
+use futures_util::StreamExt;
+use mongodb::bson::{doc, to_bson, Bson, Document};
 use mongodb::options::{Credential, FindOptions};
+use mongodb::{options::ClientOptions, Client};
 use serde_json::{Map, Value};
 
 use commons::errors::RustyError;
@@ -20,17 +20,19 @@ pub struct MongoDBClient {
 }
 
 impl MongoDBClient {
-
     async fn build_client() -> Self {
         let mut client_options = ClientOptions::parse(Self::get_conn_string())
-            .await.expect("error while parsing mongodb connection string");
+            .await
+            .expect("error while parsing mongodb connection string");
         client_options.credential = Some(Self::get_credential());
-        client_options.connect_timeout = Some(Duration::new(30,  0));
+        client_options.connect_timeout = Some(Duration::new(30, 0));
         client_options.min_pool_size = Some(8);
         client_options.max_pool_size = Some(24);
         Self {
-            database: std::env::var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
-            client: Client::with_options(client_options).expect("error while building mongodb client"),
+            database: std::env::var("MONGODB_DATABASE")
+                .expect("MONGODB_DATABASE variable is required"),
+            client: Client::with_options(client_options)
+                .expect("error while building mongodb client"),
         }
     }
 
@@ -41,14 +43,10 @@ impl MongoDBClient {
     }
 
     fn get_credential() -> Credential {
-        let user = std::env::var("MONGODB_USER")
-            .expect("MONGODB_USER variable is required");
-        let pass = std::env::var("MONGODB_PASSWORD")
-            .expect("MONGODB_PASSWORD variable is required");
-        Credential::builder()
-            .username(user)
-            .password(pass)
-            .build()
+        let user = std::env::var("MONGODB_USER").expect("MONGODB_USER variable is required");
+        let pass =
+            std::env::var("MONGODB_PASSWORD").expect("MONGODB_PASSWORD variable is required");
+        Credential::builder().username(user).password(pass).build()
     }
 }
 
@@ -62,14 +60,15 @@ impl PersistenceBuilder for MongoDBClient {
 }
 
 impl Persistence for MongoDBClient {
-
     async fn get_all<T: RustyDomainItem>(
         &self,
         index: &str,
         filter: Option<Value>,
         options: Option<SearchOptions>,
     ) -> Result<Vec<T>, RustyError> {
-        let mut cursor = self.client.database(&self.database)
+        let mut cursor = self
+            .client
+            .database(&self.database)
             .collection::<T>(index)
             .find(parse_filter(&filter)?, parse_options(&options))
             .await?;
@@ -86,10 +85,11 @@ impl Persistence for MongoDBClient {
         index: &str,
         id: &str,
     ) -> Result<Option<T>, RustyError> {
-        let collection = self.client.database(&self.database)
-            .collection::<T>(index);
+        let collection = self.client.database(&self.database).collection::<T>(index);
 
-        collection.find_one(doc! { "id": id }, None).await?
+        collection
+            .find_one(doc! { "id": id }, None)
+            .await?
             .map_or_else(|| Ok(None), |doc| Ok(Some(doc)))
     }
 
@@ -98,10 +98,13 @@ impl Persistence for MongoDBClient {
         index: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        let collection = self.client.database(&self.database)
+        let collection = self
+            .client
+            .database(&self.database)
             .collection::<Document>(index);
-        let Bson::Document(document) = to_bson(&item)?
-            else { return Err(RustyError {}) };
+        let Bson::Document(document) = to_bson(&item)? else {
+            return Err(RustyError {});
+        };
 
         match collection.insert_one(document, None).await {
             Ok(_) => Ok(item.id()),
@@ -109,42 +112,54 @@ impl Persistence for MongoDBClient {
         }
     }
 
-    async fn delete(
-        &self,
-        index: &str,
-        id: &str,
-    ) -> Result<u64, RustyError> {
-        let collection = self.client.database(&self.database)
+    async fn delete(&self, index: &str, id: &str) -> Result<u64, RustyError> {
+        let collection = self
+            .client
+            .database(&self.database)
             .collection::<Document>(index);
 
-        collection.delete_one(doc! { "id": id }, None).await
+        collection
+            .delete_one(doc! { "id": id }, None)
+            .await
             .map_or(Err(RustyError {}), |result| Ok(result.deleted_count))
     }
 }
 
 fn parse_filter(filter: &Option<Value>) -> Result<Option<Document>, RustyError> {
-    filter.as_ref().map_or_else(|| Ok(None), |value|
-        match to_bson(&value.as_object().unwrap_or(&Map::new()).clone())? {
+    filter.as_ref().map_or_else(
+        || Ok(None),
+        |value| match to_bson(&value.as_object().unwrap_or(&Map::new()).clone())? {
             Bson::Document(doc) => Ok(Some(doc)),
             _ => Ok(None),
-        }
+        },
     )
 }
 
 fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
-    options.as_ref().map_or_else(|| None, |value| {
-        let page_number = value.page_number.unwrap_or(1);
-        let page_number = if page_number > 0 { page_number } else { 1 };
-        let page_size = value.page_size.unwrap_or(20);
-        let sort = if value.sort_field.is_some() && value.sort_mode.is_some() {
-            let field = value.clone().sort_field.unwrap();
-            let mode = if value.clone().sort_mode.unwrap() == SortOptions::Ascending { 1 } else { -1 };
-            Some(doc! { field: mode })
-        } else { None };
-        Some(FindOptions::builder()
-            .limit(page_size.try_into().unwrap_or(i64::MAX))
-            .skip((page_number - 1) * page_size)
-            .sort(sort)
-            .build())
-    })
+    options.as_ref().map_or_else(
+        || None,
+        |value| {
+            let page_number = value.page_number.unwrap_or(1);
+            let page_number = if page_number > 0 { page_number } else { 1 };
+            let page_size = value.page_size.unwrap_or(20);
+            let sort = if value.sort_field.is_some() && value.sort_mode.is_some() {
+                let field = value.clone().sort_field.unwrap();
+                let mode = if value.clone().sort_mode.unwrap() == SortOptions::Ascending {
+                    1
+                } else {
+                    -1
+                };
+                Some(doc! { field: mode })
+            } else {
+                None
+            };
+            Some(
+                FindOptions::builder()
+                    .limit(page_size.try_into().unwrap_or(i64::MAX))
+                    .skip((page_number - 1) * page_size)
+                    .sort(sort)
+                    .build(),
+            )
+        },
+    )
 }

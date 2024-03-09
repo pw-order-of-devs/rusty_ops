@@ -17,6 +17,7 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use std::future::Future;
+
 use serde_json::Value;
 
 use commons::errors::RustyError;
@@ -40,7 +41,6 @@ pub enum DbType {
 }
 
 impl DbType {
-
     /// Parses the `RUSTY_PERSISTENCE` environment variable and returns the corresponding `DbType` value.
     ///
     /// # Panics
@@ -56,7 +56,7 @@ impl DbType {
 
         match db_type.as_str() {
             "mongodb" | "mongo_db" => Self::MongoDb,
-            _ => panic!("Unsupported database: {db_type}")
+            _ => panic!("Unsupported database: {db_type}"),
         }
     }
 }
@@ -93,14 +93,13 @@ pub trait PersistenceBuilder {
     /// The function returns a future that will produce the constructed object.
     /// The future's `Output` type is the same as the struct that defines the `build`
     /// function.
-    fn build() -> impl Future<Output=Self> + Send;
+    fn build() -> impl Future<Output = Self> + Send;
 }
 
 /// Defines the Persistence trait which represents a persistence mechanism for storing and retrieving data.
 ///
 /// The trait provides methods for getting all items, getting an item by ID, creating a new item, and deleting an item.
 pub trait Persistence: Send + Sync {
-
     /// Retrieves a list of items by index.
     ///
     /// This method attempts to retrieve n list of items of type `T` from the specified index.
@@ -121,7 +120,7 @@ pub trait Persistence: Send + Sync {
         index: &str,
         filter: Option<Value>,
         options: Option<SearchOptions>,
-    ) -> impl Future<Output=Result<Vec<T>, RustyError>> + Send;
+    ) -> impl Future<Output = Result<Vec<T>, RustyError>> + Send;
 
     /// Retrieves an item by index and ID.
     ///
@@ -145,7 +144,7 @@ pub trait Persistence: Send + Sync {
         &self,
         index: &str,
         id: &str,
-    ) -> impl Future<Output=Result<Option<T>, RustyError>> + Send;
+    ) -> impl Future<Output = Result<Option<T>, RustyError>> + Send;
 
     /// Creates a new item in the specified index.
     ///
@@ -167,7 +166,7 @@ pub trait Persistence: Send + Sync {
         &self,
         index: &str,
         item: &T,
-    ) -> impl Future<Output=Result<String, RustyError>> + Send;
+    ) -> impl Future<Output = Result<String, RustyError>> + Send;
 
     /// Deletes an item from the database.
     ///
@@ -185,11 +184,8 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn delete(
-        &self,
-        index: &str,
-        id: &str,
-    ) -> impl Future<Output=Result<u64, RustyError>> + Send;
+    fn delete(&self, index: &str, id: &str)
+        -> impl Future<Output = Result<u64, RustyError>> + Send;
 }
 
 /// Initializes the persistence layer based on the configured database type.
@@ -197,6 +193,6 @@ pub trait Persistence: Send + Sync {
 /// Returns an instance of the persistence layer that implements the `Persistence` trait.
 pub async fn init() -> impl Persistence + Send + Sync {
     match DbType::parse() {
-        DbType::MongoDb => MongoDBClient::build().await
+        DbType::MongoDb => MongoDBClient::build().await,
     }
 }

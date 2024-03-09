@@ -1,4 +1,7 @@
-use leptos::{CollectView, component, create_local_resource, ErrorBoundary, IntoView, SignalWithUntracked, Transition, view};
+use leptos::{
+    component, create_local_resource, view, CollectView, ErrorBoundary, IntoView,
+    SignalWithUntracked, Transition,
+};
 use leptos_router::use_params_map;
 
 use crate::api::jobs::get_jobs_for_project;
@@ -17,22 +20,24 @@ pub fn ProjectView() -> impl IntoView {
     let project = create_local_resource(move || id.clone(), get_project);
 
     let project_view = move || {
-        project.and_then(|data| {
-            view! {
-                <div class="container">
-                    <div class="title"> { data.clone().name } </div>
-                    <div class="title"> "Jobs:" </div>
-                </div>
-                <div class="container">
-                    <div class="project-details">
-                        "other metadata about the project"
+        project
+            .and_then(|data| {
+                view! {
+                    <div class="container">
+                        <div class="title"> { data.clone().name } </div>
+                        <div class="title"> "Jobs:" </div>
                     </div>
-                    <div class="project-jobs">
-                        <ProjectJobsView id=data.clone().id/>
+                    <div class="container">
+                        <div class="project-details">
+                            "other metadata about the project"
+                        </div>
+                        <div class="project-jobs">
+                            <ProjectJobsView id=data.clone().id/>
+                        </div>
                     </div>
-                </div>
-            }
-        }).collect_view()
+                }
+            })
+            .collect_view()
     };
 
     view! {
@@ -50,36 +55,51 @@ pub fn ProjectView() -> impl IntoView {
 fn ProjectJobsView(#[prop(into)] id: String) -> impl IntoView {
     let jobs = create_local_resource(move || id.clone(), get_jobs_for_project);
 
-    move || { jobs.and_then(|jobs| {
-        jobs.iter().map(|data| view! {
-            <a href=format!("/jobs/{}", data.clone().id) class="card button">
-                <div class="row">
-                    <div> { data.clone().name }":" </div>
-                    <div> { data.clone().description } </div>
-                </div>
-                <ProjectJobLastPipelineView id=data.clone().id/>
-            </a>
-        }).collect_view()
-    }) }
+    move || {
+        jobs.and_then(|jobs| {
+            jobs.iter()
+                .map(|data| {
+                    view! {
+                        <a href=format!("/jobs/{}", data.clone().id) class="card button">
+                            <div class="row">
+                                <div> { data.clone().name }":" </div>
+                                <div> { data.clone().description } </div>
+                            </div>
+                            <ProjectJobLastPipelineView id=data.clone().id/>
+                        </a>
+                    }
+                })
+                .collect_view()
+        })
+    }
 }
 
 #[component]
 fn ProjectJobLastPipelineView(#[prop(into)] id: String) -> impl IntoView {
     let last_pipe = create_local_resource(move || id.clone(), get_last_pipeline_for_job);
 
-    move || { last_pipe.and_then(|pipe| {
-        pipe.as_ref().map_or_else(|| view! {
-            <div class="row" />
-        }, |data| {
-            let status_icon = get_pipeline_status_icon(&data.status);
-            let date = parse_date(&data.start_date);
+    move || {
+        last_pipe
+            .and_then(|pipe| {
+                pipe.as_ref().map_or_else(
+                    || {
+                        view! {
+                            <div class="row" />
+                        }
+                    },
+                    |data| {
+                        let status_icon = get_pipeline_status_icon(&data.status);
+                        let date = parse_date(&data.start_date);
 
-            view! {
-                <div class="row">
-                    <img src=format!("/static/{}.svg", status_icon) width=16 height=16/>
-                    <div> "#" { data.clone().number } " @ " { date } </div>
-                </div>
-            }
-        })
-    }).collect_view() }
+                        view! {
+                            <div class="row">
+                                <img src=format!("/static/{}.svg", status_icon) width=16 height=16/>
+                                <div> "#" { data.clone().number } " @ " { date } </div>
+                            </div>
+                        }
+                    },
+                )
+            })
+            .collect_view()
+    }
 }

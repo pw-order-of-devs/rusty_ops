@@ -1,8 +1,8 @@
-use leptos::{component, IntoView, view};
-use leptos_router::{Route, Router, Routes};
 use crate::pages::errors::not_found::NotFoundPage;
 use crate::pages::home::Home;
 use crate::pages::jobs::view::JobView;
+use leptos::{component, view, IntoView};
+use leptos_router::{Route, Router, Routes};
 
 use crate::pages::projects::list::ProjectsList;
 use crate::pages::projects::view::ProjectView;

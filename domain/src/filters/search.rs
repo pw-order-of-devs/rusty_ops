@@ -7,7 +7,7 @@ pub enum SortOptions {
     /// Sort results in ascending mode.
     Ascending,
     /// Sort results in descending mode.
-    Descending
+    Descending,
 }
 
 /// A struct representing a search filter for `get_all` calls.
@@ -24,7 +24,6 @@ pub struct SearchOptions {
 }
 
 impl Default for SearchOptions {
-
     fn default() -> Self {
         Self {
             page_number: Some(1),

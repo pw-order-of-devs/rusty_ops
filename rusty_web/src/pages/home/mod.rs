@@ -1,4 +1,4 @@
-use leptos::{component, IntoView, view};
+use leptos::{component, view, IntoView};
 
 /// Landing page.
 #[component]

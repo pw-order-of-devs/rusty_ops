@@ -16,7 +16,7 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
-use leptos::{component, IntoView, mount_to_body, view};
+use leptos::{component, mount_to_body, view, IntoView};
 use leptos_meta::provide_meta_context;
 
 use crate::components::header::Header;

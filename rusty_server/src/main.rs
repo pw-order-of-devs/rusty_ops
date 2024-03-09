@@ -19,9 +19,9 @@
 use std::error::Error;
 
 use async_graphql_poem::GraphQL;
-use poem::{EndpointExt, listener::TcpListener, Route, Server};
 use poem::http::Method;
 use poem::middleware::Cors;
+use poem::{listener::TcpListener, EndpointExt, Route, Server};
 
 mod gql;
 

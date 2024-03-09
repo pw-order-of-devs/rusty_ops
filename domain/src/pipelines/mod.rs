@@ -7,22 +7,47 @@ use crate::RustyDomainItem;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Enum, Serialize, Deserialize)]
 pub enum PipelineStatus {
     /// Created pipeline, waiting for agent to be assigned to.
-    #[serde(rename(deserialize = "DEFINED", deserialize = "Defined", deserialize = "defined"))]
+    #[serde(rename(
+        deserialize = "DEFINED",
+        deserialize = "Defined",
+        deserialize = "defined"
+    ))]
     Defined,
     /// Pipeline assigned to an agent, not yet started.
-    #[serde(rename(deserialize = "ASSIGNED", deserialize = "Assigned", deserialize = "assigned"))]
+    #[serde(rename(
+        deserialize = "ASSIGNED",
+        deserialize = "Assigned",
+        deserialize = "assigned"
+    ))]
     Assigned,
     /// Currently running pipeline.
-    #[serde(rename(deserialize = "INPROGRESS", deserialize = "IN_PROGRESS", deserialize = "InProgress", deserialize = "in_progress"))]
+    #[serde(rename(
+        deserialize = "INPROGRESS",
+        deserialize = "IN_PROGRESS",
+        deserialize = "InProgress",
+        deserialize = "in_progress"
+    ))]
     InProgress,
     /// Pipeline finished successfully.
-    #[serde(rename(deserialize = "SUCCESS", deserialize = "Success", deserialize = "success"))]
+    #[serde(rename(
+        deserialize = "SUCCESS",
+        deserialize = "Success",
+        deserialize = "success"
+    ))]
     Success,
     /// Pipeline finished with a failure.
-    #[serde(rename(deserialize = "FAILURE", deserialize = "Failure", deserialize = "failure"))]
+    #[serde(rename(
+        deserialize = "FAILURE",
+        deserialize = "Failure",
+        deserialize = "failure"
+    ))]
     Failure,
     /// Pipeline finished in an unstable state.
-    #[serde(rename(deserialize = "UNSTABLE", deserialize = "Unstable", deserialize = "unstable"))]
+    #[serde(rename(
+        deserialize = "UNSTABLE",
+        deserialize = "Unstable",
+        deserialize = "unstable"
+    ))]
     Unstable,
 }
 
@@ -70,14 +95,12 @@ impl From<&RegisterPipeline> for Pipeline {
 }
 
 impl RustyDomainItem for Pipeline {
-
     fn id(&self) -> String {
         self.clone().id
     }
 }
 
 impl RustyDomainItem for RegisterPipeline {
-
     fn id(&self) -> String {
         todo!()
     }

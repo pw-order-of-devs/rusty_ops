@@ -32,13 +32,11 @@ impl From<&RegisterProject> for Project {
 }
 
 impl RustyDomainItem for Project {
-
     fn id(&self) -> String {
         self.clone().id
     }
 }
 impl RustyDomainItem for RegisterProject {
-
     fn id(&self) -> String {
         todo!()
     }

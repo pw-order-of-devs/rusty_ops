@@ -38,9 +38,9 @@ pub mod projects;
 ///
 /// To implement the `RustyDomainItem` trait, you need to ensure that your type satisfies all the
 /// trait's associated traits (`Send`, `Sync`, `Debug`, `Unpin`, `Serialize`, and `Deserialize`).
-pub trait RustyDomainItem: Send + Sync + std::fmt::Debug + Unpin
-+ serde::ser::Serialize + for<'de> serde::de::Deserialize<'de> {
-
+pub trait RustyDomainItem:
+    Send + Sync + std::fmt::Debug + Unpin + serde::ser::Serialize + for<'de> serde::de::Deserialize<'de>
+{
     /// Returns the identifier of an object.
     fn id(&self) -> String;
 

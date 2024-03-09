@@ -1,5 +1,5 @@
-use leptos::{Errors, HtmlElement, RwSignal, SignalWith, view};
 use leptos::html::Div;
+use leptos::{view, Errors, HtmlElement, RwSignal, SignalWith};
 
 /// Creates a fallback for operation displaying an error message
 ///

@@ -1,4 +1,7 @@
-use leptos::{CollectView, component, create_local_resource, ErrorBoundary, IntoView, SignalWithUntracked, Transition, view};
+use leptos::{
+    component, create_local_resource, view, CollectView, ErrorBoundary, IntoView,
+    SignalWithUntracked, Transition,
+};
 use leptos_router::use_params_map;
 
 use crate::api::jobs::get_job;
@@ -31,7 +34,8 @@ pub fn JobView() -> impl IntoView {
                     </div>
                 </div>
             }
-        }).collect_view()
+        })
+        .collect_view()
     };
 
     view! {
@@ -49,19 +53,23 @@ pub fn JobView() -> impl IntoView {
 fn JobPipelinesView(#[prop(into)] id: String) -> impl IntoView {
     let jobs = create_local_resource(move || id.clone(), get_pipelines_for_job);
 
-    move || { jobs.and_then(|jobs| {
-        jobs.iter().map(|data| {
-            let status_icon = get_pipeline_status_icon(&data.status);
-            let date = parse_date(&data.start_date);
+    move || {
+        jobs.and_then(|jobs| {
+            jobs.iter()
+                .map(|data| {
+                    let status_icon = get_pipeline_status_icon(&data.status);
+                    let date = parse_date(&data.start_date);
 
-            view! {
-                <a href=format!("/pipelines/{}", data.clone().id) class="card button">
-                    <div class="row">
-                        <img src=format!("/static/{}.svg", status_icon) width=16 height=16/>
-                        <div> "#" { data.clone().number } " @ " { date } </div>
-                    </div>
-                </a>
-            }
-        }).collect_view()
-    }) }
+                    view! {
+                        <a href=format!("/pipelines/{}", data.clone().id) class="card button">
+                            <div class="row">
+                                <img src=format!("/static/{}.svg", status_icon) width=16 height=16/>
+                                <div> "#" { data.clone().number } " @ " { date } </div>
+                            </div>
+                        </a>
+                    }
+                })
+                .collect_view()
+        })
+    }
 }
