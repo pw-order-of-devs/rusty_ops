@@ -7,3 +7,4 @@ Cargo.lock
 /target
 rusty_web/dist/
 .idea
+**/.env

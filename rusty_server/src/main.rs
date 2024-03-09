@@ -28,16 +28,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     commons::logger::init();
     let db = persist::init().await;
 
-    let cors = Cors::new()
-        .allow_methods(vec![Method::POST, Method::OPTIONS])
-        .allow_origin("http://localhost:8080")
-        .allow_header("content-type")
-        .allow_credentials(true);
-
     // start the http server
     let app = Route::new()
         .at("/graphql", GraphQL::new(gql::build_schema(db)))
-        .with(cors);
+        .with(cors_config());
 
     let host = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0".to_string());
     let port = std::env::var("SERVER_PORT").unwrap_or_else(|_| "8000".to_string());
@@ -46,4 +40,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .run(app)
         .await?;
     Ok(())
+}
+
+fn cors_config() -> Cors {
+    let origins = std::env::var("CORS_ALLOW_ORIGINS")
+        .unwrap_or_else(|_| "http://localhost:8080".to_string())
+        .split(',')
+        .map(str::to_string)
+        .collect::<Vec<String>>();
+    Cors::new()
+        .allow_methods(vec![Method::POST, Method::OPTIONS])
+        .allow_origins(origins)
+        .allow_header("content-type")
+        .allow_credentials(true)
 }
