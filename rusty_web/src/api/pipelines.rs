@@ -37,7 +37,7 @@ pub async fn get_pipelines_for_job(job_id: String) -> Result<Vec<Pipeline>, Rust
         .await?;
     let json_data: Value = serde_json::from_str(&data)?;
     serde_json::from_value::<Vec<Pipeline>>(json_data["data"]["getPipelines"].clone())
-        .map_or(Err(RustyError {}), Ok)
+        .map_err(|err| RustyError::SerializationError { message: err.to_string() })
 }
 
 /// Function to retrieve last pipeline for job from a GraphQL endpoint.
@@ -78,7 +78,7 @@ pub async fn get_last_pipeline_for_job(job_id: String) -> Result<Option<Pipeline
     let json_data: Value = serde_json::from_str(&data)?;
     let entries =
         serde_json::from_value::<Vec<Pipeline>>(json_data["data"]["getPipelines"].clone())
-            .map_or(Err(RustyError {}), Ok)?;
+            .map_err(|err| RustyError::SerializationError { message: err.to_string() })?;
     Ok(if entries.len() == 1 {
         entries.first().cloned()
     } else {

@@ -18,6 +18,24 @@ use log4rs::Config;
 ///
 /// This function will panic if it is unable to build a new Config.
 pub fn init() {
+    match env::var("LOG_CONFIG_PATH") {
+        Ok(path) => match log4rs::init_file(&path, Default::default()) {
+            Ok(_) => {
+                log::debug!("using logger configuration from: {path}");
+            },
+            Err(err) => {
+                default_logger();
+                log::debug!("using default logger configuration: {err}");
+            },
+        },
+        Err(err) => {
+            default_logger();
+            log::debug!("using default logger configuration: {err}");
+        },
+    }
+}
+
+fn default_logger() {
     let log_level = env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
     let level_filter = LevelFilter::from_str(&log_level).unwrap_or(LevelFilter::Info);
 

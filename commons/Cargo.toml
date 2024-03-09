@@ -25,6 +25,6 @@ mongo = ["mongodb"]
 async-graphql.workspace = true
 gloo-net = { workspace = true, optional = true }
 log.workspace = true
-log4rs = { workspace = true, optional = true }
+log4rs = { workspace = true, features = ["gzip", "all_components"], optional = true }
 mongodb = { workspace = true, optional = true }
 serde_json.workspace = true

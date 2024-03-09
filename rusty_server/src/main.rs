@@ -16,8 +16,6 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
-use std::error::Error;
-
 use async_graphql_poem::GraphQL;
 use poem::http::Method;
 use poem::middleware::Cors;
@@ -26,7 +24,7 @@ use poem::{listener::TcpListener, EndpointExt, Route, Server};
 mod gql;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     commons::logger::init();
     let db = persist::init().await;
 
@@ -41,8 +39,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .at("/graphql", GraphQL::new(gql::build_schema(db)))
         .with(cors);
 
-    log::info!("Server is listening at: :8000/graphql");
-    Server::new(TcpListener::bind("0.0.0.0:8000"))
+    let host = std::env::var("SERVER_ADDR").unwrap_or("0.0.0.0".to_string());
+    let port = std::env::var("SERVER_PORT").unwrap_or("8000".to_string());
+    log::info!("Server is listening at: :{port}/graphql");
+    Server::new(TcpListener::bind(format!("{host}:{port}")))
         .run(app)
         .await?;
     Ok(())

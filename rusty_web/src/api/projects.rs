@@ -32,7 +32,7 @@ pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
         .await?;
     let json_data: Value = serde_json::from_str(&data)?;
     serde_json::from_value::<Vec<Project>>(json_data["data"]["getProjects"].clone())
-        .map_or(Err(RustyError {}), Ok)
+        .map_err(|err| RustyError::SerializationError { message: err.to_string() })
 }
 
 /// Function to retrieve a project from a GraphQL endpoint by id.
@@ -64,5 +64,5 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
         .await?;
     let json_data: Value = serde_json::from_str(&data)?;
     serde_json::from_value::<Project>(json_data["data"]["getProjectById"].clone())
-        .map_or(Err(RustyError {}), Ok)
+        .map_err(|err| RustyError::SerializationError { message: err.to_string() })
 }
