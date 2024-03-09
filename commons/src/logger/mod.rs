@@ -18,18 +18,17 @@ use log4rs::Config;
 ///
 /// This function will panic if it is unable to build a new Config.
 pub fn init() {
-    match env::var("LOG_CONFIG_PATH") {
-        Ok(path) => match log4rs::init_file(&path, Deserializers::default()) {
-            Ok(()) => log::debug!("using logger configuration from: {path}"),
+    if let Ok(path) = env::var("LOG_CONFIG_PATH") {
+        match log4rs::init_file(&path, Deserializers::default()) {
+            Ok(()) => log::debug!("using logger configuration from: `{path}`"),
             Err(err) => {
                 default_logger();
                 log::debug!("using default logger configuration: {err}");
             }
-        },
-        Err(err) => {
-            default_logger();
-            log::debug!("using default logger configuration: {err}");
         }
+    } else {
+        default_logger();
+        log::debug!("using default logger configuration: LOG_CONFIG_PATH is not defined");
     }
 }
 
