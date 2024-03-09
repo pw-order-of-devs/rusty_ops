@@ -103,12 +103,16 @@ impl Persistence for MongoDBClient {
             .database(&self.database)
             .collection::<Document>(index);
         let Bson::Document(document) = to_bson(&item)? else {
-            return Err(RustyError::MongoDBError { message: "Unexpected BSON document type".to_string() });
+            return Err(RustyError::MongoDBError {
+                message: "Unexpected BSON document type".to_string(),
+            });
         };
 
         match collection.insert_one(document, None).await {
             Ok(_) => Ok(item.id()),
-            Err(err) => Err(RustyError::MongoDBError { message: err.kind.to_string() }),
+            Err(err) => Err(RustyError::MongoDBError {
+                message: err.kind.to_string(),
+            }),
         }
     }
 
@@ -121,7 +125,9 @@ impl Persistence for MongoDBClient {
         collection
             .delete_one(doc! { "id": id }, None)
             .await
-            .map_err(|err| RustyError::MongoDBError { message: err.kind.to_string() })
+            .map_err(|err| RustyError::MongoDBError {
+                message: err.kind.to_string(),
+            })
             .map(|res| res.deleted_count)
     }
 }

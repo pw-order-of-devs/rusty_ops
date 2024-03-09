@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
-use log4rs::config::{Appender, Root};
+use log4rs::config::{Appender, Deserializers, Root};
 use log4rs::encode::pattern::PatternEncoder;
 use log4rs::Config;
 
@@ -19,19 +19,17 @@ use log4rs::Config;
 /// This function will panic if it is unable to build a new Config.
 pub fn init() {
     match env::var("LOG_CONFIG_PATH") {
-        Ok(path) => match log4rs::init_file(&path, Default::default()) {
-            Ok(_) => {
-                log::debug!("using logger configuration from: {path}");
-            },
+        Ok(path) => match log4rs::init_file(&path, Deserializers::default()) {
+            Ok(()) => log::debug!("using logger configuration from: {path}"),
             Err(err) => {
                 default_logger();
                 log::debug!("using default logger configuration: {err}");
-            },
+            }
         },
         Err(err) => {
             default_logger();
             log::debug!("using default logger configuration: {err}");
-        },
+        }
     }
 }
 

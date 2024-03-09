@@ -35,8 +35,11 @@ pub async fn get_jobs_for_project(project_id: String) -> Result<Vec<Job>, RustyE
         .text()
         .await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Vec<Job>>(json_data["data"]["getJobs"].clone())
-        .map_err(|err| RustyError::SerializationError { message: err.to_string() })
+    serde_json::from_value::<Vec<Job>>(json_data["data"]["getJobs"].clone()).map_err(|err| {
+        RustyError::SerializationError {
+            message: err.to_string(),
+        }
+    })
 }
 
 /// Function to retrieve a job from a GraphQL endpoint by id.
@@ -68,6 +71,9 @@ pub async fn get_job(id: String) -> Result<Job, RustyError> {
         .text()
         .await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Job>(json_data["data"]["getJobById"].clone())
-        .map_err(|err| RustyError::SerializationError { message: err.to_string() })
+    serde_json::from_value::<Job>(json_data["data"]["getJobById"].clone()).map_err(|err| {
+        RustyError::SerializationError {
+            message: err.to_string(),
+        }
+    })
 }

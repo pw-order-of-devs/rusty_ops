@@ -39,8 +39,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .at("/graphql", GraphQL::new(gql::build_schema(db)))
         .with(cors);
 
-    let host = std::env::var("SERVER_ADDR").unwrap_or("0.0.0.0".to_string());
-    let port = std::env::var("SERVER_PORT").unwrap_or("8000".to_string());
+    let host = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let port = std::env::var("SERVER_PORT").unwrap_or_else(|_| "8000".to_string());
     log::info!("Server is listening at: :{port}/graphql");
     Server::new(TcpListener::bind(format!("{host}:{port}")))
         .run(app)
