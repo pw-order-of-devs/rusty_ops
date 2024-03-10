@@ -5,8 +5,10 @@
 @import "header";
 @import "home";
 @import "jobs";
+@import "modal";
 @import "page";
 @import "projects";
+@import "scroll";
 
 body {
     background-color: $backgroundColor;
@@ -19,8 +21,13 @@ body {
     -ms-user-select: none;
     -webkit-user-select: none;
     font-family: sans-serif;
+    box-sizing: border-box;
 }
 
 a {
     -webkit-user-drag: none;
+}
+
+.bold {
+    font-weight: bold;
 }

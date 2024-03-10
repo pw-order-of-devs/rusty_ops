@@ -1,7 +1,25 @@
 @import "variables";
 
-.job-pipelines {
+.container-jobs {
+    max-height: calc(100vh - 6rem - 4.5rem);
+    padding: 0 0.5rem;
+    overflow-y: auto;
+}
+
+.list-job-pipelines {
+    max-height: calc(100vh - 6rem - 6.3rem);
     display: inline-grid;
     grid-template-columns: 1fr 1fr 1fr;
     gap: $gridGap
+}
+
+.container-job-pipelines {
+    grid-template-columns: 9fr 1fr !important;
+
+    div:last-child {
+        display: flex!important;
+        justify-content: end;
+        padding-right: 0.5rem;
+        border-left: $primaryColor 0.2rem solid;
+    }
 }

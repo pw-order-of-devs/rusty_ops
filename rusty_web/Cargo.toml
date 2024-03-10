@@ -26,6 +26,7 @@ leptos_meta = { workspace = true, features = ["csr"] }
 leptos_router = { workspace = true, features = ["csr"] }
 serde.workspace = true
 serde_json.workspace = true
+url.workspace = true
 wasm-bindgen.workspace = true
 
 [build-dependencies]

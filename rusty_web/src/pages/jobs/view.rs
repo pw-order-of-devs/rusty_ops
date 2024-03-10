@@ -21,15 +21,15 @@ pub fn JobView() -> impl IntoView {
     let job_view = move || {
         job.and_then(|data| {
             view! {
-                <div class="container">
+                <div class="container container-job-pipelines">
                     <div class="title"> "Job: " { data.clone().name } </div>
-                    <div class="title"> "Pipelines:" </div>
+                    <div class="title"> "Pipelines" </div>
                 </div>
                 <div class="container">
                     <div class="job-details">
                         "other metadata about the job"
                     </div>
-                    <div class="job-pipelines">
+                    <div class="list-job-pipelines scrollable">
                         <JobPipelinesView id=data.clone().id/>
                     </div>
                 </div>
@@ -39,7 +39,7 @@ pub fn JobView() -> impl IntoView {
     };
 
     view! {
-        <div class="page view-page">
+        <div class="page page-view">
             <Transition fallback=move || { view! { <div>"Loading ..."</div> } }>
                 <ErrorBoundary fallback>
                     { job_view }

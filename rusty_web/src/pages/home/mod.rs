@@ -5,7 +5,7 @@ use leptos::{component, view, IntoView};
 #[must_use]
 pub fn Home() -> impl IntoView {
     view! {
-        <div class="page home-page">
+        <div class="page page-home">
             <div class="container">
                 <div class="row">
                     <img src="/static/infinity.svg" alt="" height=100 />

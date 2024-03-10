@@ -2,7 +2,7 @@
 
 .header {
   display: flex;
-  padding: 10px;
+  padding: 0.5rem;
   position: fixed;
   top: 0;
   width: $full;
@@ -15,12 +15,12 @@
   .title {
     display: inline-flex;
     color: $primaryColor;
-    font-size: 48px;
+    font-size: 3rem;
     font-family: "3270 Nerd Font Mono", sans-serif;
     justify-items: center;
-    margin-left: 30px;
+    margin-left: 2rem;
     text-decoration: none;
   }
 
-  box-shadow: 0 0 0 0.2px $primaryColor;
+  box-shadow: 0 0 0 0.05rem $primaryColor;
 }

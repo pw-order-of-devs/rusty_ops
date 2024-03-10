@@ -23,15 +23,15 @@ pub fn ProjectView() -> impl IntoView {
         project
             .and_then(|data| {
                 view! {
-                    <div class="container">
-                        <div class="title"> { data.clone().name } </div>
-                        <div class="title"> "Jobs:" </div>
+                    <div class="container container-project-jobs">
+                        <div class="title bold one-line"> { data.clone().name } </div>
+                        <div class="title"> "Jobs" </div>
                     </div>
                     <div class="container">
                         <div class="project-details">
                             "other metadata about the project"
                         </div>
-                        <div class="project-jobs">
+                        <div class="list-project-jobs scrollable">
                             <ProjectJobsView id=data.clone().id/>
                         </div>
                     </div>
@@ -41,7 +41,7 @@ pub fn ProjectView() -> impl IntoView {
     };
 
     view! {
-        <div class="page view-page">
+        <div class="page page-view">
             <Transition fallback=move || { view! { <div>"Loading ..."</div> } }>
                 <ErrorBoundary fallback>
                     { project_view }

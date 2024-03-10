@@ -1,23 +1,19 @@
 @import "variables";
 
 .page {
-    padding: 120px 30px 30px;
-
-    .title {
-        font-size: 24px;
-    }
+    height: calc(100vh - 6rem);
+    padding: 6rem 2rem 0 2rem;
 
     .container {
         display: inline-grid;
-        margin-top: 20px;
+        margin-top: 2rem;
         width: $full;
         gap: $gridGap;
 
         .card {
-            padding: 15px;
-            border: $primaryColor solid 1px;
-            border-radius: 5px;
-            overflow: hidden;
+            padding: 1rem;
+            border: $primaryColor solid 0.1rem;
+            border-radius: $borderRadius;
 
             .text-field {
                 display: -webkit-box;
@@ -31,7 +27,7 @@
                 display: flex;
                 flex-wrap: wrap;
                 align-content: center;
-                line-height: 20px;
+                line-height: 1.1rem;
             }
 
             .row:nth-child(1) {
@@ -59,30 +55,48 @@
             }
         }
 
-        .button {
-            color: $primaryColor;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .button:hover {
-            background-color: $buttonBackgroundHover;
-        }
-
-        .button:active {
-            background-color: $buttonBackgroundActive;
+        .title {
+            font-size: 1.8rem;
         }
     }
 }
 
-.list-page {
+.button {
+    color: $primaryColor;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.button:hover {
+    background-color: $buttonBackgroundHover;
+}
+
+.button:active {
+    background-color: $buttonBackgroundActive;
+}
+
+.page-list {
     .container {
         grid-template-columns: 1fr 1fr 1fr;
     }
 }
 
-.view-page {
+.page-view {
     .container {
         grid-template-columns: 1fr 3fr;
     }
+}
+
+.scrollable {
+    padding: 0 0.5rem;
+    overflow-y: auto;
+}
+
+.one-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

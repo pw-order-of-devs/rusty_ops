@@ -1,7 +1,8 @@
 use std::fmt::{Debug, Display, Formatter};
+use serde::{Deserialize, Serialize};
 
 /// `RustyOps` Error definition
-#[derive(Clone, PartialOrd, PartialEq, Eq)]
+#[derive(Clone, PartialOrd, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RustyError {
     /// AsyncGraphql operation related error
     AsyncGraphqlError {

@@ -1,0 +1,20 @@
+@import "variables";
+
+$backgroundScroll: #3d3d3d;
+$backgroundScrollHover: #4c4c4c;
+
+::-webkit-scrollbar {
+  width: 1rem;  /* width of the entire scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: $primaryColor; /* color of the tracking area */
+}
+
+::-webkit-scrollbar-thumb {
+  background: $backgroundScroll; /* color of the scroll thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: $backgroundScrollHover; /* color of the scroll thumb on hover */
+}

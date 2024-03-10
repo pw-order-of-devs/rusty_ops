@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::projects::Project;
+use domain::projects::{Project, RegisterProject};
 
 use crate::api::client::gloo_post;
 
@@ -13,7 +13,7 @@ use crate::api::client::gloo_post;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_projects(_: usize) -> Result<Vec<Project>, RustyError> {
+pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
             getProjects {{
@@ -60,4 +60,28 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
             message: err.to_string(),
         }
     })
+}
+
+/// Function to register a new project via GraphQL endpoint.
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+#[allow(clippy::future_not_send)]
+pub async fn register_project(model: RegisterProject) -> Result<String, RustyError> {
+    let payload = serde_json::json!({
+        "query": format!(r#"mutation {{
+            registerProject(project: {{
+                name: "{}",
+                url: "{}"
+            }})
+        }}"#, model.name, model.url),
+        "variables": {}
+    });
+
+    let data = gloo_post(&payload).await?;
+    let json_data: Value = serde_json::from_str(&data)?;
+    Ok(json_data["data"]["registerProject"].to_string())
 }

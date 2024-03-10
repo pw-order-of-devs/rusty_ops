@@ -1,6 +1,6 @@
 @import "variables";
 
-.error-page {
+.page-error {
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
@@ -9,16 +9,16 @@
     font-family: "3270 Nerd Font Mono", sans-serif;
 
     .error-code {
-        font-size: 256px;
+        font-size: 24rem;
     }
 
     .error-message {
-        font-size: 64px;
+        font-size: 4rem;
     }
 
     .back-home {
-        margin-top: 20px;
-        font-size: 32px;
+        margin-top: 1rem;
+        font-size: 2rem;
         text-decoration: none;
         color: $primaryColor;
     }

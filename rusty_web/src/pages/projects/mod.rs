@@ -1,3 +1,6 @@
+/// Modal component for project registration.
+pub mod create;
+
 /// Web page for projects list.
 pub mod list;
 

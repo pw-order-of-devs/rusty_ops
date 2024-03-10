@@ -1,6 +1,6 @@
 @import "variables";
 
-.home-page {
+.page-home {
     .container {
         .row {
             display: inline-flex;
@@ -10,18 +10,18 @@
     }
 
     .app-name {
-        font-size: 100px;
+        font-size: 7rem;
         font-family: "3270 Nerd Font Mono", sans-serif;
-        margin-left: 20px;
+        margin-left: 2rem;
     }
 
     .app-link {
-        font-size: 28px;
+        font-size: 2rem;
         text-decoration: underline!important;
         padding: 0 $gridGap;
 
         &:not(:last-child) {
-            border-right: $primaryColor 0.1em solid;
+            border-right: $primaryColor 0.1rem solid;
         }
     }
 }
