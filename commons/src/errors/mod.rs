@@ -1,5 +1,5 @@
-use std::fmt::{Debug, Display, Formatter};
 use serde::{Deserialize, Serialize};
+use std::fmt::{Debug, Display, Formatter};
 
 /// `RustyOps` Error definition
 #[derive(Clone, PartialOrd, PartialEq, Eq, Serialize, Deserialize)]

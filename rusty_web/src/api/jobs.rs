@@ -1,9 +1,8 @@
-use serde_json::Value;
-
 use commons::errors::RustyError;
 use domain::jobs::Job;
 
 use crate::api::client::gloo_post;
+use crate::api::utils::parse_entries;
 
 /// Function to retrieve jobs for project from a GraphQL endpoint.
 ///
@@ -16,25 +15,24 @@ use crate::api::client::gloo_post;
 pub async fn get_jobs_for_project(project_id: String) -> Result<Vec<Job>, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getJobs(filter: {{
-                project_id: "{}"
-            }}) {{
-                id
-                name
-                description
-                projectId
+            jobs {{
+                get(filter: {{
+                    project_id: "{}"
+                }}) {{
+                    id
+                    name
+                    description
+                    projectId
+                }}
             }}
         }}"#, project_id),
         "variables": {}
     });
 
     let data = gloo_post(&payload).await?;
-    let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Vec<Job>>(json_data["data"]["getJobs"].clone()).map_err(|err| {
-        RustyError::SerializationError {
-            message: err.to_string(),
-        }
-    })
+    let json_data: serde_json::Value = serde_json::from_str(&data)?;
+    let json_data = json_data["data"]["jobs"]["get"].clone();
+    parse_entries(json_data)
 }
 
 /// Function to retrieve a job from a GraphQL endpoint by id.
@@ -48,21 +46,20 @@ pub async fn get_jobs_for_project(project_id: String) -> Result<Vec<Job>, RustyE
 pub async fn get_job(id: String) -> Result<Job, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getJobById(id: "{}") {{
-                id
-                name
-                description
-                projectId
+            jobs {{
+                getById(id: "{}") {{
+                    id
+                    name
+                    description
+                    projectId
+                }}
             }}
         }}"#, id),
         "variables": {}
     });
 
     let data = gloo_post(&payload).await?;
-    let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Job>(json_data["data"]["getJobById"].clone()).map_err(|err| {
-        RustyError::SerializationError {
-            message: err.to_string(),
-        }
-    })
+    let json_data: serde_json::Value = serde_json::from_str(&data)?;
+    let json_data = json_data["data"]["jobs"]["getById"].clone();
+    parse_entries(json_data)
 }

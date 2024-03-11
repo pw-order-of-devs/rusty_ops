@@ -4,6 +4,7 @@ use commons::errors::RustyError;
 use domain::projects::{Project, RegisterProject};
 
 use crate::api::client::gloo_post;
+use crate::api::utils::parse_entries;
 
 /// Function to retrieve projects from a GraphQL endpoint.
 ///
@@ -16,9 +17,11 @@ use crate::api::client::gloo_post;
 pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getProjects {{
-                id
-                name
+            projects {{
+                get {{
+                    id
+                    name
+                }}
             }}
         }}"#),
         "variables": {}
@@ -26,11 +29,8 @@ pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
 
     let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Vec<Project>>(json_data["data"]["getProjects"].clone()).map_err(
-        |err| RustyError::SerializationError {
-            message: err.to_string(),
-        },
-    )
+    let json_data = json_data["data"]["projects"]["get"].clone();
+    parse_entries(json_data)
 }
 
 /// Function to retrieve a project from a GraphQL endpoint by id.
@@ -44,10 +44,12 @@ pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
 pub async fn get_project(id: String) -> Result<Project, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
-            getProjectById(id: "{}") {{
-                id
-                name
-                url
+            projects {{
+                getById(id: "{}") {{
+                    id
+                    name
+                    url
+                }}
             }}
         }}"#, id),
         "variables": {}
@@ -55,11 +57,8 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
 
     let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    serde_json::from_value::<Project>(json_data["data"]["getProjectById"].clone()).map_err(|err| {
-        RustyError::SerializationError {
-            message: err.to_string(),
-        }
-    })
+    let json_data = json_data["data"]["projects"]["getById"].clone();
+    parse_entries(json_data)
 }
 
 /// Function to register a new project via GraphQL endpoint.
@@ -73,15 +72,17 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
 pub async fn register_project(model: RegisterProject) -> Result<String, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"mutation {{
-            registerProject(project: {{
-                name: "{}",
-                url: "{}"
-            }})
+            projects {{
+                register(project: {{
+                    name: "{}",
+                    url: "{}"
+                }})
+            }}
         }}"#, model.name, model.url),
         "variables": {}
     });
 
     let data = gloo_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
-    Ok(json_data["data"]["registerProject"].to_string())
+    Ok(json_data["data"]["projects"]["register"].to_string())
 }

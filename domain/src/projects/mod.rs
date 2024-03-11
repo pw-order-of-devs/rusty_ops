@@ -27,7 +27,10 @@ impl RegisterProject {
     /// constructor
     #[must_use]
     pub fn new(name: &str, url: &str) -> Self {
-        Self { name: name.to_string(), url: url.to_string() }
+        Self {
+            name: name.to_string(),
+            url: url.to_string(),
+        }
     }
 }
 
