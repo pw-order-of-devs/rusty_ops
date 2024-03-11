@@ -28,6 +28,9 @@ pub mod pipelines;
 /// # Projects Module
 pub mod projects;
 
+/// # Template
+pub mod templates;
+
 /// The `RustyDomainItem` trait represents an item in a read-only domain.
 ///
 /// It defines the basic requirements that an item must fulfill in order to be considered

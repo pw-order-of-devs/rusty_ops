@@ -63,9 +63,6 @@ pub struct Pipeline {
     pub start_date: String,
     /// pipeline status
     pub status: PipelineStatus,
-    // conditions: Vec<Condition>,
-    // shared: Shared,
-    // stages: Vec<Stage>,
     /// pipeline job id
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]
     pub job_id: String,
@@ -75,9 +72,6 @@ pub struct Pipeline {
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
 pub struct RegisterPipeline {
     name: String,
-    // conditions: Vec<Condition>,
-    // shared: Shared,
-    // stages: Vec<Stage>,
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]
     job_id: String,
 }

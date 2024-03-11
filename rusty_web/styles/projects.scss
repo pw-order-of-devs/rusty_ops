@@ -1,27 +1,26 @@
 @import "variables";
 
-.page {
-    .row-title {
+.row-title-button-add {
+    display: flex;
+    justify-content: space-between !important;
+    align-items: center;
+    padding-left: 1rem;
+
+    .button-add {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         align-items: center;
 
-        .button-add {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        font-size: 1.4rem;
+        padding: 0.1rem 0.4rem;
+        margin-right: 1.5rem;
+        border: $primaryColor solid 0.15rem;
+        border-radius: $borderRadius;
+        height: 2rem;
+    }
 
-            font-size: 1.4rem;
-            padding: 0.1rem 0.4rem;
-            margin-right: 1.5rem;
-            border: $primaryColor solid 0.15rem;
-            border-radius: $borderRadius;
-            height: 2rem;
-        }
-
-        .title {
-            font-size: 1.8rem;
-        }
+    .title-text {
+        font-size: 1.8rem;
     }
 }
 
@@ -34,17 +33,22 @@
 .list-project-jobs {
     max-height: calc(100vh - 6rem - 6.3rem);
     display: inline-grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: $gridGap;
 }
 
 .container-project-jobs {
-    grid-template-columns: 9fr 1fr !important;
+    display: flex !important;
+    justify-content: space-between;
 
     div:last-child {
         display: flex!important;
         justify-content: end;
         padding-right: 0.5rem;
         border-left: $primaryColor 0.2rem solid;
+
+        div:last-child {
+            margin-left: 1rem;
+        }
     }
 }

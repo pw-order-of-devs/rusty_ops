@@ -17,14 +17,12 @@ pub fn ProjectRegisterModal(
     set_modal_visible: WriteSignal<&'static str>,
 ) -> impl IntoView {
     let (form_error, set_form_error) = create_signal(String::new());
-    let (project_name, _) = create_signal(String::new());
     let (project_name_error, set_project_name_error) = create_signal(String::new());
-    let (project_repository, _) = create_signal(String::new());
     let (project_repository_error, set_project_repository_error) = create_signal(String::new());
     let project_name_ref: NodeRef<html::Input> = create_node_ref();
     let project_repository_ref: NodeRef<html::Input> = create_node_ref();
 
-    let register_project_action_cancel = create_action(move |()| async move {
+    let action_cancel = create_action(move |()| async move {
         action_cancel(
             set_modal_visible,
             set_form_error,
@@ -35,10 +33,10 @@ pub fn ProjectRegisterModal(
         );
     });
 
-    let register_project_action = create_action(move |input: &RegisterProject| {
+    let action_save = create_action(move |input: &RegisterProject| {
         let input = input.to_owned();
         async move {
-            action_submit(
+            action_save(
                 input,
                 set_modal_visible,
                 set_form_error,
@@ -60,12 +58,11 @@ pub fn ProjectRegisterModal(
             <div class="content">
                 <form method="GET" action="" id="new-project-form">
                     <div class="form-row">
-                        <label for="input-project-name"> "Project name" </label>
+                        <label for="input-project-name"> "Name" </label>
                         <div class="errors"> <span class="error"> { move || project_name_error.get() } </span> </div>
                         <input
                             type="text"
                             id="input-project-name"
-                            value=project_name
                             node_ref=project_name_ref />
                     </div>
                     <div class="form-row">
@@ -74,25 +71,25 @@ pub fn ProjectRegisterModal(
                         <input
                             type="text"
                             id="input-project-url"
-                            value=project_repository
                             node_ref=project_repository_ref />
                     </div>
                 </form>
             </div>
             <div class="buttons">
                 <div class="button" on:click=move |_| {
-                    register_project_action_cancel.dispatch(());
+                    action_cancel.dispatch(());
                 }> "Cancel" </div>
                 <div class="button" on:click=move |_| {
                     let name = project_name_ref.get().expect("<input> should be mounted").value();
                     let url = project_repository_ref.get().expect("<input> should be mounted").value();
-                    register_project_action.dispatch(RegisterProject::new(&name, &url));
+                    action_save.dispatch(RegisterProject::new(&name, &url));
                 }> "Save" </div>
             </div>
         </div>
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn action_cancel(
     set_modal_visible: WriteSignal<&str>,
     set_form_error: WriteSignal<String>,
@@ -116,7 +113,8 @@ fn action_cancel(
 }
 
 #[allow(clippy::future_not_send)]
-async fn action_submit(
+#[allow(clippy::too_many_arguments)]
+async fn action_save(
     input: RegisterProject,
     set_modal_visible: WriteSignal<&str>,
     set_form_error: WriteSignal<String>,

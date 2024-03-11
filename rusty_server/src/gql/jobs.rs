@@ -4,6 +4,7 @@ use serde_json::Value;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::jobs::{Job, RegisterJob};
+use domain::templates::pipeline::PipelineTemplate;
 use persist::Persistence;
 
 use crate::gql::get_db_client;
@@ -50,8 +51,10 @@ impl JobsMutation {
         job: RegisterJob,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `register_job` request");
-        let job = Job::from(&job);
-        get_db_client(ctx)?.create(JOBS_INDEX, &job).await
+        let _ = PipelineTemplate::from_yaml(&job.template)?;
+        get_db_client(ctx)?
+            .create(JOBS_INDEX, &Job::from(&job))
+            .await
     }
 
     async fn delete_one(

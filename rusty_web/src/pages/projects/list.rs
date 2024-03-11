@@ -33,8 +33,8 @@ pub fn ProjectsList() -> impl IntoView {
 
     view! {
         <div class="page page-list">
-            <div class="row-title">
-                <div class="title"> "Your projects:" </div>
+            <div class="row-title-button-add">
+                <div class="title-text"> "Your projects:" </div>
                 <div class="button button-add" on:click=move |_| set_modal_visible.set("modal-visible")> "Add new" </div>
             </div>
             <div class="container container-projects">

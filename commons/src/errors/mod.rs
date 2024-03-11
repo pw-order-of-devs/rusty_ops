@@ -104,3 +104,27 @@ impl From<serde_json::Error> for RustyError {
         }
     }
 }
+
+impl From<serde_yaml::Error> for RustyError {
+    fn from(err: serde_yaml::Error) -> Self {
+        Self::SerializationError {
+            message: err.to_string(),
+        }
+    }
+}
+
+impl From<base64_url::base64::DecodeError> for RustyError {
+    fn from(err: base64_url::base64::DecodeError) -> Self {
+        Self::SerializationError {
+            message: err.to_string(),
+        }
+    }
+}
+
+impl From<std::string::FromUtf8Error> for RustyError {
+    fn from(err: std::string::FromUtf8Error) -> Self {
+        Self::SerializationError {
+            message: err.to_string(),
+        }
+    }
+}

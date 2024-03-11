@@ -12,6 +12,8 @@ pub struct Job {
     pub name: String,
     /// job description
     pub description: Option<String>,
+    /// job pipeline template
+    pub template: String,
     /// job project id
     #[serde(rename(deserialize = "projectId", deserialize = "project_id"))]
     pub project_id: String,
@@ -20,10 +22,32 @@ pub struct Job {
 /// A struct representing the registration of a job.
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
 pub struct RegisterJob {
-    name: String,
-    description: Option<String>,
+    /// job name
+    pub name: String,
+    /// job description
+    pub description: Option<String>,
+    /// job pipeline template
+    pub template: String,
+    /// job project id
     #[serde(rename(deserialize = "projectId", deserialize = "project_id"))]
-    project_id: String,
+    pub project_id: String,
+}
+
+impl RegisterJob {
+    /// constructor
+    #[must_use]
+    pub fn new(name: &str, description: &str, template: &str, project_id: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            description: if description.is_empty() {
+                None
+            } else {
+                Some(description.to_string())
+            },
+            template: template.to_string(),
+            project_id: project_id.to_string(),
+        }
+    }
 }
 
 impl From<&RegisterJob> for Job {
@@ -32,6 +56,7 @@ impl From<&RegisterJob> for Job {
             id: Self::generate_id(),
             name: value.clone().name,
             description: value.clone().description,
+            template: value.clone().template,
             project_id: value.clone().project_id,
         }
     }

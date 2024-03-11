@@ -52,8 +52,9 @@ impl ProjectsMutation {
         project: RegisterProject,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `register_project` request");
-        let project = Project::from(&project);
-        get_db_client(ctx)?.create(PROJECTS_INDEX, &project).await
+        get_db_client(ctx)?
+            .create(PROJECTS_INDEX, &Project::from(&project))
+            .await
     }
 
     async fn delete_one(

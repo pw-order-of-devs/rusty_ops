@@ -3,11 +3,11 @@
 .modal {
   z-index: 9999;
   position: absolute;
-  top: 10rem;
+  top: 6rem;
   bottom: 0.5rem;
   left: 1rem;
   right: 1rem;
-  height: calc(100vh - 11rem);
+  height: calc(100vh - 7rem);
 
   background: $backgroundColor;
   border: $primaryColor solid 0.3rem;
@@ -32,22 +32,47 @@
   }
 
   .content {
-    height: calc(100vh - 22rem);
-    max-height: calc(100vh - 22rem);
+    height: calc(100vh - 18rem);
+    max-height: calc(100vh - 18rem);
     padding: 2rem;
     overflow-y: auto;
+
+    .form-columns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
 
     .form-row {
       padding: 1rem 0;
       display: flex;
       flex-direction: column;
-      width: 60%;
+      width: 80%;
 
       input {
-        padding: 0.3rem;
         font-size: 1.2rem;
+        padding: 0.3rem;
+      }
+
+      textarea {
+        font-size: 1rem;
+        min-width: 100%;
+        max-width: 100%;
+        min-height: 10rem;
+        max-height: 10rem;
+        resize: none;
+      }
+
+      textarea.editing {
+        height: calc(100vh - 23rem);
+        min-height: calc(100vh - 23rem);
+        max-height: calc(100vh - 23rem);
+        overflow: auto;
+        white-space: nowrap;
+      }
+
+      input, textarea {
         color: $primaryColor;
-        background-color: $backgroundColor;
+        background-color: $backgroundLighter;
         border: none;
         border-bottom: $primaryColor solid 0.1rem;
 

@@ -1,5 +1,5 @@
 use commons::errors::RustyError;
-use domain::jobs::Job;
+use domain::jobs::{Job, RegisterJob};
 
 use crate::api::client::gloo_post;
 use crate::api::utils::parse_entries;
@@ -22,6 +22,7 @@ pub async fn get_jobs_for_project(project_id: String) -> Result<Vec<Job>, RustyE
                     id
                     name
                     description
+                    template
                     projectId
                 }}
             }}
@@ -51,6 +52,7 @@ pub async fn get_job(id: String) -> Result<Job, RustyError> {
                     id
                     name
                     description
+                    template
                     projectId
                 }}
             }}
@@ -62,4 +64,35 @@ pub async fn get_job(id: String) -> Result<Job, RustyError> {
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["jobs"]["getById"].clone();
     parse_entries(json_data)
+}
+
+/// Function to register a new job via GraphQL endpoint.
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+#[allow(clippy::future_not_send)]
+pub async fn register_job(model: RegisterJob) -> Result<String, RustyError> {
+    let description = model.description
+        .map_or_else(String::new, |desc| format!("description: \"{desc}\""));
+    let payload = serde_json::json!({
+        "query": format!(r#"mutation {{
+            jobs {{
+                register(job: {{
+                    name: "{}"
+                    {}
+                    template: "{}"
+                    projectId: "{}"
+                }})
+            }}
+        }}"#, model.name, description, model.template, model.project_id),
+        "variables": {}
+    });
+
+    let data = gloo_post(&payload).await?;
+    leptos::leptos_dom::log!("{:?}", data);
+    let json_data: serde_json::Value = serde_json::from_str(&data)?;
+    Ok(json_data["data"]["jobs"]["register"].to_string())
 }
