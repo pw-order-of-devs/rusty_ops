@@ -71,9 +71,19 @@ pub struct Pipeline {
 /// A struct representing the registration of a pipeline.
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
 pub struct RegisterPipeline {
-    name: String,
+    /// pipeline job id
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]
-    job_id: String,
+    pub job_id: String,
+}
+
+impl RegisterPipeline {
+    /// constructor
+    #[must_use]
+    pub fn new(job_id: &str) -> Self {
+        Self {
+            job_id: job_id.to_string(),
+        }
+    }
 }
 
 impl From<&RegisterPipeline> for Pipeline {

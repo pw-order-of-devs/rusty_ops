@@ -93,7 +93,6 @@ pub async fn register_job(model: RegisterJob) -> Result<String, RustyError> {
     });
 
     let data = gloo_post(&payload).await?;
-    leptos::leptos_dom::log!("{:?}", data);
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     Ok(json_data["data"]["jobs"]["register"].to_string())
 }

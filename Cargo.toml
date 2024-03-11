@@ -17,6 +17,7 @@ readme = "README.md"
 [workspace.dependencies]
 async-graphql = "7.0"
 async-graphql-poem = "7.0"
+async-std = "1.12"
 base64-url = "2.0"
 chrono = "0.4"
 dotenv = "0.15"

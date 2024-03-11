@@ -52,7 +52,11 @@ impl PipelinesMutation {
         log::debug!("handling `register_pipeline` request");
         let db = get_db_client(ctx)?;
         let pipelines_count = db
-            .get_all::<Pipeline>(PIPELINES_INDEX, None, None)
+            .get_all::<Pipeline>(
+                PIPELINES_INDEX,
+                Some(serde_json::json!({ "job_id": pipeline.job_id })),
+                None,
+            )
             .await?
             .len() as u64;
         let mut pipeline = Pipeline::from(&pipeline);

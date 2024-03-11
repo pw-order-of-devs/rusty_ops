@@ -1,5 +1,5 @@
 use commons::errors::RustyError;
-use domain::pipelines::Pipeline;
+use domain::pipelines::{Pipeline, RegisterPipeline};
 
 use crate::api::client::gloo_post;
 use crate::api::utils::parse_entries;
@@ -16,9 +16,10 @@ pub async fn get_pipelines_for_job(job_id: String) -> Result<Vec<Pipeline>, Rust
     let payload = serde_json::json!({
         "query": format!(r#"query {{
             pipelines {{
-                get(filter: {{
-                    job_id: "{}"
-                }}) {{
+                get(
+                    filter: {{ job_id: "{}" }},
+        			options: {{ sortMode: DESCENDING, sortField: "number" }}
+                ) {{
                     id
                     number
                     startDate
@@ -75,4 +76,29 @@ pub async fn get_last_pipeline_for_job(job_id: String) -> Result<Option<Pipeline
     } else {
         None
     })
+}
+
+/// Function to run a new pipeline via GraphQL endpoint.
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+#[allow(clippy::future_not_send)]
+pub async fn run_pipeline(model: RegisterPipeline) -> Result<String, RustyError> {
+    let payload = serde_json::json!({
+        "query": format!(r#"mutation {{
+            pipelines {{
+                register(pipeline: {{
+                    jobId: "{}"
+                }})
+            }}
+        }}"#, model.job_id),
+        "variables": {}
+    });
+
+    let data = gloo_post(&payload).await?;
+    let json_data: serde_json::Value = serde_json::from_str(&data)?;
+    Ok(json_data["data"]["pipelines"]["register"].to_string())
 }

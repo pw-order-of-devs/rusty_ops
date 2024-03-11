@@ -25,15 +25,20 @@
 }
 
 .container-projects {
-    max-height: calc(100vh - 6rem - 4.5rem);
+    max-height: calc(100vh - 10.5rem);
     padding: 0 0.5rem;
     overflow-y: auto;
 }
 
+.container-projects-list {
+    max-height: calc(100vh - 12rem) !important;
+    overflow-y: auto;
+}
+
 .list-project-jobs {
-    max-height: calc(100vh - 6rem - 6.3rem);
-    display: inline-grid;
-    grid-template-columns: 1fr;
+    max-height: calc(100vh - 18rem) !important;
+    display: flex;
+    flex-direction: column;
     gap: $gridGap;
 }
 

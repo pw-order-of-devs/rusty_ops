@@ -37,7 +37,7 @@ pub fn ProjectsList() -> impl IntoView {
                 <div class="title-text"> "Your projects:" </div>
                 <div class="button button-add" on:click=move |_| set_modal_visible.set("modal-visible")> "Add new" </div>
             </div>
-            <div class="container container-projects">
+            <div class="container container-projects-list scrollable">
                 <Transition fallback=move || { view! { <div>"Loading ..."</div> } }>
                     <ErrorBoundary fallback>
                         { projects_view }

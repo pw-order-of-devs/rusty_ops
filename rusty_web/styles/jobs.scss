@@ -7,9 +7,9 @@
 }
 
 .list-job-pipelines {
-    max-height: calc(100vh - 6rem - 6.3rem);
-    display: inline-grid;
-    grid-template-columns: 1fr;
+    max-height: calc(100vh - 18rem) !important;
+    display: flex;
+    flex-direction: column;
     gap: $gridGap
 }
 

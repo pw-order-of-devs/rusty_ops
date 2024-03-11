@@ -9,7 +9,9 @@
         margin-top: 2rem;
         width: $full;
         gap: $gridGap;
+    }
 
+    .scrollable {
         .card {
             padding: 1rem;
             border: $primaryColor solid 0.1rem;
