@@ -23,7 +23,6 @@ pub fn JobView() -> impl IntoView {
             let description = data.clone().description.unwrap_or_else(|| "-".to_string());
             let template = base64_url::decode(&data.clone().template).unwrap_or_default();
             let template = String::from_utf8(template).unwrap_or_default();
-            leptos::leptos_dom::log!("{template}");
 
             view! {
                 <div class="container container-job-pipelines">
