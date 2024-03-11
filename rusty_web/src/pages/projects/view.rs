@@ -1,6 +1,6 @@
 use leptos::{
-    component, create_local_resource, create_signal, view, CollectView, ErrorBoundary, IntoView,
-    SignalSet, SignalWithUntracked, Transition,
+    component, create_local_resource, create_resource, create_signal, view, CollectView,
+    ErrorBoundary, IntoView, ReadSignal, SignalGet, SignalSet, SignalWithUntracked, Transition,
 };
 use leptos_router::use_params_map;
 
@@ -38,7 +38,7 @@ pub fn ProjectView() -> impl IntoView {
                             "other metadata about the project"
                         </div>
                         <div class="list-project-jobs scrollable">
-                            <ProjectJobsView id=data.clone().id/>
+                            <ProjectJobsView modal_visible id=data.clone().id />
                         </div>
                     </div>
                 }
@@ -59,8 +59,20 @@ pub fn ProjectView() -> impl IntoView {
 }
 
 #[component]
-fn ProjectJobsView(#[prop(into)] id: String) -> impl IntoView {
-    let jobs = create_local_resource(move || id.clone(), get_jobs_for_project);
+fn ProjectJobsView(
+    /// visibility of the component
+    modal_visible: ReadSignal<&'static str>,
+    /// id value
+    #[prop(into)]
+    id: String,
+) -> impl IntoView {
+    let jobs = create_resource(
+        move || modal_visible.get(),
+        move |_| {
+            let project_id = id.clone();
+            async move { get_jobs_for_project(project_id).await }
+        },
+    );
 
     move || {
         jobs.and_then(|jobs| {

@@ -14,12 +14,36 @@
 }
 
 .container-job-pipelines {
-    grid-template-columns: 9fr 1fr !important;
+    display: flex !important;
+    justify-content: space-between;
 
     div:last-child {
         display: flex!important;
         justify-content: end;
         padding-right: 0.5rem;
         border-left: $primaryColor 0.2rem solid;
+
+        div:last-child {
+            margin-left: 1rem;
+        }
+    }
+}
+
+.container-job-pipelines-content {
+    grid-template-columns: 1fr 2fr 2fr !important;
+
+    textarea {
+        color: $primaryColor;
+        background-color: $backgroundLighter;
+        border: none;
+        border-bottom: $primaryColor solid 0.1rem;
+
+        font-size: 1rem;
+        width: 100%;
+        height: calc(100vh - 18rem);
+
+        resize: none;
+        overflow: auto;
+        white-space: pre-wrap;
     }
 }

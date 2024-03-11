@@ -20,14 +20,26 @@ pub fn JobView() -> impl IntoView {
 
     let job_view = move || {
         job.and_then(|data| {
+            let description = data.clone().description.unwrap_or_else(|| "-".to_string());
+            let template = base64_url::decode(&data.clone().template).unwrap_or_default();
+            let template = String::from_utf8(template).unwrap_or_default();
+            leptos::leptos_dom::log!("{template}");
+
             view! {
                 <div class="container container-job-pipelines">
-                    <div class="title"> "Job: " { data.clone().name } </div>
-                    <div class="title"> "Pipelines" </div>
+                    <div class="title bold one-line"> "Job: " { data.clone().name } </div>
+                    <div class="row-title-button-add">
+                        <div class="title"> "Pipelines" </div>
+                        <div class="button button-add"> "Run >>" </div>
+                    </div>
                 </div>
-                <div class="container">
+                <div class="container container-job-pipelines-content">
                     <div class="job-details">
-                        "other metadata about the job"
+                        <label> "description:" </label>
+                        <div> { description } </div>
+                    </div>
+                    <div class="job-template">
+                        <textarea disabled> { template } </textarea>
                     </div>
                     <div class="list-job-pipelines scrollable">
                         <JobPipelinesView id=data.clone().id/>

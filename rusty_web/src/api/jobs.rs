@@ -75,7 +75,8 @@ pub async fn get_job(id: String) -> Result<Job, RustyError> {
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
 pub async fn register_job(model: RegisterJob) -> Result<String, RustyError> {
-    let description = model.description
+    let description = model
+        .description
         .map_or_else(String::new, |desc| format!("description: \"{desc}\""));
     let payload = serde_json::json!({
         "query": format!(r#"mutation {{

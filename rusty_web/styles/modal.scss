@@ -55,17 +55,12 @@
 
       textarea {
         font-size: 1rem;
-        min-width: 100%;
-        max-width: 100%;
-        min-height: 10rem;
-        max-height: 10rem;
+        width: 100%;
         resize: none;
       }
 
       textarea.editing {
         height: calc(100vh - 23rem);
-        min-height: calc(100vh - 23rem);
-        max-height: calc(100vh - 23rem);
         overflow: auto;
         white-space: nowrap;
       }
