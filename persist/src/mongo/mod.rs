@@ -98,8 +98,7 @@ impl Persistence for MongoDBClient {
         index: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        self
-            .client
+        self.client
             .database(&self.database)
             .collection::<T>(index)
             .insert_one(item, None)
@@ -116,8 +115,7 @@ impl Persistence for MongoDBClient {
         id: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        self
-            .client
+        self.client
             .database(&self.database)
             .collection::<T>(index)
             .replace_one(doc! { "id": id }, item, None)
