@@ -9,14 +9,14 @@ pub enum RustyError {
         /// AsyncGraphql Error message
         message: String,
     },
-    /// GlooNet operation related error
-    GlooNetError {
-        /// GlooNet Error message
-        message: String,
-    },
     /// MongoDB operation related error
     MongoDBError {
         /// MongoDB Error message
+        message: String,
+    },
+    /// Reqwest|Reqwasm operation related error
+    RequestError {
+        /// Reqwest|Reqwasm Error message
         message: String,
     },
     /// Serde operation related error
@@ -43,8 +43,8 @@ impl Display for RustyError {
             Self::AsyncGraphqlError { message } => {
                 write!(f, "GraphQL error: {message}")
             }
-            Self::GlooNetError { message } => {
-                write!(f, "Gloo error: {message}")
+            Self::RequestError { message } => {
+                write!(f, "Request error: {message}")
             }
             Self::MongoDBError { message } => {
                 write!(f, "MongoDB error: {message}")
@@ -69,10 +69,18 @@ impl From<async_graphql::Error> for RustyError {
     }
 }
 
-#[cfg(feature = "gloo")]
-impl From<gloo_net::Error> for RustyError {
-    fn from(err: gloo_net::Error) -> Self {
-        Self::GlooNetError {
+#[cfg(feature = "wasm")]
+impl From<reqwasm::Error> for RustyError {
+    fn from(err: reqwasm::Error) -> Self {
+        Self::RequestError {
+            message: err.to_string(),
+        }
+    }
+}
+
+impl From<reqwest::Error> for RustyError {
+    fn from(err: reqwest::Error) -> Self {
+        Self::RequestError {
             message: err.to_string(),
         }
     }

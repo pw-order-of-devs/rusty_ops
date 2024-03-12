@@ -13,7 +13,7 @@ use domain::RustyDomainItem;
 use crate::{Persistence, PersistenceBuilder};
 
 /// Represents a `MongoDB` client.
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MongoDBClient {
     database: String,
     client: Client,
@@ -85,9 +85,9 @@ impl Persistence for MongoDBClient {
         index: &str,
         id: &str,
     ) -> Result<Option<T>, RustyError> {
-        let collection = self.client.database(&self.database).collection::<T>(index);
-
-        collection
+        self.client
+            .database(&self.database)
+            .collection::<T>(index)
             .find_one(doc! { "id": id }, None)
             .await?
             .map_or_else(|| Ok(None), |doc| Ok(Some(doc)))
@@ -98,31 +98,40 @@ impl Persistence for MongoDBClient {
         index: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        let collection = self
+        self
             .client
             .database(&self.database)
-            .collection::<Document>(index);
-        let Bson::Document(document) = to_bson(&item)? else {
-            return Err(RustyError::MongoDBError {
-                message: "Unexpected BSON document type".to_string(),
-            });
-        };
-
-        match collection.insert_one(document, None).await {
-            Ok(_) => Ok(item.id()),
-            Err(err) => Err(RustyError::MongoDBError {
+            .collection::<T>(index)
+            .insert_one(item, None)
+            .await
+            .map_err(|err| RustyError::MongoDBError {
                 message: err.kind.to_string(),
-            }),
-        }
+            })
+            .map(|_| item.id())
+    }
+
+    async fn update<T: RustyDomainItem>(
+        &self,
+        index: &str,
+        id: &str,
+        item: &T,
+    ) -> Result<String, RustyError> {
+        self
+            .client
+            .database(&self.database)
+            .collection::<T>(index)
+            .replace_one(doc! { "id": id }, item, None)
+            .await
+            .map_err(|err| RustyError::MongoDBError {
+                message: err.kind.to_string(),
+            })
+            .map(|_| item.id())
     }
 
     async fn delete(&self, index: &str, id: &str) -> Result<u64, RustyError> {
-        let collection = self
-            .client
+        self.client
             .database(&self.database)
-            .collection::<Document>(index);
-
-        collection
+            .collection::<Document>(index)
             .delete_one(doc! { "id": id }, None)
             .await
             .map_err(|err| RustyError::MongoDBError {

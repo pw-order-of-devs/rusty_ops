@@ -1,4 +1,4 @@
-use gloo_net::{http::Request, Error};
+use reqwasm::{http::Request, Error};
 
 /// HTTP POST request
 ///
@@ -6,12 +6,12 @@ use gloo_net::{http::Request, Error};
 ///
 /// This function can generate the following errors:
 ///
-/// * `gloo_net::Error` - If there was an error during the creation of the item.
+/// * `reqwasm::Error` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn gloo_post(payload: &serde_json::Value) -> Result<String, Error> {
+pub async fn reqwasm_post(payload: &serde_json::Value) -> Result<String, Error> {
     Request::post(&format!("{}/graphql", crate::env::APP_API_URL))
         .header("Content-Type", "application/json")
-        .json(payload)?
+        .body(&payload.to_string())
         .send()
         .await?
         .text()

@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use log::LevelFilter;
 use log4rs::append::console::ConsoleAppender;
-use log4rs::config::{Appender, Deserializers, Root};
+use log4rs::config::{Appender, Deserializers, Logger, Root};
 use log4rs::encode::pattern::PatternEncoder;
 use log4rs::Config;
 
@@ -41,6 +41,7 @@ fn default_logger() {
         .build();
     let config = Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .logger(Logger::builder().build("reqwest", LevelFilter::Off))
         .build(Root::builder().appender("stdout").build(level_filter))
         .unwrap();
     let _ = log4rs::init_config(config);

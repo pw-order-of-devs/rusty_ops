@@ -168,6 +168,30 @@ pub trait Persistence: Send + Sync {
         item: &T,
     ) -> impl Future<Output = Result<String, RustyError>> + Send;
 
+    /// Updates an item in the specified index.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - The name of the index where the item will be modified.
+    /// * `id` - The id of the item to be modified.
+    /// * `item` - The item to be modified in the index.
+    ///
+    /// # Returns
+    ///
+    /// A future that resolves to a `Result` indicating whether the operation was successful or returned an error.
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    fn update<T: RustyDomainItem>(
+        &self,
+        index: &str,
+        id: &str,
+        item: &T,
+    ) -> impl Future<Output = Result<String, RustyError>> + Send;
+
     /// Deletes an item from the database.
     ///
     /// # Arguments

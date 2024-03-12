@@ -16,16 +16,16 @@ name = "rusty_web"
 path = "src/main.rs"
 
 [dependencies]
-commons = { path = "../commons", features = ["errors", "gloo"] }
+commons = { path = "../commons", features = ["errors", "wasm"] }
 domain = { path = "../domain" }
 
 async-std.workspace = true
 base64-url.workspace = true
 chrono.workspace = true
-gloo-net.workspace = true
 leptos = { workspace = true, features = ["csr"] }
 leptos_meta = { workspace = true, features = ["csr"] }
 leptos_router = { workspace = true, features = ["csr"] }
+reqwasm.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 url.workspace = true

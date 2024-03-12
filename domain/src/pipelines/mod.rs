@@ -7,47 +7,22 @@ use crate::RustyDomainItem;
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Enum, Serialize, Deserialize)]
 pub enum PipelineStatus {
     /// Created pipeline, waiting for agent to be assigned to.
-    #[serde(rename(
-        deserialize = "DEFINED",
-        deserialize = "Defined",
-        deserialize = "defined"
-    ))]
+    #[serde(rename(deserialize = "DEFINED", deserialize = "Defined"))]
     Defined,
     /// Pipeline assigned to an agent, not yet started.
-    #[serde(rename(
-        deserialize = "ASSIGNED",
-        deserialize = "Assigned",
-        deserialize = "assigned"
-    ))]
+    #[serde(rename(deserialize = "ASSIGNED", deserialize = "Assigned"))]
     Assigned,
     /// Currently running pipeline.
-    #[serde(rename(
-        deserialize = "INPROGRESS",
-        deserialize = "IN_PROGRESS",
-        deserialize = "InProgress",
-        deserialize = "in_progress"
-    ))]
+    #[serde(rename(deserialize = "IN_PROGRESS", deserialize = "InProgress"))]
     InProgress,
     /// Pipeline finished successfully.
-    #[serde(rename(
-        deserialize = "SUCCESS",
-        deserialize = "Success",
-        deserialize = "success"
-    ))]
+    #[serde(rename(deserialize = "SUCCESS", deserialize = "Success"))]
     Success,
     /// Pipeline finished with a failure.
-    #[serde(rename(
-        deserialize = "FAILURE",
-        deserialize = "Failure",
-        deserialize = "failure"
-    ))]
+    #[serde(rename(deserialize = "FAILURE", deserialize = "Failure"))]
     Failure,
     /// Pipeline finished in an unstable state.
-    #[serde(rename(
-        deserialize = "UNSTABLE",
-        deserialize = "Unstable",
-        deserialize = "unstable"
-    ))]
+    #[serde(rename(deserialize = "UNSTABLE", deserialize = "Unstable"))]
     Unstable,
 }
 
@@ -66,6 +41,9 @@ pub struct Pipeline {
     /// pipeline job id
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]
     pub job_id: String,
+    /// pipeline agent id
+    #[serde(rename(deserialize = "agentId", deserialize = "agent_id"))]
+    pub agent_id: Option<String>,
 }
 
 /// A struct representing the registration of a pipeline.
@@ -94,6 +72,7 @@ impl From<&RegisterPipeline> for Pipeline {
             start_date: String::new(),
             status: PipelineStatus::Defined,
             job_id: value.clone().job_id,
+            agent_id: None,
         }
     }
 }

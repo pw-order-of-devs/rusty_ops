@@ -1,7 +1,7 @@
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, RegisterPipeline};
 
-use crate::api::client::gloo_post;
+use crate::api::client::reqwasm_post;
 use crate::api::utils::parse_entries;
 
 /// Function to retrieve pipelines for job from a GraphQL endpoint.
@@ -31,7 +31,7 @@ pub async fn get_pipelines_for_job(job_id: String) -> Result<Vec<Pipeline>, Rust
         "variables": {}
     });
 
-    let data = gloo_post(&payload).await?;
+    let data = reqwasm_post(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["get"].clone();
     parse_entries(json_data)
@@ -67,7 +67,7 @@ pub async fn get_last_pipeline_for_job(job_id: String) -> Result<Option<Pipeline
         "variables": {}
     });
 
-    let data = gloo_post(&payload).await?;
+    let data = reqwasm_post(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["get"].clone();
     let entries: Vec<Pipeline> = parse_entries(json_data)?;
@@ -98,7 +98,7 @@ pub async fn run_pipeline(model: RegisterPipeline) -> Result<String, RustyError>
         "variables": {}
     });
 
-    let data = gloo_post(&payload).await?;
+    let data = reqwasm_post(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     Ok(json_data["data"]["pipelines"]["register"].to_string())
 }

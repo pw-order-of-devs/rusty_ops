@@ -3,7 +3,7 @@ use serde_json::Value;
 use commons::errors::RustyError;
 use domain::projects::{Project, RegisterProject};
 
-use crate::api::client::gloo_post;
+use crate::api::client::reqwasm_post;
 use crate::api::utils::parse_entries;
 
 /// Function to retrieve projects from a GraphQL endpoint.
@@ -27,7 +27,7 @@ pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
         "variables": {}
     });
 
-    let data = gloo_post(&payload).await?;
+    let data = reqwasm_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["projects"]["get"].clone();
     parse_entries(json_data)
@@ -55,7 +55,7 @@ pub async fn get_project(id: String) -> Result<Project, RustyError> {
         "variables": {}
     });
 
-    let data = gloo_post(&payload).await?;
+    let data = reqwasm_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["projects"]["getById"].clone();
     parse_entries(json_data)
@@ -82,7 +82,7 @@ pub async fn register_project(model: RegisterProject) -> Result<String, RustyErr
         "variables": {}
     });
 
-    let data = gloo_post(&payload).await?;
+    let data = reqwasm_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     Ok(json_data["data"]["projects"]["register"].to_string())
 }

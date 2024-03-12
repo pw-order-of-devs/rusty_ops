@@ -9,7 +9,7 @@ keywords.workspace = true
 license.workspace = true
 readme.workspace = true
 name = "rusty_server"
-description = "rusty_ops - ci/cd system"
+description = "rusty_ops - ci/cd system - server"
 
 [[bin]]
 name = "rusty_server"

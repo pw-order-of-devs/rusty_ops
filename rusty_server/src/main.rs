@@ -17,19 +17,26 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use async_graphql_poem::GraphQL;
-use poem::{listener::TcpListener, EndpointExt, Route, Server};
+use poem::{get, handler, listener::TcpListener, EndpointExt, Route, Server};
 
 mod cors;
 mod gql;
+
+#[handler]
+fn health() -> String {
+    "ok".to_string()
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     commons::logger::init();
     let db = persist::init().await;
+    let schema = gql::build_schema(db);
 
     // start the http server
     let app = Route::new()
-        .at("/graphql", GraphQL::new(gql::build_schema(db)))
+        .at("/health", get(health))
+        .at("/graphql", GraphQL::new(schema))
         .with(cors::cors_config());
 
     let host = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0".to_string());

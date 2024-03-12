@@ -4,13 +4,13 @@ use serde_json::{json, Value};
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::jobs::Job;
-use domain::pipelines::{Pipeline, RegisterPipeline};
+use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
 use persist::Persistence;
 
 use crate::gql::get_db_client;
 use crate::gql::jobs::JOBS_INDEX;
 
-const PIPELINES_INDEX: &str = "pipelines";
+pub(crate) const PIPELINES_INDEX: &str = "pipelines";
 
 pub struct PipelinesQuery;
 
@@ -78,6 +78,36 @@ impl PipelinesMutation {
             pipeline.number = pipelines_count + 1;
             pipeline.start_date = chrono::Utc::now().to_rfc3339();
             get_db_client(ctx)?.create(PIPELINES_INDEX, &pipeline).await
+        }
+    }
+
+    // pipelines interface
+    async fn assign(
+        &self,
+        ctx: &Context<'_>,
+        pipeline_id: String,
+        agent_id: String,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `assign_pipeline` request");
+        let db = get_db_client(ctx)?;
+        let pipeline = db
+            .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
+            .await?;
+
+        if let Some(mut pipe) = pipeline {
+            if pipe.status == PipelineStatus::Defined && pipe.agent_id.is_none() {
+                pipe.status = PipelineStatus::Assigned;
+                pipe.agent_id = Some(agent_id.to_string());
+                db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
+            } else {
+                let message = "`assign_pipeline` - pipeline already assigned".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError { message })
+            }
+        } else {
+            let message = "`assign_pipeline` - pipeline not found".to_string();
+            log::debug!("{message}");
+            Err(RustyError::AsyncGraphqlError { message })
         }
     }
 
