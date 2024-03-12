@@ -30,4 +30,5 @@ log4rs = { workspace = true, features = ["gzip", "all_components"], optional = t
 mongodb = { workspace = true, optional = true }
 serde.workspace = true
 serde_json.workspace = true
+serde_valid.workspace = true
 serde_yaml.workspace = true

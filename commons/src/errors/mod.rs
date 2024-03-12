@@ -24,6 +24,11 @@ pub enum RustyError {
         /// Serde Error message
         message: String,
     },
+    /// Serde_valid operation related error
+    ValidationError {
+        /// Serde Error message
+        message: String,
+    },
 }
 
 impl Debug for RustyError {
@@ -46,6 +51,9 @@ impl Display for RustyError {
             }
             Self::SerializationError { message } => {
                 write!(f, "Serialization error: {message}")
+            }
+            Self::ValidationError { message } => {
+                write!(f, "{message}")
             }
         }
     }
@@ -105,6 +113,22 @@ impl From<serde_json::Error> for RustyError {
     }
 }
 
+impl From<serde_valid::validation::Error> for RustyError {
+    fn from(err: serde_valid::validation::Error) -> Self {
+        Self::ValidationError {
+            message: err.to_string(),
+        }
+    }
+}
+
+impl From<serde_valid::validation::Errors> for RustyError {
+    fn from(err: serde_valid::validation::Errors) -> Self {
+        Self::ValidationError {
+            message: err.to_string(),
+        }
+    }
+}
+
 impl From<serde_yaml::Error> for RustyError {
     fn from(err: serde_yaml::Error) -> Self {
         Self::SerializationError {
@@ -123,7 +147,7 @@ impl From<base64_url::base64::DecodeError> for RustyError {
 
 impl From<std::string::FromUtf8Error> for RustyError {
     fn from(err: std::string::FromUtf8Error) -> Self {
-        Self::SerializationError {
+        Self::ValidationError {
             message: err.to_string(),
         }
     }

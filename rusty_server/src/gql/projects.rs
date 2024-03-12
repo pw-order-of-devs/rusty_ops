@@ -1,5 +1,6 @@
 use async_graphql::{Context, Object};
 use serde_json::Value;
+use serde_valid::Validate;
 
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
@@ -8,7 +9,7 @@ use persist::Persistence;
 
 use crate::gql::get_db_client;
 
-const PROJECTS_INDEX: &str = "projects";
+pub(crate) const PROJECTS_INDEX: &str = "projects";
 
 pub struct ProjectsQuery;
 
@@ -52,6 +53,7 @@ impl ProjectsMutation {
         project: RegisterProject,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `register_project` request");
+        project.validate()?;
         get_db_client(ctx)?
             .create(PROJECTS_INDEX, &Project::from(&project))
             .await

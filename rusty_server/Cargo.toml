@@ -27,4 +27,5 @@ chrono.workspace = true
 log.workspace = true
 poem.workspace = true
 serde_json.workspace = true
+serde_valid.workspace = true
 tokio.workspace = true

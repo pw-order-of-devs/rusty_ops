@@ -1,12 +1,14 @@
 use async_graphql::{Context, Object};
-use serde_json::Value;
+use serde_json::{json, Value};
 
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
+use domain::jobs::Job;
 use domain::pipelines::{Pipeline, RegisterPipeline};
 use persist::Persistence;
 
 use crate::gql::get_db_client;
+use crate::gql::jobs::JOBS_INDEX;
 
 const PIPELINES_INDEX: &str = "pipelines";
 
@@ -51,18 +53,32 @@ impl PipelinesMutation {
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `register_pipeline` request");
         let db = get_db_client(ctx)?;
-        let pipelines_count = db
-            .get_all::<Pipeline>(
-                PIPELINES_INDEX,
-                Some(serde_json::json!({ "job_id": pipeline.job_id })),
-                None,
-            )
+        if db
+            .get_by_id::<Job>(JOBS_INDEX, &pipeline.job_id)
             .await?
-            .len() as u64;
-        let mut pipeline = Pipeline::from(&pipeline);
-        pipeline.number = pipelines_count + 1;
-        pipeline.start_date = chrono::Utc::now().to_rfc3339();
-        get_db_client(ctx)?.create(PIPELINES_INDEX, &pipeline).await
+            .is_none()
+        {
+            Err(RustyError::ValidationError {
+                message: json!({
+                    "errors": [],
+                    "properties": {"job_id": {"errors": ["job not found"]}}
+                })
+                .to_string(),
+            })
+        } else {
+            let pipelines_count = db
+                .get_all::<Pipeline>(
+                    PIPELINES_INDEX,
+                    Some(json!({ "job_id": pipeline.job_id })),
+                    None,
+                )
+                .await?
+                .len() as u64;
+            let mut pipeline = Pipeline::from(&pipeline);
+            pipeline.number = pipelines_count + 1;
+            pipeline.start_date = chrono::Utc::now().to_rfc3339();
+            get_db_client(ctx)?.create(PIPELINES_INDEX, &pipeline).await
+        }
     }
 
     async fn delete_one(

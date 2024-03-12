@@ -1,6 +1,8 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
+use serde_valid::{validation, Validate};
 
+use crate::templates::pipeline::PipelineTemplate;
 use crate::RustyDomainItem;
 
 /// A struct representing a job.
@@ -20,16 +22,22 @@ pub struct Job {
 }
 
 /// A struct representing the registration of a job.
-#[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
+#[derive(Clone, Debug, InputObject, Serialize, Deserialize, Validate)]
 pub struct RegisterJob {
     /// job name
+    #[validate(min_length = 1)]
+    #[validate(max_length = 512)]
     pub name: String,
     /// job description
+    #[validate(max_length = 2048)]
     pub description: Option<String>,
     /// job pipeline template
+    #[validate(custom(validate_template))]
     pub template: String,
     /// job project id
     #[serde(rename(deserialize = "projectId", deserialize = "project_id"))]
+    #[validate(min_length = 36)]
+    #[validate(max_length = 36)]
     pub project_id: String,
 }
 
@@ -47,6 +55,15 @@ impl RegisterJob {
             template: template.to_string(),
             project_id: project_id.to_string(),
         }
+    }
+}
+
+fn validate_template(url: &str) -> Result<(), validation::Error> {
+    match PipelineTemplate::from_yaml(url) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(validation::Error::Custom(
+            "Invalid pipeline template".to_owned(),
+        )),
     }
 }
 

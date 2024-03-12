@@ -1,5 +1,6 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
+use serde_valid::{validation, Validate};
 
 use crate::RustyDomainItem;
 
@@ -15,12 +16,22 @@ pub struct Project {
 }
 
 /// A struct representing the registration of a project.
-#[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
+#[derive(Clone, Debug, InputObject, Serialize, Deserialize, Validate)]
 pub struct RegisterProject {
     /// project name
+    #[validate(min_length = 1)]
+    #[validate(max_length = 512)]
     pub name: String,
     /// project url
+    #[validate(custom(validate_url))]
     pub url: String,
+}
+
+fn validate_url(url: &str) -> Result<(), validation::Error> {
+    match url::Url::parse(url) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(validation::Error::Custom("Invalid url".to_owned())),
+    }
 }
 
 impl RegisterProject {

@@ -1,15 +1,17 @@
 use async_graphql::{Context, Object};
-use serde_json::Value;
+use serde_json::{json, Value};
+use serde_valid::Validate;
 
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::jobs::{Job, RegisterJob};
-use domain::templates::pipeline::PipelineTemplate;
+use domain::projects::Project;
 use persist::Persistence;
 
 use crate::gql::get_db_client;
+use crate::gql::projects::PROJECTS_INDEX;
 
-const JOBS_INDEX: &str = "jobs";
+pub(crate) const JOBS_INDEX: &str = "jobs";
 
 pub struct JobsQuery;
 
@@ -51,10 +53,23 @@ impl JobsMutation {
         job: RegisterJob,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `register_job` request");
-        let _ = PipelineTemplate::from_yaml(&job.template)?;
-        get_db_client(ctx)?
-            .create(JOBS_INDEX, &Job::from(&job))
-            .await
+        job.validate()?;
+        let db = get_db_client(ctx)?;
+        if db
+            .get_by_id::<Project>(PROJECTS_INDEX, &job.project_id)
+            .await?
+            .is_none()
+        {
+            Err(RustyError::ValidationError {
+                message: json!({
+                    "errors": [],
+                    "properties": {"project_id": {"errors": ["project not found"]}}
+                })
+                .to_string(),
+            })
+        } else {
+            db.create(JOBS_INDEX, &Job::from(&job)).await
+        }
     }
 
     async fn delete_one(
