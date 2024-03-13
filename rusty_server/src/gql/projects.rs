@@ -15,7 +15,6 @@ pub struct ProjectsQuery;
 
 #[Object]
 impl ProjectsQuery {
-    // projects interface
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -46,7 +45,6 @@ pub struct ProjectsMutation;
 
 #[Object]
 impl ProjectsMutation {
-    // projects interface
     async fn register(
         &self,
         ctx: &Context<'_>,

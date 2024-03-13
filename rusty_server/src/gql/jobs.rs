@@ -17,7 +17,6 @@ pub struct JobsQuery;
 
 #[Object]
 impl JobsQuery {
-    // jobs interface
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -46,7 +45,6 @@ pub struct JobsMutation;
 
 #[Object]
 impl JobsMutation {
-    // jobs interface
     async fn register(
         &self,
         ctx: &Context<'_>,

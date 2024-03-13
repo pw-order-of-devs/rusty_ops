@@ -1,4 +1,5 @@
-use async_graphql::{Context, Object};
+use async_graphql::futures_util::Stream;
+use async_graphql::{async_stream, Context, Object};
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
@@ -16,7 +17,6 @@ pub struct PipelinesQuery;
 
 #[Object]
 impl PipelinesQuery {
-    // pipelines interface
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -45,7 +45,6 @@ pub struct PipelinesMutation;
 
 #[Object]
 impl PipelinesMutation {
-    // pipelines interface
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -81,7 +80,6 @@ impl PipelinesMutation {
         }
     }
 
-    // pipelines interface
     async fn assign(
         &self,
         ctx: &Context<'_>,
@@ -106,6 +104,36 @@ impl PipelinesMutation {
             }
         } else {
             let message = "`assign_pipeline` - pipeline not found".to_string();
+            log::debug!("{message}");
+            Err(RustyError::AsyncGraphqlError { message })
+        }
+    }
+
+    async fn set_status(
+        &self,
+        ctx: &Context<'_>,
+        pipeline_id: String,
+        agent_id: String,
+        new_status: PipelineStatus,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `set_pipeline_status` request");
+        let db = get_db_client(ctx)?;
+        let pipeline = db
+            .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
+            .await?;
+
+        if let Some(mut pipe) = pipeline {
+            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id {
+                // validate status workflow
+                pipe.status = new_status;
+                db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
+            } else {
+                let message = "`set_pipeline_status` - cannot update".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError { message })
+            }
+        } else {
+            let message = "`set_pipeline_status` - pipeline not found".to_string();
             log::debug!("{message}");
             Err(RustyError::AsyncGraphqlError { message })
         }

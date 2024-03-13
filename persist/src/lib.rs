@@ -107,6 +107,8 @@ pub trait Persistence: Send + Sync {
     /// # Arguments
     ///
     /// * `index` - The name of the index to search in.
+    /// * `filter` - Search filter for filtering the results.
+    /// * `options` - Sorting/Pagination options.
     ///
     /// A future that resolves to a `Result` indicating whether the operation was successful or returned an error.
     ///
