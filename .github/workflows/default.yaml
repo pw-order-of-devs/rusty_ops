@@ -4,6 +4,9 @@ on:
   push:
     branches: ['**']
 
+env:
+  APP_API_URL: http://dummy
+
 jobs:
   build:
     runs-on: ubuntu-latest
