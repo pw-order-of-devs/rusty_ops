@@ -1,5 +1,4 @@
-use async_graphql::futures_util::Stream;
-use async_graphql::{async_stream, Context, Object};
+use async_graphql::{Context, Object};
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
