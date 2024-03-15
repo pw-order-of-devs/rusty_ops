@@ -123,12 +123,14 @@ impl Persistence for MongoDBClient {
         item: &T,
     ) -> Result<String, RustyError> {
         if let Some(original) = self.get_by_id::<T>(index, id).await? {
-            let original = to_document(&original)?;
-            let modification = to_document(item)?;
             self.client
                 .database(&self.database)
                 .collection::<T>(index)
-                .update_one(original, modification, None)
+                .update_one(
+                    to_document(&original)?,
+                    doc! { "$set": to_document(item)? },
+                    None,
+                )
                 .await
                 .map_err(|err| RustyError::MongoDBError {
                     message: err.kind.to_string(),
