@@ -104,12 +104,11 @@ impl PipelinesMutation {
                     .get_all::<Pipeline>(PIPELINES_INDEX, Some(assigned_condition), None)
                     .await?
                     .len()
-                    >= max_assigned;
+                    < max_assigned;
                 if can_assign {
                     db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
                 } else {
-                    let message =
-                        "`assign_pipeline` - agent can only have 1 pipeline assigned".to_string();
+                    let message = format!("`assign_pipeline` - agent can only have {max_assigned} pipeline(s) assigned");
                     log::debug!("{message}");
                     Err(RustyError::AsyncGraphqlError { message })
                 }
