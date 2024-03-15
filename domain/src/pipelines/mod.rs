@@ -39,6 +39,9 @@ pub struct Pipeline {
     /// pipeline start date
     #[serde(rename(deserialize = "startDate", deserialize = "start_date"))]
     pub start_date: Option<String>,
+    /// pipeline end date
+    #[serde(rename(deserialize = "endDate", deserialize = "end_date"))]
+    pub end_date: Option<String>,
     /// pipeline status
     pub status: PipelineStatus,
     /// pipeline job id
@@ -74,6 +77,7 @@ impl From<&RegisterPipeline> for Pipeline {
             number: 0,
             register_date: String::new(),
             start_date: None,
+            end_date: None,
             status: PipelineStatus::Defined,
             job_id: value.clone().job_id,
             agent_id: None,

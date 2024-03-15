@@ -130,7 +130,7 @@ impl PipelinesMutation {
         pipeline_id: String,
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `set_pipeline_status` request");
+        log::debug!("handling `set_running` request");
         let db = get_db_client(ctx)?;
         let pipeline = db
             .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
@@ -150,6 +150,38 @@ impl PipelinesMutation {
             }
         } else {
             let message = "`set_running` - pipeline not found".to_string();
+            log::debug!("{message}");
+            Err(RustyError::AsyncGraphqlError { message })
+        }
+    }
+
+    async fn finalize(
+        &self,
+        ctx: &Context<'_>,
+        pipeline_id: String,
+        agent_id: String,
+        status: PipelineStatus,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `finalize` request");
+        let db = get_db_client(ctx)?;
+        let pipeline = db
+            .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
+            .await?;
+
+        if let Some(mut pipe) = pipeline {
+            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
+                && pipe.clone().status == PipelineStatus::InProgress
+            {
+                pipe.status = status;
+                pipe.end_date = Some(chrono::Utc::now().to_rfc3339());
+                db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
+            } else {
+                let message = "`finalize` - cannot update".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError { message })
+            }
+        } else {
+            let message = "`finalize` - pipeline not found".to_string();
             log::debug!("{message}");
             Err(RustyError::AsyncGraphqlError { message })
         }
