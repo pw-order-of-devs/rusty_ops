@@ -1,7 +1,9 @@
-use crate::api::jobs::get_pipeline_template;
+use std::io::Write;
+
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
-use std::io::Write;
+
+use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
 
 pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
