@@ -23,11 +23,11 @@ impl JobsQuery {
         filter: Option<Value>,
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<Vec<Job>, RustyError> {
-        log::debug!("handling `get_jobs` request");
+        log::debug!("handling `jobs::get` request");
         let entries = get_db_client(ctx)?
             .get_all(JOBS_INDEX, filter, options)
             .await?;
-        log::debug!("`get_jobs`: found {} entries", entries.len());
+        log::debug!("`jobs::get`: found {} entries", entries.len());
         Ok(entries)
     }
 
@@ -36,7 +36,7 @@ impl JobsQuery {
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<Job>, RustyError> {
-        log::debug!("handling `get_job_by_id` request");
+        log::debug!("handling `jobs::getById` request");
         get_db_client(ctx)?.get_by_id(JOBS_INDEX, &id).await
     }
 }
@@ -50,7 +50,7 @@ impl JobsMutation {
         ctx: &Context<'_>,
         job: RegisterJob,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `register_job` request");
+        log::debug!("handling `jobs::register` request");
         job.validate()?;
         let db = get_db_client(ctx)?;
         if db
@@ -75,7 +75,7 @@ impl JobsMutation {
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
-        log::debug!("handling `delete_job` request");
+        log::debug!("handling `jobs::delete` request");
         get_db_client(ctx)?.delete(JOBS_INDEX, &id).await
     }
 }

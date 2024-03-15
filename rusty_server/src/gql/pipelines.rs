@@ -24,11 +24,11 @@ impl PipelinesQuery {
         filter: Option<Value>,
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<Vec<Pipeline>, RustyError> {
-        log::debug!("handling `get_pipelines` request");
+        log::debug!("handling `pipelines::get` request");
         let entries = get_db_client(ctx)?
             .get_all(PIPELINES_INDEX, filter, options)
             .await?;
-        log::debug!("`get_pipelines`: found {} entries", entries.len());
+        log::debug!("`pipelines::get`: found {} entries", entries.len());
         Ok(entries)
     }
 
@@ -37,7 +37,7 @@ impl PipelinesQuery {
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<Pipeline>, RustyError> {
-        log::debug!("handling `get_pipeline_by_id` request");
+        log::debug!("handling `pipelines::getById` request");
         get_db_client(ctx)?.get_by_id(PIPELINES_INDEX, &id).await
     }
 }
@@ -51,7 +51,7 @@ impl PipelinesMutation {
         ctx: &Context<'_>,
         pipeline: RegisterPipeline,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `register_pipeline` request");
+        log::debug!("handling `pipelines::register` request");
         let db = get_db_client(ctx)?;
         if db
             .get_by_id::<Job>(JOBS_INDEX, &pipeline.job_id)
@@ -87,7 +87,7 @@ impl PipelinesMutation {
         pipeline_id: String,
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `assign_pipeline` request");
+        log::debug!("handling `pipelines::assign` request");
         let db = get_db_client(ctx)?;
         let pipeline = db
             .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
@@ -108,17 +108,17 @@ impl PipelinesMutation {
                 if can_assign {
                     db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
                 } else {
-                    let message = format!("`assign_pipeline` - agent can only have {max_assigned} pipeline(s) assigned");
+                    let message = format!("`pipelines::assign` - agent can only have {max_assigned} pipeline(s) assigned");
                     log::debug!("{message}");
                     Err(RustyError::AsyncGraphqlError { message })
                 }
             } else {
-                let message = "`assign_pipeline` - pipeline already assigned".to_string();
+                let message = "`pipelines::assign` - pipeline already assigned".to_string();
                 log::debug!("{message}");
                 Err(RustyError::AsyncGraphqlError { message })
             }
         } else {
-            let message = "`assign_pipeline` - pipeline not found".to_string();
+            let message = "`pipelines::assign` - pipeline not found".to_string();
             log::debug!("{message}");
             Err(RustyError::AsyncGraphqlError { message })
         }
@@ -130,7 +130,7 @@ impl PipelinesMutation {
         pipeline_id: String,
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `set_running` request");
+        log::debug!("handling `pipelines::setRunning` request");
         let db = get_db_client(ctx)?;
         let pipeline = db
             .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
@@ -144,12 +144,12 @@ impl PipelinesMutation {
                 pipe.start_date = Some(chrono::Utc::now().to_rfc3339());
                 db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
             } else {
-                let message = "`set_running` - cannot update".to_string();
+                let message = "`pipelines::setRunning` - cannot update".to_string();
                 log::debug!("{message}");
                 Err(RustyError::AsyncGraphqlError { message })
             }
         } else {
-            let message = "`set_running` - pipeline not found".to_string();
+            let message = "`pipelines::setRunning` - pipeline not found".to_string();
             log::debug!("{message}");
             Err(RustyError::AsyncGraphqlError { message })
         }
@@ -162,7 +162,7 @@ impl PipelinesMutation {
         agent_id: String,
         status: PipelineStatus,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `finalize` request");
+        log::debug!("handling `pipelines::finalize` request");
         let db = get_db_client(ctx)?;
         let pipeline = db
             .get_by_id::<Pipeline>(PIPELINES_INDEX, &pipeline_id)
@@ -176,12 +176,12 @@ impl PipelinesMutation {
                 pipe.end_date = Some(chrono::Utc::now().to_rfc3339());
                 db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
             } else {
-                let message = "`finalize` - cannot update".to_string();
+                let message = "`pipelines::finalize` - cannot update".to_string();
                 log::debug!("{message}");
                 Err(RustyError::AsyncGraphqlError { message })
             }
         } else {
-            let message = "`finalize` - pipeline not found".to_string();
+            let message = "`pipelines::finalize` - pipeline not found".to_string();
             log::debug!("{message}");
             Err(RustyError::AsyncGraphqlError { message })
         }
@@ -192,12 +192,12 @@ impl PipelinesMutation {
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
-        log::debug!("handling `delete_pipeline` request");
+        log::debug!("handling `pipelines::delete` request");
         get_db_client(ctx)?.delete(PIPELINES_INDEX, &id).await
     }
 
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
-        log::debug!("handling `delete_pipelines` request");
+        log::debug!("handling `pipelines::deleteAll` request");
         get_db_client(ctx)?.delete_all(PIPELINES_INDEX).await
     }
 }
@@ -207,7 +207,7 @@ pub struct PipelineSubscription;
 #[Subscription]
 impl PipelineSubscription {
     async fn pipelines(&self, ctx: &Context<'_>) -> impl Stream<Item = Pipeline> {
-        log::debug!("handling `pipelines` subscription");
+        log::debug!("handling `pipelines::inserted` subscription");
         let mut change_stream = get_db_client(ctx)
             .expect("Error while obtaining db client")
             .change_stream::<Pipeline>(PIPELINES_INDEX)

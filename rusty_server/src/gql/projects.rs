@@ -21,11 +21,11 @@ impl ProjectsQuery {
         filter: Option<Value>,
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<Vec<Project>, RustyError> {
-        log::debug!("handling `get_projects` request");
+        log::debug!("handling `projects::get` request");
         let entries = get_db_client(ctx)?
             .get_all(PROJECTS_INDEX, filter, options)
             .await?;
-        log::debug!("`get_projects`: found {} entries", entries.len());
+        log::debug!("`projects::get`: found {} entries", entries.len());
         Ok(entries)
     }
 
@@ -34,7 +34,7 @@ impl ProjectsQuery {
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<Project>, RustyError> {
-        log::debug!("handling `get_project_by_id` request");
+        log::debug!("handling `projects::getById` request");
         get_db_client(ctx)?
             .get_by_id::<Project>(PROJECTS_INDEX, &id)
             .await
@@ -50,7 +50,7 @@ impl ProjectsMutation {
         ctx: &Context<'_>,
         project: RegisterProject,
     ) -> async_graphql::Result<String, RustyError> {
-        log::debug!("handling `register_project` request");
+        log::debug!("handling `projects::register` request");
         project.validate()?;
         get_db_client(ctx)?
             .create(PROJECTS_INDEX, &Project::from(&project))
@@ -62,7 +62,7 @@ impl ProjectsMutation {
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
-        log::debug!("handling `delete_project` request");
+        log::debug!("handling `projects::delete` request");
         get_db_client(ctx)?.delete(PROJECTS_INDEX, &id).await
     }
 }
