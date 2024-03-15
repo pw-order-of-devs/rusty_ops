@@ -1,0 +1,32 @@
+[package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+name = "rusty_agent"
+description = "rusty_ops - ci/cd system - agent"
+
+[[bin]]
+name = "rusty_agent"
+path = "src/main.rs"
+
+[dependencies]
+commons = { path = "../commons", features = ["errors", "logging", "ws"] }
+domain = { path = "../domain" }
+
+futures-util.workspace = true
+lazy_static.workspace = true
+log.workspace = true
+poem.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tokio-tungstenite = { workspace = true, features = ["native-tls"] }
+uuid = { workspace = true, features = ["v4"] }
+url.workspace = true
