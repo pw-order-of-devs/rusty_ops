@@ -20,6 +20,9 @@
 #[cfg(feature = "errors")]
 pub mod errors;
 
+/// environment variables wrapper
+pub mod env;
+
 /// logging configuration
 #[cfg(feature = "logging")]
 pub mod logger;

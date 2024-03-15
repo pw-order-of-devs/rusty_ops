@@ -111,7 +111,7 @@ fn JobPipelinesView(
             jobs.iter()
                 .map(|data| {
                     let status_icon = get_pipeline_status_icon(&data.status);
-                    let date = parse_date(&data.start_date.unwrap_or_else(|_| "-".to_string()));
+                    let date = parse_date(&data.start_date);
 
                     view! {
                         <a href=format!("/pipelines/{}", data.clone().id) class="card button">

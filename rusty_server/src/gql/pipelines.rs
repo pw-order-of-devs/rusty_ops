@@ -2,6 +2,7 @@ use async_graphql::futures_util::{Stream, StreamExt};
 use async_graphql::{async_stream, Context, Object, Subscription};
 use serde_json::{json, Value};
 
+use commons::env::var_or_default;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::jobs::Job;
@@ -96,7 +97,22 @@ impl PipelinesMutation {
             if pipe.status == PipelineStatus::Defined && pipe.agent_id.is_none() {
                 pipe.status = PipelineStatus::Assigned;
                 pipe.agent_id = Some(agent_id.to_string());
-                db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
+
+                let max_assigned = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
+                let assigned_condition = json!({ "status": "ASSIGNED", "agent_id": agent_id });
+                let can_assign = db
+                    .get_all::<Pipeline>(PIPELINES_INDEX, Some(assigned_condition), None)
+                    .await?
+                    .len()
+                    >= max_assigned;
+                if can_assign {
+                    db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
+                } else {
+                    let message =
+                        "`assign_pipeline` - agent can only have 1 pipeline assigned".to_string();
+                    log::debug!("{message}");
+                    Err(RustyError::AsyncGraphqlError { message })
+                }
             } else {
                 let message = "`assign_pipeline` - pipeline already assigned".to_string();
                 log::debug!("{message}");
@@ -123,7 +139,8 @@ impl PipelinesMutation {
 
         if let Some(mut pipe) = pipeline {
             if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
-                && pipe.clone().status == PipelineStatus::Assigned {
+                && pipe.clone().status == PipelineStatus::Assigned
+            {
                 pipe.status = PipelineStatus::InProgress;
                 pipe.start_date = Some(chrono::Utc::now().to_rfc3339());
                 db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await

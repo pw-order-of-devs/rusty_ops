@@ -19,6 +19,8 @@
 use async_graphql_poem::{GraphQL, GraphQLSubscription};
 use poem::{get, handler, listener::TcpListener, EndpointExt, Route, Server};
 
+use commons::env::var_or_default;
+
 mod gql;
 mod middleware;
 
@@ -40,8 +42,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .at("/ws", get(GraphQLSubscription::new(schema)))
         .with(middleware::cors::cors_config());
 
-    let host = std::env::var("SERVER_ADDR").unwrap_or_else(|_| "0.0.0.0".to_string());
-    let port = std::env::var("SERVER_PORT").unwrap_or_else(|_| "8000".to_string());
+    let host = var_or_default("SERVER_ADDR", "0.0.0.0".to_string());
+    let port = var_or_default("SERVER_PORT", "8000".to_string());
     log::info!("Server is listening at: :{port}/graphql");
     Server::new(TcpListener::bind(format!("{host}:{port}")))
         .run(app)

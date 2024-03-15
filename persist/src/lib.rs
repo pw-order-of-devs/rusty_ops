@@ -22,6 +22,7 @@ use mongodb::change_stream::event::ChangeStreamEvent;
 use mongodb::change_stream::ChangeStream;
 use serde_json::Value;
 
+use commons::env::var;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::RustyDomainItem;
@@ -52,7 +53,7 @@ impl DbType {
     /// - `DbType::MongoDb` if the `RUSTY_PERSISTENCE` value is `mongodb` or `mongo_db`
     #[must_use]
     pub fn parse() -> Self {
-        let db_type = std::env::var("RUSTY_PERSISTENCE")
+        let db_type = var::<String>("RUSTY_PERSISTENCE")
             .expect("RUSTY_PERSISTENCE variable is required")
             .to_lowercase();
 

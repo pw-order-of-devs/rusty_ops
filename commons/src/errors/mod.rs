@@ -9,6 +9,11 @@ pub enum RustyError {
         /// AsyncGraphql Error message
         message: String,
     },
+    /// Environment variable error
+    EnvVarError {
+        /// Environment Error message
+        message: String,
+    },
     /// MongoDB operation related error
     MongoDBError {
         /// MongoDB Error message
@@ -47,6 +52,9 @@ impl Display for RustyError {
         match self {
             Self::AsyncGraphqlError { message } => {
                 write!(f, "GraphQL error: {message}")
+            }
+            Self::EnvVarError { message } => {
+                write!(f, "Env variable error: {message}")
             }
             Self::RequestError { message } => {
                 write!(f, "Request error: {message}")
@@ -164,6 +172,14 @@ impl From<base64_url::base64::DecodeError> for RustyError {
 impl From<std::string::FromUtf8Error> for RustyError {
     fn from(err: std::string::FromUtf8Error) -> Self {
         Self::ValidationError {
+            message: err.to_string(),
+        }
+    }
+}
+
+impl From<std::env::VarError> for RustyError {
+    fn from(err: std::env::VarError) -> Self {
+        Self::EnvVarError {
             message: err.to_string(),
         }
     }

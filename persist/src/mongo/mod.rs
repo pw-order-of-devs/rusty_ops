@@ -8,6 +8,7 @@ use mongodb::options::{Credential, FindOptions};
 use mongodb::{options::ClientOptions, Client};
 use serde_json::{Map, Value};
 
+use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use domain::filters::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
@@ -32,28 +33,31 @@ impl MongoDBClient {
         client_options.connect_timeout = Some(Duration::new(30, 0));
         client_options.min_pool_size = Some(8);
         client_options.max_pool_size = Some(24);
-        if let Ok(rs) = std::env::var("MONGODB_REPLICA_SET") {
+        if let Ok(rs) = var("MONGODB_REPLICA_SET") {
             client_options.repl_set_name = Some(rs);
         }
         Self {
-            database: std::env::var("MONGODB_DATABASE")
-                .expect("MONGODB_DATABASE variable is required"),
+            database: var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
             client: Client::with_options(client_options)
                 .expect("error while building mongodb client"),
         }
     }
 
     fn get_conn_string() -> String {
-        let host = std::env::var("MONGODB_HOST").unwrap_or_else(|_| "localhost".to_string());
-        let port = std::env::var("MONGODB_PORT").unwrap_or_else(|_| "27017".to_string());
-        format!("mongodb://{host}:{port}")
+        format!(
+            "mongodb://{}:{}",
+            var_or_default("MONGODB_HOST", "localhost".to_string()),
+            var_or_default("MONGODB_PORT", 27017),
+        )
     }
 
     fn get_credential() -> Credential {
-        let user = std::env::var("MONGODB_USER").expect("MONGODB_USER variable is required");
-        let pass =
-            std::env::var("MONGODB_PASSWORD").expect("MONGODB_PASSWORD variable is required");
-        Credential::builder().username(user).password(pass).build()
+        Credential::builder()
+            .username(var::<String>("MONGODB_USER").expect("MONGODB_USER variable is required"))
+            .password(
+                var::<String>("MONGODB_PASSWORD").expect("MONGODB_PASSWORD variable is required"),
+            )
+            .build()
     }
 }
 
