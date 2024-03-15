@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use futures_util::StreamExt;
-use mongodb::bson::{doc, to_bson, Bson, Document};
+use mongodb::bson::{doc, to_bson, to_document, Bson, Document};
 use mongodb::change_stream::event::ChangeStreamEvent;
 use mongodb::change_stream::ChangeStream;
 use mongodb::options::{Credential, FindOptions};
@@ -122,15 +122,23 @@ impl Persistence for MongoDBClient {
         id: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        self.client
-            .database(&self.database)
-            .collection::<T>(index)
-            .replace_one(doc! { "id": id }, item, None)
-            .await
-            .map_err(|err| RustyError::MongoDBError {
-                message: err.kind.to_string(),
+        if let Some(original) = self.get_by_id::<T>(index, id).await? {
+            let original = to_document(&original)?;
+            let modification = to_document(item)?;
+            self.client
+                .database(&self.database)
+                .collection::<T>(index)
+                .update_one(original, modification, None)
+                .await
+                .map_err(|err| RustyError::MongoDBError {
+                    message: err.kind.to_string(),
+                })
+                .map(|_| item.id())
+        } else {
+            Err(RustyError::MongoDBError {
+                message: format!("Item not found: `{index}`.`{id}`"),
             })
-            .map(|_| item.id())
+        }
     }
 
     async fn delete(&self, index: &str, id: &str) -> Result<u64, RustyError> {
@@ -138,6 +146,18 @@ impl Persistence for MongoDBClient {
             .database(&self.database)
             .collection::<Document>(index)
             .delete_one(doc! { "id": id }, None)
+            .await
+            .map_err(|err| RustyError::MongoDBError {
+                message: err.kind.to_string(),
+            })
+            .map(|res| res.deleted_count)
+    }
+
+    async fn delete_all(&self, index: &str) -> Result<u64, RustyError> {
+        self.client
+            .database(&self.database)
+            .collection::<Document>(index)
+            .delete_many(doc! {}, None)
             .await
             .map_err(|err| RustyError::MongoDBError {
                 message: err.kind.to_string(),

@@ -20,6 +20,7 @@ errors = []
 wasm = ["reqwasm"]
 logging = ["log4rs"]
 mongo = ["mongodb"]
+ws = ["tokio-tungstenite"]
 
 [dependencies]
 async-graphql.workspace = true
@@ -33,3 +34,4 @@ serde.workspace = true
 serde_json.workspace = true
 serde_valid.workspace = true
 serde_yaml.workspace = true
+tokio-tungstenite = { workspace = true, optional = true }

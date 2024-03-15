@@ -147,6 +147,11 @@ impl PipelinesMutation {
         log::debug!("handling `delete_pipeline` request");
         get_db_client(ctx)?.delete(PIPELINES_INDEX, &id).await
     }
+
+    async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
+        log::debug!("handling `delete_pipelines` request");
+        get_db_client(ctx)?.delete_all(PIPELINES_INDEX).await
+    }
 }
 
 pub struct PipelineSubscription;

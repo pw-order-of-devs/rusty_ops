@@ -29,6 +29,11 @@ pub enum RustyError {
         /// Serde Error message
         message: String,
     },
+    /// Websocket operation related error
+    WsError {
+        /// Websocket Error message
+        message: String,
+    },
 }
 
 impl Debug for RustyError {
@@ -54,6 +59,9 @@ impl Display for RustyError {
             }
             Self::ValidationError { message } => {
                 write!(f, "{message}")
+            }
+            Self::WsError { message } => {
+                write!(f, "Websocket error: {message}")
             }
         }
     }
@@ -156,6 +164,15 @@ impl From<base64_url::base64::DecodeError> for RustyError {
 impl From<std::string::FromUtf8Error> for RustyError {
     fn from(err: std::string::FromUtf8Error) -> Self {
         Self::ValidationError {
+            message: err.to_string(),
+        }
+    }
+}
+
+#[cfg(feature = "ws")]
+impl From<tokio_tungstenite::tungstenite::Error> for RustyError {
+    fn from(err: tokio_tungstenite::tungstenite::Error) -> Self {
+        Self::WsError {
             message: err.to_string(),
         }
     }
