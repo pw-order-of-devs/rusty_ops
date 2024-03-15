@@ -1,4 +1,5 @@
-use async_graphql::{Context, Object};
+use async_graphql::futures_util::{Stream, StreamExt};
+use async_graphql::{async_stream, Context, Object, Subscription};
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
@@ -145,5 +146,28 @@ impl PipelinesMutation {
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `delete_pipeline` request");
         get_db_client(ctx)?.delete(PIPELINES_INDEX, &id).await
+    }
+}
+
+pub struct PipelineSubscription;
+
+#[Subscription]
+impl PipelineSubscription {
+    async fn pipelines(&self, ctx: &Context<'_>) -> impl Stream<Item = Pipeline> {
+        log::debug!("handling `pipelines` subscription");
+        let mut change_stream = get_db_client(ctx)
+            .expect("Error while obtaining db client")
+            .change_stream::<Pipeline>(PIPELINES_INDEX)
+            .await
+            .expect("Error while obtaining change stream for `pipelines`");
+        async_stream::stream! {
+            while let Some(event) = change_stream.next().await {
+                if let Ok(event) = event {
+                    if let Some(document) = event.full_document {
+                        yield document;
+                    }
+                }
+            }
+        }
     }
 }

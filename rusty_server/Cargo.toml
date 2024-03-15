@@ -25,7 +25,7 @@ async-graphql-poem.workspace = true
 base64-url.workspace = true
 chrono.workspace = true
 log.workspace = true
-poem.workspace = true
+poem = { workspace = true, features = ["websocket"] }
 serde_json.workspace = true
 serde_valid.workspace = true
 tokio.workspace = true

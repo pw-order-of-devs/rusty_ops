@@ -18,6 +18,8 @@
 
 use std::future::Future;
 
+use mongodb::change_stream::event::ChangeStreamEvent;
+use mongodb::change_stream::ChangeStream;
 use serde_json::Value;
 
 use commons::errors::RustyError;
@@ -212,12 +214,32 @@ pub trait Persistence: Send + Sync {
     /// * `RustyError` - If there was an error during the creation of the item.
     fn delete(&self, index: &str, id: &str)
         -> impl Future<Output = Result<u64, RustyError>> + Send;
+
+    /// Fetches a change stream for a collection from the database.
+    ///
+    /// # Arguments
+    ///
+    /// * `index` - The index name of the item.
+    ///
+    /// # Returns
+    ///
+    /// A future that resolves to a `Result` indicating whether the operation was successful or returned an error.
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    fn change_stream<T: RustyDomainItem>(
+        &self,
+        index: &str,
+    ) -> impl Future<Output = Result<ChangeStream<ChangeStreamEvent<T>>, mongodb::error::Error>> + Send;
 }
 
 /// Initializes the persistence layer based on the configured database type.
 ///
 /// Returns an instance of the persistence layer that implements the `Persistence` trait.
-pub async fn init() -> impl Persistence + Send + Sync {
+pub async fn init() -> impl Persistence + Send + Sync + Clone {
     match DbType::parse() {
         DbType::MongoDb => MongoDBClient::build().await,
     }

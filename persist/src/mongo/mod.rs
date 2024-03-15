@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use futures_util::StreamExt;
 use mongodb::bson::{doc, to_bson, Bson, Document};
+use mongodb::change_stream::event::ChangeStreamEvent;
+use mongodb::change_stream::ChangeStream;
 use mongodb::options::{Credential, FindOptions};
 use mongodb::{options::ClientOptions, Client};
 use serde_json::{Map, Value};
@@ -12,6 +14,8 @@ use domain::RustyDomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
 
+pub use {mongodb::change_stream::event::OperationType, mongodb::error::Error};
+
 /// Represents a `MongoDB` client.
 #[derive(Clone, Debug)]
 pub struct MongoDBClient {
@@ -21,13 +25,16 @@ pub struct MongoDBClient {
 
 impl MongoDBClient {
     async fn build_client() -> Self {
-        let mut client_options = ClientOptions::parse(Self::get_conn_string())
+        let mut client_options = ClientOptions::parse_async(Self::get_conn_string())
             .await
             .expect("error while parsing mongodb connection string");
         client_options.credential = Some(Self::get_credential());
         client_options.connect_timeout = Some(Duration::new(30, 0));
         client_options.min_pool_size = Some(8);
         client_options.max_pool_size = Some(24);
+        if let Ok(rs) = std::env::var("MONGODB_REPLICA_SET") {
+            client_options.repl_set_name = Some(rs);
+        }
         Self {
             database: std::env::var("MONGODB_DATABASE")
                 .expect("MONGODB_DATABASE variable is required"),
@@ -136,6 +143,17 @@ impl Persistence for MongoDBClient {
                 message: err.kind.to_string(),
             })
             .map(|res| res.deleted_count)
+    }
+
+    async fn change_stream<T: RustyDomainItem>(
+        &self,
+        index: &str,
+    ) -> Result<ChangeStream<ChangeStreamEvent<T>>, mongodb::error::Error> {
+        self.client
+            .database(&self.database)
+            .collection::<T>(index)
+            .watch(None, None)
+            .await
     }
 }
 
