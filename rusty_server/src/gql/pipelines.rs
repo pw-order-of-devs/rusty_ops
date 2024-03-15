@@ -75,7 +75,7 @@ impl PipelinesMutation {
                 .len() as u64;
             let mut pipeline = Pipeline::from(&pipeline);
             pipeline.number = pipelines_count + 1;
-            pipeline.start_date = chrono::Utc::now().to_rfc3339();
+            pipeline.register_date = chrono::Utc::now().to_rfc3339();
             get_db_client(ctx)?.create(PIPELINES_INDEX, &pipeline).await
         }
     }
@@ -109,12 +109,11 @@ impl PipelinesMutation {
         }
     }
 
-    async fn set_status(
+    async fn set_running(
         &self,
         ctx: &Context<'_>,
         pipeline_id: String,
         agent_id: String,
-        new_status: PipelineStatus,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `set_pipeline_status` request");
         let db = get_db_client(ctx)?;
@@ -123,17 +122,18 @@ impl PipelinesMutation {
             .await?;
 
         if let Some(mut pipe) = pipeline {
-            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id {
-                // validate status workflow
-                pipe.status = new_status;
+            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
+                && pipe.clone().status == PipelineStatus::Assigned {
+                pipe.status = PipelineStatus::InProgress;
+                pipe.start_date = Some(chrono::Utc::now().to_rfc3339());
                 db.update(PIPELINES_INDEX, &pipeline_id, &pipe).await
             } else {
-                let message = "`set_pipeline_status` - cannot update".to_string();
+                let message = "`set_running` - cannot update".to_string();
                 log::debug!("{message}");
                 Err(RustyError::AsyncGraphqlError { message })
             }
         } else {
-            let message = "`set_pipeline_status` - pipeline not found".to_string();
+            let message = "`set_running` - pipeline not found".to_string();
             log::debug!("{message}");
             Err(RustyError::AsyncGraphqlError { message })
         }

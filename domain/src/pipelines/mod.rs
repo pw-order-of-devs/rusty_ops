@@ -33,9 +33,12 @@ pub struct Pipeline {
     pub id: String,
     /// pipeline order number
     pub number: u64,
-    /// pipeline start_date
+    /// pipeline register date
+    #[serde(rename(deserialize = "registerDate", deserialize = "register_date"))]
+    pub register_date: String,
+    /// pipeline start date
     #[serde(rename(deserialize = "startDate", deserialize = "start_date"))]
-    pub start_date: String,
+    pub start_date: Option<String>,
     /// pipeline status
     pub status: PipelineStatus,
     /// pipeline job id
@@ -69,7 +72,8 @@ impl From<&RegisterPipeline> for Pipeline {
         Self {
             id: Self::generate_id(),
             number: 0,
-            start_date: String::new(),
+            register_date: String::new(),
+            start_date: None,
             status: PipelineStatus::Defined,
             job_id: value.clone().job_id,
             agent_id: None,
