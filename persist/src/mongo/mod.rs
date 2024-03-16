@@ -6,7 +6,7 @@ use mongodb::change_stream::event::ChangeStreamEvent;
 use mongodb::change_stream::ChangeStream;
 use mongodb::options::{Credential, FindOptions};
 use mongodb::{options::ClientOptions, Client};
-use serde_json::{Map, Value};
+use serde_json::{json, Map, Value};
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
@@ -91,15 +91,15 @@ impl Persistence for MongoDBClient {
         Ok(result)
     }
 
-    async fn get_by_id<T: RustyDomainItem>(
+    async fn get_one<T: RustyDomainItem>(
         &self,
         index: &str,
-        id: &str,
+        filter: Value,
     ) -> Result<Option<T>, RustyError> {
         self.client
             .database(&self.database)
             .collection::<T>(index)
-            .find_one(doc! { "id": id }, None)
+            .find_one(to_document(&filter)?, None)
             .await?
             .map_or_else(|| Ok(None), |doc| Ok(Some(doc)))
     }
@@ -126,7 +126,7 @@ impl Persistence for MongoDBClient {
         id: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        if let Some(original) = self.get_by_id::<T>(index, id).await? {
+        if let Some(original) = self.get_one::<T>(index, json!({ "id": id })).await? {
             self.client
                 .database(&self.database)
                 .collection::<T>(index)
@@ -147,11 +147,11 @@ impl Persistence for MongoDBClient {
         }
     }
 
-    async fn delete(&self, index: &str, id: &str) -> Result<u64, RustyError> {
+    async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
         self.client
             .database(&self.database)
             .collection::<Document>(index)
-            .delete_one(doc! { "id": id }, None)
+            .delete_one(to_document(&filter)?, None)
             .await
             .map_err(|err| RustyError::MongoDBError {
                 message: err.kind.to_string(),

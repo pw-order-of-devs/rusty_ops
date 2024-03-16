@@ -1,5 +1,6 @@
 use async_graphql::{Enum, InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
+use serde_valid::Validate;
 
 use crate::RustyDomainItem;
 
@@ -53,7 +54,7 @@ pub struct Pipeline {
 }
 
 /// A struct representing the registration of a pipeline.
-#[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
+#[derive(Clone, Debug, InputObject, Serialize, Deserialize, Validate)]
 pub struct RegisterPipeline {
     /// pipeline job id
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]

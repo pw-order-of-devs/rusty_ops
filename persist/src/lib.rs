@@ -127,14 +127,14 @@ pub trait Persistence: Send + Sync {
         options: Option<SearchOptions>,
     ) -> impl Future<Output = Result<Vec<T>, RustyError>> + Send;
 
-    /// Retrieves an item by index and ID.
+    /// Retrieves an item by index and filter document.
     ///
     /// This method attempts to retrieve an item of type `T` from the specified index using the provided ID.
     ///
     /// # Arguments
     ///
     /// * `index` - The name of the index to search in.
-    /// * `id` - The ID of the item to retrieve.
+    /// * `filter` - The ID of the item to retrieve.
     ///
     /// # Returns
     ///
@@ -145,10 +145,10 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn get_by_id<T: RustyDomainItem>(
+    fn get_one<T: RustyDomainItem>(
         &self,
         index: &str,
-        id: &str,
+        filter: Value,
     ) -> impl Future<Output = Result<Option<T>, RustyError>> + Send;
 
     /// Creates a new item in the specified index.
@@ -213,8 +213,11 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn delete(&self, index: &str, id: &str)
-        -> impl Future<Output = Result<u64, RustyError>> + Send;
+    fn delete_one(
+        &self,
+        index: &str,
+        filter: Value,
+    ) -> impl Future<Output = Result<u64, RustyError>> + Send;
 
     /// Deletes all items from the database.
     ///
@@ -248,6 +251,10 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
+    ///
+    /// # Notes
+    ///
+    /// It should return a wrapper or generic result when more databases are supported
     fn change_stream<T: RustyDomainItem>(
         &self,
         index: &str,

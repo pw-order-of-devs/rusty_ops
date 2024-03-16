@@ -23,6 +23,7 @@ use commons::env::var_or_default;
 
 mod gql;
 mod middleware;
+mod services;
 
 #[handler]
 fn health() -> String {

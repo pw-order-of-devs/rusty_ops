@@ -1,17 +1,12 @@
 use async_graphql::{Context, Object};
-use serde_json::{json, Value};
-use serde_valid::Validate;
+use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::jobs::{Job, RegisterJob};
-use domain::projects::Project;
-use persist::Persistence;
 
 use crate::gql::get_db_client;
-use crate::gql::projects::PROJECTS_INDEX;
-
-pub(crate) const JOBS_INDEX: &str = "jobs";
+use crate::services::jobs as service;
 
 pub struct JobsQuery;
 
@@ -24,9 +19,7 @@ impl JobsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<Vec<Job>, RustyError> {
         log::debug!("handling `jobs::get` request");
-        let entries = get_db_client(ctx)?
-            .get_all(JOBS_INDEX, filter, options)
-            .await?;
+        let entries = service::get_all(get_db_client(ctx)?, filter, options).await?;
         log::debug!("`jobs::get`: found {} entries", entries.len());
         Ok(entries)
     }
@@ -37,7 +30,9 @@ impl JobsQuery {
         id: String,
     ) -> async_graphql::Result<Option<Job>, RustyError> {
         log::debug!("handling `jobs::getById` request");
-        get_db_client(ctx)?.get_by_id(JOBS_INDEX, &id).await
+        let entry = service::get_by_id(get_db_client(ctx)?, &id).await?;
+        log::debug!("`jobs::getById`: found entry by id: `{}`", id);
+        Ok(entry)
     }
 }
 
@@ -51,31 +46,19 @@ impl JobsMutation {
         job: RegisterJob,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `jobs::register` request");
-        job.validate()?;
-        let db = get_db_client(ctx)?;
-        if db
-            .get_by_id::<Project>(PROJECTS_INDEX, &job.project_id)
-            .await?
-            .is_none()
-        {
-            Err(RustyError::ValidationError {
-                message: json!({
-                    "errors": [],
-                    "properties": {"project_id": {"errors": ["project not found"]}}
-                })
-                .to_string(),
-            })
-        } else {
-            db.create(JOBS_INDEX, &Job::from(&job)).await
-        }
+        let id = service::create(get_db_client(ctx)?, job).await?;
+        log::debug!("`jobs::register`: created job with id `{id}`");
+        Ok(id)
     }
 
-    async fn delete_one(
+    async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
-        log::debug!("handling `jobs::delete` request");
-        get_db_client(ctx)?.delete(JOBS_INDEX, &id).await
+        log::debug!("handling `jobs::deleteById` request");
+        let deleted = service::delete_by_id(get_db_client(ctx)?, &id).await?;
+        log::debug!("`jobs::deleteById`: deleted jobs with id `{id}`");
+        Ok(deleted)
     }
 }

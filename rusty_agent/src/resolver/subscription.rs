@@ -1,4 +1,3 @@
-use commons::env::var_or_default;
 use futures_util::stream::SplitStream;
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{json, Value};
@@ -7,6 +6,7 @@ use tokio_tungstenite::tungstenite::http::header;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream};
 
+use commons::env::var_or_default;
 use commons::errors::RustyError;
 use domain::pipelines::Pipeline;
 
