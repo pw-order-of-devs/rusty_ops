@@ -33,9 +33,8 @@ impl MongoDBClient {
         client_options.connect_timeout = Some(Duration::new(30, 0));
         client_options.min_pool_size = Some(8);
         client_options.max_pool_size = Some(24);
-        if let Ok(rs) = var("MONGODB_REPLICA_SET") {
-            client_options.repl_set_name = Some(rs);
-        }
+        client_options.repl_set_name = Some(var("MONGODB_REPLICA_SET")
+            .expect("MONGODB_REPLICA_SET variable is required"));
         Self {
             database: var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
             client: Client::with_options(client_options)
