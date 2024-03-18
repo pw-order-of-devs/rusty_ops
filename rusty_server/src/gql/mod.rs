@@ -1,7 +1,8 @@
-use async_graphql::{Context, Object, Result, Schema};
+use async_graphql::{Object, Schema};
+
+use persist::db_client::DbClient;
 
 use crate::gql::pipelines::PipelineSubscription;
-use persist::{mongo::MongoDBClient, DbType, Persistence};
 
 mod jobs;
 mod pipelines;
@@ -9,16 +10,10 @@ mod projects;
 
 pub type RustySchema = Schema<Query, Mutation, PipelineSubscription>;
 
-pub fn build_schema(database: impl Persistence + Send + Sync + 'static) -> RustySchema {
+pub fn build_schema(database: &DbClient) -> RustySchema {
     Schema::build(Query, Mutation, PipelineSubscription)
-        .data(database)
+        .data(database.clone())
         .finish()
-}
-
-fn get_db_client<'a>(ctx: &Context<'a>) -> Result<&'a impl Persistence> {
-    match DbType::parse() {
-        DbType::MongoDb => ctx.data::<MongoDBClient>(),
-    }
 }
 
 pub struct Query;

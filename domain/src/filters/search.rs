@@ -10,6 +10,12 @@ pub enum SortOptions {
     Descending,
 }
 
+impl Default for SortOptions {
+    fn default() -> Self {
+        Self::Ascending
+    }
+}
+
 /// A struct representing a search filter for `get_all` calls.
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize)]
 pub struct SearchOptions {

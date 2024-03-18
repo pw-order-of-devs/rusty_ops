@@ -4,7 +4,7 @@ use serde_valid::Validate;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::jobs::{Job, RegisterJob};
-use persist::Persistence;
+use persist::db_client::DbClient;
 
 use crate::services::projects;
 
@@ -13,7 +13,7 @@ const JOBS_INDEX: &str = "jobs";
 // query
 
 pub async fn get_all(
-    db: &impl Persistence,
+    db: &DbClient,
     filter: Option<Value>,
     options: Option<SearchOptions>,
 ) -> Result<Vec<Job>, RustyError> {
@@ -27,7 +27,7 @@ pub async fn get_all(
     Ok(entries)
 }
 
-pub async fn get_by_id(db: &impl Persistence, id: &str) -> Result<Option<Job>, RustyError> {
+pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Job>, RustyError> {
     let entry = db
         .get_one::<Job>(JOBS_INDEX, json!({ "id": id }))
         .await
@@ -40,7 +40,7 @@ pub async fn get_by_id(db: &impl Persistence, id: &str) -> Result<Option<Job>, R
 
 // mutate
 
-pub async fn create(db: &impl Persistence, job: RegisterJob) -> Result<String, RustyError> {
+pub async fn create(db: &DbClient, job: RegisterJob) -> Result<String, RustyError> {
     job.validate().map_err(|err| {
         log::error!("`job::create`: {err}");
         err
@@ -66,9 +66,9 @@ pub async fn create(db: &impl Persistence, job: RegisterJob) -> Result<String, R
     }
 }
 
-pub async fn delete_by_id(db: &impl Persistence, id: &str) -> Result<u64, RustyError> {
+pub async fn delete_by_id(db: &DbClient, id: &str) -> Result<u64, RustyError> {
     let id = db
-        .delete_one(JOBS_INDEX, json!({ "id": id }))
+        .delete_one::<Job>(JOBS_INDEX, json!({ "id": id }))
         .await
         .map_err(|err| {
             log::error!("`jobs::deleteById`: {err}");

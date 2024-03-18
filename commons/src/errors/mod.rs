@@ -9,14 +9,24 @@ pub enum RustyError {
         /// AsyncGraphql Error message
         message: String,
     },
+    /// Convert operation related error
+    ConvertError {
+        /// Convert Error message
+        message: String,
+    },
     /// Environment variable error
     EnvVarError {
         /// Environment Error message
         message: String,
     },
-    /// MongoDB operation related error
+    /// MongoDb operation related error
     MongoDBError {
-        /// MongoDB Error message
+        /// MongoDb Error message
+        message: String,
+    },
+    /// Redis operation related error
+    RedisError {
+        /// Redis Error message
         message: String,
     },
     /// Reqwest|Reqwasm operation related error
@@ -53,14 +63,20 @@ impl Display for RustyError {
             Self::AsyncGraphqlError { message } => {
                 write!(f, "GraphQL error: {message}")
             }
+            Self::ConvertError { message } => {
+                write!(f, "Convert error: {message}")
+            }
             Self::EnvVarError { message } => {
                 write!(f, "Env variable error: {message}")
             }
-            Self::RequestError { message } => {
-                write!(f, "Request error: {message}")
-            }
             Self::MongoDBError { message } => {
                 write!(f, "MongoDB error: {message}")
+            }
+            Self::RedisError { message } => {
+                write!(f, "Redis error: {message}")
+            }
+            Self::RequestError { message } => {
+                write!(f, "Request error: {message}")
             }
             Self::SerializationError { message } => {
                 write!(f, "Serialization error: {message}")
@@ -94,6 +110,7 @@ impl From<reqwasm::Error> for RustyError {
     }
 }
 
+#[cfg(feature = "wasm")]
 impl From<reqwest::Error> for RustyError {
     fn from(err: reqwest::Error) -> Self {
         Self::RequestError {
@@ -124,6 +141,24 @@ impl From<mongodb::bson::de::Error> for RustyError {
 impl From<mongodb::bson::ser::Error> for RustyError {
     fn from(err: mongodb::bson::ser::Error) -> Self {
         Self::MongoDBError {
+            message: err.to_string(),
+        }
+    }
+}
+
+#[cfg(feature = "redis")]
+impl From<deadpool_redis::PoolError> for RustyError {
+    fn from(err: deadpool_redis::PoolError) -> Self {
+        Self::RedisError {
+            message: err.to_string(),
+        }
+    }
+}
+
+#[cfg(feature = "redis")]
+impl From<deadpool_redis::redis::RedisError> for RustyError {
+    fn from(err: deadpool_redis::redis::RedisError) -> Self {
+        Self::RedisError {
             message: err.to_string(),
         }
     }
@@ -169,9 +204,17 @@ impl From<base64_url::base64::DecodeError> for RustyError {
     }
 }
 
+impl From<std::num::TryFromIntError> for RustyError {
+    fn from(err: std::num::TryFromIntError) -> Self {
+        Self::ConvertError {
+            message: err.to_string(),
+        }
+    }
+}
+
 impl From<std::string::FromUtf8Error> for RustyError {
     fn from(err: std::string::FromUtf8Error) -> Self {
-        Self::ValidationError {
+        Self::ConvertError {
             message: err.to_string(),
         }
     }

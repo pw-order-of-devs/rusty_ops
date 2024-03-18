@@ -34,7 +34,7 @@ fn health() -> String {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     commons::logger::init();
     let db = persist::init().await;
-    let schema = gql::build_schema(db.clone());
+    let schema = gql::build_schema(&db);
 
     // start the http server
     let app = Route::new()

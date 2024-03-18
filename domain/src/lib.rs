@@ -42,20 +42,26 @@ pub mod templates;
 /// To implement the `RustyDomainItem` trait, you need to ensure that your type satisfies all the
 /// trait's associated traits (`Send`, `Sync`, `Debug`, `Unpin`, `Serialize`, and `Deserialize`).
 pub trait RustyDomainItem:
-    Send + Sync + std::fmt::Debug + Unpin + serde::ser::Serialize + for<'de> serde::de::Deserialize<'de>
+    Send
+    + Sync
+    + Clone
+    + std::fmt::Debug
+    + Unpin
+    + serde::ser::Serialize
+    + for<'de> serde::de::Deserialize<'de>
 {
     /// Returns the identifier of an object.
     fn id(&self) -> String;
 
     /// Generate a unique identifier using UUID.
-    #[cfg(feature = "mongo")]
+    #[cfg(feature = "uuid_v4")]
     #[must_use]
     fn generate_id() -> String {
         uuid::Uuid::new_v4().to_string()
     }
 
     /// Generate a unique identifier using UUID.
-    #[cfg(not(feature = "mongo"))]
+    #[cfg(not(feature = "uuid_v4"))]
     #[must_use]
     fn generate_id() -> String {
         "dummy".to_string()

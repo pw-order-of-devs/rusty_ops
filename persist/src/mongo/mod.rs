@@ -29,12 +29,7 @@ impl MongoDBClient {
         let mut client_options = ClientOptions::parse_async(Self::get_conn_string())
             .await
             .expect("error while parsing mongodb connection string");
-        client_options.credential = Some(Self::get_credential());
-        client_options.connect_timeout = Some(Duration::new(30, 0));
-        client_options.min_pool_size = Some(8);
-        client_options.max_pool_size = Some(24);
-        client_options.repl_set_name = Some(var("MONGODB_REPLICA_SET")
-            .expect("MONGODB_REPLICA_SET variable is required"));
+        Self::configure(&mut client_options);
         Self {
             database: var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
             client: Client::with_options(client_options)
@@ -48,6 +43,13 @@ impl MongoDBClient {
             var_or_default("MONGODB_HOST", "localhost".to_string()),
             var_or_default("MONGODB_PORT", 27017),
         )
+    }
+
+    fn configure(client_options: &mut ClientOptions) {
+        client_options.credential = Some(Self::get_credential());
+        client_options.connect_timeout = Some(Duration::new(30, 0));
+        client_options.min_pool_size = Some(8);
+        client_options.max_pool_size = Some(24);
     }
 
     fn get_credential() -> Credential {
@@ -146,7 +148,11 @@ impl Persistence for MongoDBClient {
         }
     }
 
-    async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
+    async fn delete_one<T: RustyDomainItem>(
+        &self,
+        index: &str,
+        filter: Value,
+    ) -> Result<u64, RustyError> {
         self.client
             .database(&self.database)
             .collection::<Document>(index)
@@ -199,9 +205,10 @@ fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
             let page_number = value.page_number.unwrap_or(1);
             let page_number = if page_number > 0 { page_number } else { 1 };
             let page_size = value.page_size.unwrap_or(20);
-            let sort = if value.sort_field.is_some() && value.sort_mode.is_some() {
+            let sort_mode = value.sort_mode.unwrap_or_default();
+            let sort = if value.sort_field.is_some() {
                 let field = value.clone().sort_field.unwrap();
-                let mode = if value.clone().sort_mode.unwrap() == SortOptions::Ascending {
+                let mode = if sort_mode == SortOptions::Ascending {
                     1
                 } else {
                     -1

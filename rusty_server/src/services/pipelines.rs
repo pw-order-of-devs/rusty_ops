@@ -7,7 +7,7 @@ use commons::env::var_or_default;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
-use persist::Persistence;
+use persist::db_client::DbClient;
 
 use crate::services::jobs;
 
@@ -16,7 +16,7 @@ const PIPELINES_INDEX: &str = "pipelines";
 // query
 
 pub async fn get_all(
-    db: &impl Persistence,
+    db: &DbClient,
     filter: Option<Value>,
     options: Option<SearchOptions>,
 ) -> Result<Vec<Pipeline>, RustyError> {
@@ -30,7 +30,7 @@ pub async fn get_all(
     Ok(entries)
 }
 
-pub async fn get_by_id(db: &impl Persistence, id: &str) -> Result<Option<Pipeline>, RustyError> {
+pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Pipeline>, RustyError> {
     let entry = db
         .get_one::<Pipeline>(PIPELINES_INDEX, json!({ "id": id }))
         .await
@@ -43,10 +43,7 @@ pub async fn get_by_id(db: &impl Persistence, id: &str) -> Result<Option<Pipelin
 
 // mutate
 
-pub async fn create(
-    db: &impl Persistence,
-    pipeline: RegisterPipeline,
-) -> Result<String, RustyError> {
+pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String, RustyError> {
     pipeline.validate().map_err(|err| {
         log::error!("`pipeline::create`: {err}");
         err
@@ -77,7 +74,7 @@ pub async fn create(
 }
 
 pub async fn assign(
-    db: &impl Persistence,
+    db: &DbClient,
     pipeline_id: &str,
     agent_id: &str,
 ) -> Result<String, RustyError> {
@@ -109,7 +106,7 @@ pub async fn assign(
 }
 
 pub async fn set_running(
-    db: &impl Persistence,
+    db: &DbClient,
     pipeline_id: &str,
     agent_id: &str,
 ) -> Result<String, RustyError> {
@@ -133,7 +130,7 @@ pub async fn set_running(
 }
 
 pub async fn finalize(
-    db: &impl Persistence,
+    db: &DbClient,
     pipeline_id: &str,
     agent_id: &str,
     status: PipelineStatus,
@@ -157,9 +154,9 @@ pub async fn finalize(
     }
 }
 
-pub async fn delete_by_id(db: &impl Persistence, id: &str) -> Result<u64, RustyError> {
+pub async fn delete_by_id(db: &DbClient, id: &str) -> Result<u64, RustyError> {
     let id = db
-        .delete_one(PIPELINES_INDEX, json!({ "id": id }))
+        .delete_one::<Pipeline>(PIPELINES_INDEX, json!({ "id": id }))
         .await
         .map_err(|err| {
             log::error!("`pipelines::deleteById`: {err}");
@@ -168,7 +165,7 @@ pub async fn delete_by_id(db: &impl Persistence, id: &str) -> Result<u64, RustyE
     Ok(id)
 }
 
-pub async fn delete_all(db: &impl Persistence) -> Result<u64, RustyError> {
+pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
     let id = db.delete_all(PIPELINES_INDEX).await.map_err(|err| {
         log::error!("`pipelines::deleteAll`: {err}");
         err
@@ -178,7 +175,7 @@ pub async fn delete_all(db: &impl Persistence) -> Result<u64, RustyError> {
 
 // subscriptions
 
-pub async fn inserted_stream(db: &impl Persistence) -> impl Stream<Item = Pipeline> {
+pub async fn inserted_stream(db: &DbClient) -> impl Stream<Item = Pipeline> {
     let mut change_stream = db
         .change_stream::<Pipeline>(PIPELINES_INDEX)
         .await

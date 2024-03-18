@@ -4,8 +4,8 @@ use serde_json::Value;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::projects::{Project, RegisterProject};
+use persist::db_client::DbClient;
 
-use crate::gql::get_db_client;
 use crate::services::projects as service;
 
 pub struct ProjectsQuery;
@@ -19,7 +19,7 @@ impl ProjectsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<Vec<Project>, RustyError> {
         log::debug!("handling `projects::get` request");
-        let entries = service::get_all(get_db_client(ctx)?, filter, options).await?;
+        let entries = service::get_all(ctx.data::<DbClient>()?, filter, options).await?;
         log::debug!("`projects::get`: found {} entries", entries.len());
         Ok(entries)
     }
@@ -30,7 +30,7 @@ impl ProjectsQuery {
         id: String,
     ) -> async_graphql::Result<Option<Project>, RustyError> {
         log::debug!("handling `projects::getById` request");
-        let entry = service::get_by_id(get_db_client(ctx)?, &id).await?;
+        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`projects::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -46,7 +46,7 @@ impl ProjectsMutation {
         project: RegisterProject,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `projects::register` request");
-        let id = service::create(get_db_client(ctx)?, project).await?;
+        let id = service::create(ctx.data::<DbClient>()?, project).await?;
         log::debug!("`projects::register`: created project with id `{id}`");
         Ok(id)
     }
@@ -57,7 +57,7 @@ impl ProjectsMutation {
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `projects::deleteById` request");
-        let deleted = service::delete_by_id(get_db_client(ctx)?, &id).await?;
+        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`projects::deleteById`: deleted project with id `{id}`");
         Ok(deleted)
     }

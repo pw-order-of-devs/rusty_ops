@@ -5,8 +5,8 @@ use serde_json::Value;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
+use persist::db_client::DbClient;
 
-use crate::gql::get_db_client;
 use crate::services::pipelines as service;
 
 pub struct PipelinesQuery;
@@ -20,7 +20,7 @@ impl PipelinesQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<Vec<Pipeline>, RustyError> {
         log::debug!("handling `pipelines::get` request");
-        let entries = service::get_all(get_db_client(ctx)?, filter, options).await?;
+        let entries = service::get_all(ctx.data::<DbClient>()?, filter, options).await?;
         log::debug!("`pipelines::get`: found {} entries", entries.len());
         Ok(entries)
     }
@@ -31,7 +31,7 @@ impl PipelinesQuery {
         id: String,
     ) -> async_graphql::Result<Option<Pipeline>, RustyError> {
         log::debug!("handling `pipelines::getById` request");
-        let entry = service::get_by_id(get_db_client(ctx)?, &id).await?;
+        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`pipelines::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -47,7 +47,7 @@ impl PipelinesMutation {
         pipeline: RegisterPipeline,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::register` request");
-        let id = service::create(get_db_client(ctx)?, pipeline).await?;
+        let id = service::create(ctx.data::<DbClient>()?, pipeline).await?;
         log::debug!("`pipelines::register`: created pipeline with id `{id}`");
         Ok(id)
     }
@@ -59,7 +59,7 @@ impl PipelinesMutation {
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::assign` request");
-        let id = service::assign(get_db_client(ctx)?, &pipeline_id, &agent_id).await?;
+        let id = service::assign(ctx.data::<DbClient>()?, &pipeline_id, &agent_id).await?;
         log::debug!("`pipelines::assign`: assigned pipeline with id `{id}` to agent `{agent_id}`");
         Ok(id)
     }
@@ -71,7 +71,7 @@ impl PipelinesMutation {
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::setRunning` request");
-        let id = service::set_running(get_db_client(ctx)?, &pipeline_id, &agent_id).await?;
+        let id = service::set_running(ctx.data::<DbClient>()?, &pipeline_id, &agent_id).await?;
         log::debug!("`pipelines::setRunning`: updated pipeline with id `{id}` as `InProgress`");
         Ok(id)
     }
@@ -84,7 +84,8 @@ impl PipelinesMutation {
         status: PipelineStatus,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::finalize` request");
-        let id = service::finalize(get_db_client(ctx)?, &pipeline_id, &agent_id, status).await?;
+        let id =
+            service::finalize(ctx.data::<DbClient>()?, &pipeline_id, &agent_id, status).await?;
         log::debug!("`pipelines::finalize`: updated pipeline with id `{id}` as `{status:?}`");
         Ok(id)
     }
@@ -94,14 +95,14 @@ impl PipelinesMutation {
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `pipelines::deleteById` request");
-        let deleted = service::delete_by_id(get_db_client(ctx)?, &id).await?;
+        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`pipelines::deleteById`: deleted pipeline with id `{id}`");
         Ok(deleted)
     }
 
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `pipelines::deleteAll` request");
-        let deleted = service::delete_all(get_db_client(ctx)?).await?;
+        let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;
         log::debug!("`pipelines::deleteAll`: deleted {deleted} pipelines");
         Ok(deleted)
     }
@@ -113,6 +114,9 @@ pub struct PipelineSubscription;
 impl PipelineSubscription {
     async fn pipelines(&self, ctx: &Context<'_>) -> impl Stream<Item = Pipeline> {
         log::debug!("handling `pipelines::inserted` subscription");
-        service::inserted_stream(get_db_client(ctx).expect("Error while obtaining db client")).await
+        let stream = ctx
+            .data::<DbClient>()
+            .expect("Error while obtaining db client");
+        service::inserted_stream(stream).await
     }
 }

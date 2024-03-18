@@ -22,47 +22,24 @@ use mongodb::change_stream::event::ChangeStreamEvent;
 use mongodb::change_stream::ChangeStream;
 use serde_json::Value;
 
-use commons::env::var;
 use commons::errors::RustyError;
 use domain::filters::search::SearchOptions;
 use domain::RustyDomainItem;
 
+use crate::db_client::DbClient;
+use crate::db_type::DbType;
 use crate::mongo::MongoDBClient;
+use crate::redis::RedisClient;
+
+/// Wrapper for DB client
+pub mod db_client;
+mod db_type;
 
 /// # `MongoDB` Module
 pub mod mongo;
 
-/// The `DbType` enum represents the types of databases supported by the application.
-///
-/// # Variants
-///
-/// - `MongoDb`: Represents a `MongoDB` database.
-#[derive(Debug)]
-pub enum DbType {
-    /// A MongoDB client for connecting to a MongoDB server.
-    MongoDb,
-}
-
-impl DbType {
-    /// Parses the `RUSTY_PERSISTENCE` environment variable and returns the corresponding `DbType` value.
-    ///
-    /// # Panics
-    /// if the `RUSTY_PERSISTENCE` variable is not set or if the value is not supported.
-    ///
-    /// # Returns
-    /// - `DbType::MongoDb` if the `RUSTY_PERSISTENCE` value is `mongodb` or `mongo_db`
-    #[must_use]
-    pub fn parse() -> Self {
-        let db_type = var::<String>("RUSTY_PERSISTENCE")
-            .expect("RUSTY_PERSISTENCE variable is required")
-            .to_lowercase();
-
-        match db_type.as_str() {
-            "mongodb" | "mongo_db" => Self::MongoDb,
-            _ => panic!("Unsupported database: {db_type}"),
-        }
-    }
-}
+/// # `Redis` Module
+pub mod redis;
 
 /// Defines the `PersistenceBuilder` trait, which is used to construct persistent objects asynchronously.
 ///
@@ -213,7 +190,7 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn delete_one(
+    fn delete_one<T: RustyDomainItem>(
         &self,
         index: &str,
         filter: Value,
@@ -264,8 +241,9 @@ pub trait Persistence: Send + Sync {
 /// Initializes the persistence layer based on the configured database type.
 ///
 /// Returns an instance of the persistence layer that implements the `Persistence` trait.
-pub async fn init() -> impl Persistence + Send + Sync + Clone {
+pub async fn init() -> DbClient {
     match DbType::parse() {
-        DbType::MongoDb => MongoDBClient::build().await,
+        DbType::MongoDb => DbClient::MongoDb(MongoDBClient::build().await),
+        DbType::Redis => DbClient::Redis(RedisClient::build().await),
     }
 }
