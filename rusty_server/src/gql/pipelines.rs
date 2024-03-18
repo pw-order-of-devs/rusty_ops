@@ -112,11 +112,11 @@ pub struct PipelineSubscription;
 
 #[Subscription]
 impl PipelineSubscription {
-    async fn pipelines(&self, ctx: &Context<'_>) -> impl Stream<Item = Pipeline> {
+    async fn pipelines<'a>(&'a self, ctx: &Context<'a>) -> impl Stream<Item = Pipeline> + 'a {
         log::debug!("handling `pipelines::inserted` subscription");
         let stream = ctx
             .data::<DbClient>()
             .expect("Error while obtaining db client");
-        service::inserted_stream(stream).await
+        service::inserted_stream(stream)
     }
 }

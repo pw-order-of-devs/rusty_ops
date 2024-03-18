@@ -1,5 +1,4 @@
-use async_graphql::async_stream;
-use async_graphql::futures_util::{Stream, StreamExt};
+use async_graphql::futures_util::Stream;
 use serde_json::{json, Value};
 use serde_valid::Validate;
 
@@ -174,21 +173,6 @@ pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
 }
 
 // subscriptions
-
-pub async fn inserted_stream(db: &DbClient) -> impl Stream<Item = Pipeline> {
-    let mut change_stream = db
-        .change_stream::<Pipeline>(PIPELINES_INDEX)
-        .await
-        .expect("Error while obtaining change stream for `pipelines`");
-    async_stream::stream! {
-        while let Some(event) = change_stream.next().await {
-            if let Ok(event) = event {
-                if event.operation_type == persist::mongo::OperationType::Insert {
-                    if let Some(document) = event.full_document {
-                        yield document;
-                    }
-                }
-            }
-        }
-    }
+pub fn inserted_stream(db: &DbClient) -> impl Stream<Item = Pipeline> + '_ {
+    db.change_stream(PIPELINES_INDEX)
 }

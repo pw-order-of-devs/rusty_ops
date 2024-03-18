@@ -1,10 +1,9 @@
 use std::cmp::Ordering;
-use std::fmt::Formatter;
+use std::pin::Pin;
 
-use deadpool_redis::redis::{cmd, AsyncCommands};
-use deadpool_redis::{Config, Pool, PoolConfig, Runtime};
-use mongodb::change_stream::event::ChangeStreamEvent;
-use mongodb::change_stream::ChangeStream;
+use bb8_redis::redis::AsyncCommands;
+use bb8_redis::{bb8, RedisConnectionManager};
+use futures_util::StreamExt;
 use serde_json::{json, Value};
 
 use commons::env::var_or_default;
@@ -12,29 +11,35 @@ use commons::errors::RustyError;
 use domain::filters::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
+use crate::redis::pubsub::RedisPubSubConnectionManager;
 use crate::{Persistence, PersistenceBuilder};
 
-/// Represents a `Redis` client.
-#[derive(Clone)]
-pub struct RedisClient {
-    pool: Pool,
-}
+mod pubsub;
 
-impl std::fmt::Debug for RedisClient {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "RedisClient {:?}", self.pool.manager())
-    }
+/// Represents a `Redis` client.
+#[derive(Clone, Debug)]
+pub struct RedisClient {
+    client: bb8::Pool<RedisConnectionManager>,
+    pubsub: bb8::Pool<RedisPubSubConnectionManager>,
 }
 
 impl RedisClient {
-    fn build_client() -> Self {
-        let mut config = Config::from_url(Self::get_conn_string());
-        config.pool = Some(PoolConfig::new(24));
-
-        let pool = config
-            .create_pool(Some(Runtime::Tokio1))
+    async fn build_client() -> Self {
+        let manager = RedisConnectionManager::new(Self::get_conn_string())
             .expect("error while building redis client");
-        Self { pool }
+        let client = bb8::Pool::builder()
+            .build(manager)
+            .await
+            .expect("error while building redis client");
+
+        let pubsub_manager = RedisPubSubConnectionManager::new(Self::get_conn_string())
+            .expect("error while building redis pubsub client");
+        let pubsub = bb8::Pool::builder()
+            .build(pubsub_manager)
+            .await
+            .expect("error while building redis client");
+
+        Self { client, pubsub }
     }
 
     fn get_conn_string() -> String {
@@ -51,7 +56,7 @@ impl PersistenceBuilder for RedisClient {
     type PersistentType = Self;
 
     async fn build() -> Self {
-        async { Self::build_client() }.await
+        Self::build_client().await
     }
 }
 
@@ -62,7 +67,7 @@ impl Persistence for RedisClient {
         filter: Option<Value>,
         options: Option<SearchOptions>,
     ) -> Result<Vec<T>, RustyError> {
-        let mut conn = self.pool.get().await?;
+        let mut conn = self.client.get().await?;
         let keys: Vec<String> = conn.keys(format!("{index}_*")).await?;
 
         let mut values: Vec<Value> = vec![];
@@ -134,14 +139,10 @@ impl Persistence for RedisClient {
         item: &T,
     ) -> Result<String, RustyError> {
         let id = item.id();
-        let mut conn = self.pool.get().await?;
+        let mut conn = self.client.get().await?;
         let item = serde_json::to_string(item)?;
-        conn.set(format!("{index}_{id}"), item).await?;
-        cmd("publish")
-            .arg(index)
-            .arg(&format!("{index}_{id}"))
-            .query_async(&mut conn)
-            .await?;
+        conn.set(format!("{index}_{id}"), &item).await?;
+        conn.publish(index, &item).await?;
         Ok(id)
     }
 
@@ -151,7 +152,7 @@ impl Persistence for RedisClient {
         id: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        let mut conn = self.pool.get().await?;
+        let mut conn = self.client.get().await?;
         let found: Option<T> = self.get_one(index, json!({ "id": id })).await?;
         if found.is_some() {
             conn.set(format!("{index}_{id}"), serde_json::to_string(item)?)
@@ -169,7 +170,7 @@ impl Persistence for RedisClient {
         index: &str,
         filter: Value,
     ) -> Result<u64, RustyError> {
-        let mut conn = self.pool.get().await?;
+        let mut conn = self.client.get().await?;
         let item: Option<T> = self.get_one(index, filter).await?;
         if let Some(item) = item {
             conn.del(format!("{index}_{}", item.id())).await?;
@@ -180,7 +181,7 @@ impl Persistence for RedisClient {
     }
 
     async fn delete_all(&self, index: &str) -> Result<u64, RustyError> {
-        let mut conn = self.pool.get().await?;
+        let mut conn = self.client.get().await?;
         let keys: Vec<String> = conn.keys(format!("{index}_*")).await?;
         for key in &keys {
             conn.del(key).await?;
@@ -188,22 +189,23 @@ impl Persistence for RedisClient {
         Ok(keys.len() as u64)
     }
 
-    async fn change_stream<T: RustyDomainItem>(
-        &self,
-        index: &str,
-    ) -> Result<ChangeStream<ChangeStreamEvent<T>>, mongodb::error::Error> {
-        // let mut conn = self.pool.get().await?;
-        // let mut pubsub = conn.into_pubsub();
-        // let _ = pubsub.subscribe(index).await?;
-        //
-        // loop {
-        //     let msg = pubsub.on_message()?;
-        //
-        //     // get the payload as string
-        //     let payload : String = msg.get_payload()?;
-        //     println!("channel '{}': {}", msg.get_channel_name(), payload);
-        // }
-        println!("{index}");
-        todo!()
+    fn change_stream<'a, T: RustyDomainItem + 'static>(
+        &'a self,
+        index: &'a str,
+    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>> {
+        Box::pin(async_stream::stream! {
+            let mut conn = self.pubsub.dedicated_connection().await
+                .expect("Error while obtaining redis connection");
+            conn.subscribe(index)
+                .await
+                .unwrap_or_else(|_| panic!("Error while obtaining change stream for `{index}`"));
+            while let Some(msg) = conn.on_message().next().await {
+                if let Ok(payload) = msg.get_payload::<String>() {
+                    if let Ok(item) = serde_json::from_str::<T>(&payload) {
+                        yield item
+                    }
+                }
+            }
+        })
     }
 }

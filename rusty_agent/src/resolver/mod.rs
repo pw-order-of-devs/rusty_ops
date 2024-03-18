@@ -1,3 +1,4 @@
+use commons::env::var_or_default;
 use std::time::Duration;
 
 use crate::api::pipelines::{get_last_assigned_pipeline, set_running};
@@ -28,7 +29,8 @@ pub fn init() {
     // schedule a task every x minutes to fetch assigned pipeline and run it
     let uuid_schedule_get_assigned = uuid;
     tokio::spawn(async move {
-        let mut task = tokio::time::interval(Duration::from_secs(5));
+        let get_assigned_timer = var_or_default("SCHEDULER_GET_ASSIGNED", 300);
+        let mut task = tokio::time::interval(Duration::from_secs(get_assigned_timer));
 
         loop {
             task.tick().await;

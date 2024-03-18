@@ -20,16 +20,16 @@ errors = []
 wasm = ["reqwasm"]
 logging = ["log4rs"]
 mongo = ["mongodb"]
-redis = ["deadpool-redis"]
+redis = ["bb8-redis"]
 ws = ["tokio-tungstenite"]
 
 [dependencies]
 async-graphql.workspace = true
 base64-url.workspace = true
-deadpool-redis = { workspace = true, optional = true }
 log.workspace = true
 log4rs = { workspace = true, features = ["gzip", "all_components"], optional = true }
 mongodb = { workspace = true, optional = true }
+bb8-redis = { workspace = true, optional = true }
 reqwasm = { workspace = true, optional = true }
 reqwest.workspace = true
 serde.workspace = true

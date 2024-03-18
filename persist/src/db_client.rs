@@ -1,6 +1,3 @@
-use mongodb::change_stream::event::ChangeStreamEvent;
-use mongodb::change_stream::ChangeStream;
-use mongodb::error::Error;
 use serde_json::Value;
 
 use commons::errors::RustyError;
@@ -134,13 +131,13 @@ impl DbClient {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    pub async fn change_stream<T: RustyDomainItem>(
-        &self,
-        index: &str,
-    ) -> Result<ChangeStream<ChangeStreamEvent<T>>, Error> {
+    pub fn change_stream<'a, T: RustyDomainItem + 'static>(
+        &'a self,
+        index: &'a str,
+    ) -> impl futures_util::Stream<Item = T> + 'a {
         match self {
-            Self::MongoDb(client) => client.change_stream(index).await,
-            Self::Redis(client) => client.change_stream(index).await,
+            Self::MongoDb(client) => client.change_stream(index),
+            Self::Redis(client) => client.change_stream(index),
         }
     }
 }

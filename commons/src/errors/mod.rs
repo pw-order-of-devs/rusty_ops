@@ -110,7 +110,6 @@ impl From<reqwasm::Error> for RustyError {
     }
 }
 
-#[cfg(feature = "wasm")]
 impl From<reqwest::Error> for RustyError {
     fn from(err: reqwest::Error) -> Self {
         Self::RequestError {
@@ -147,8 +146,8 @@ impl From<mongodb::bson::ser::Error> for RustyError {
 }
 
 #[cfg(feature = "redis")]
-impl From<deadpool_redis::PoolError> for RustyError {
-    fn from(err: deadpool_redis::PoolError) -> Self {
+impl From<bb8_redis::redis::RedisError> for RustyError {
+    fn from(err: bb8_redis::redis::RedisError) -> Self {
         Self::RedisError {
             message: err.to_string(),
         }
@@ -156,8 +155,8 @@ impl From<deadpool_redis::PoolError> for RustyError {
 }
 
 #[cfg(feature = "redis")]
-impl From<deadpool_redis::redis::RedisError> for RustyError {
-    fn from(err: deadpool_redis::redis::RedisError) -> Self {
+impl From<bb8_redis::bb8::RunError<bb8_redis::redis::RedisError>> for RustyError {
+    fn from(err: bb8_redis::bb8::RunError<bb8_redis::redis::RedisError>) -> Self {
         Self::RedisError {
             message: err.to_string(),
         }

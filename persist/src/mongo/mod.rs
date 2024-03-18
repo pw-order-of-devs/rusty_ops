@@ -1,9 +1,9 @@
+use std::pin::Pin;
 use std::time::Duration;
 
 use futures_util::StreamExt;
 use mongodb::bson::{doc, to_bson, to_document, Bson, Document};
-use mongodb::change_stream::event::ChangeStreamEvent;
-use mongodb::change_stream::ChangeStream;
+use mongodb::change_stream::event::OperationType;
 use mongodb::options::{Credential, FindOptions};
 use mongodb::{options::ClientOptions, Client};
 use serde_json::{json, Map, Value};
@@ -14,8 +14,6 @@ use domain::filters::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
-
-pub use {mongodb::change_stream::event::OperationType, mongodb::error::Error};
 
 /// Represents a `MongoDB` client.
 #[derive(Clone, Debug)]
@@ -176,15 +174,27 @@ impl Persistence for MongoDBClient {
             .map(|res| res.deleted_count)
     }
 
-    async fn change_stream<T: RustyDomainItem>(
-        &self,
-        index: &str,
-    ) -> Result<ChangeStream<ChangeStreamEvent<T>>, mongodb::error::Error> {
-        self.client
-            .database(&self.database)
-            .collection::<T>(index)
-            .watch(None, None)
-            .await
+    fn change_stream<'a, T: RustyDomainItem + 'static>(
+        &'a self,
+        index: &'a str,
+    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>> {
+        Box::pin(async_stream::stream! {
+            let mut change_stream = self.client
+                .database(&self.database)
+                .collection::<T>(index)
+                .watch(None, None)
+                .await
+                .unwrap_or_else(|_| panic!("Error while obtaining change stream for `{index}`"));
+            while let Some(event) = change_stream.next().await {
+                if let Ok(event) = event {
+                    if event.operation_type == OperationType::Insert {
+                        if let Some(document) = event.full_document {
+                            yield document;
+                        }
+                    }
+                }
+            }
+        })
     }
 }
 

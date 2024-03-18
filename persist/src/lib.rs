@@ -17,9 +17,8 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use std::future::Future;
+use std::pin::Pin;
 
-use mongodb::change_stream::event::ChangeStreamEvent;
-use mongodb::change_stream::ChangeStream;
 use serde_json::Value;
 
 use commons::errors::RustyError;
@@ -232,10 +231,10 @@ pub trait Persistence: Send + Sync {
     /// # Notes
     ///
     /// It should return a wrapper or generic result when more databases are supported
-    fn change_stream<T: RustyDomainItem>(
-        &self,
-        index: &str,
-    ) -> impl Future<Output = Result<ChangeStream<ChangeStreamEvent<T>>, mongodb::error::Error>> + Send;
+    fn change_stream<'a, T: RustyDomainItem + 'static>(
+        &'a self,
+        index: &'a str,
+    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>>;
 }
 
 /// Initializes the persistence layer based on the configured database type.
