@@ -6,7 +6,7 @@ use bb8_redis::{bb8, RedisConnectionManager};
 use futures_util::StreamExt;
 use serde_json::{json, Value};
 
-use commons::env::var_or_default;
+use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use domain::filters::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
@@ -44,10 +44,19 @@ impl RedisClient {
 
     fn get_conn_string() -> String {
         format!(
-            "redis://{}:{}",
+            "redis://{}{}:{}",
+            Self::get_credential(),
             var_or_default("REDIS_HOST", "localhost".to_string()),
             var_or_default("REDIS_PORT", 6379),
         )
+    }
+
+    fn get_credential() -> String {
+        match (var::<String>("REDIS_USER"), var::<String>("REDIS_PASSWORD")) {
+            (Ok(user), Ok(pass)) => format!("{user}:{pass}@"),
+            (_, Ok(pass)) => format!(":{pass}@"),
+            _ => String::new(),
+        }
     }
 }
 

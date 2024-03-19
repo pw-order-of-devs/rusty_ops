@@ -44,19 +44,22 @@ impl MongoDBClient {
     }
 
     fn configure(client_options: &mut ClientOptions) {
-        client_options.credential = Some(Self::get_credential());
+        client_options.credential = Self::get_credential();
         client_options.connect_timeout = Some(Duration::new(30, 0));
         client_options.min_pool_size = Some(8);
         client_options.max_pool_size = Some(24);
     }
 
-    fn get_credential() -> Credential {
-        Credential::builder()
-            .username(var::<String>("MONGODB_USER").expect("MONGODB_USER variable is required"))
-            .password(
-                var::<String>("MONGODB_PASSWORD").expect("MONGODB_PASSWORD variable is required"),
-            )
-            .build()
+    fn get_credential() -> Option<Credential> {
+        match (
+            var::<String>("MONGODB_USER"),
+            var::<String>("MONGODB_PASSWORD"),
+        ) {
+            (Ok(user), Ok(pass)) => {
+                Some(Credential::builder().username(user).password(pass).build())
+            }
+            _ => None,
+        }
     }
 }
 
