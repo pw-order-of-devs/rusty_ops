@@ -11,7 +11,5 @@ use commons::errors::RustyError;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 pub fn parse_entries<T: for<'de> Deserialize<'de>>(json_data: Value) -> Result<T, RustyError> {
-    from_value::<T>(json_data).map_err(|err| RustyError::SerializationError {
-        message: err.to_string(),
-    })
+    from_value::<T>(json_data).map_err(|err| RustyError::SerializationError(err.to_string()))
 }

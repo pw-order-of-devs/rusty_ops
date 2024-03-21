@@ -82,9 +82,7 @@ impl PipelineTemplate {
         if errors.is_empty() {
             Ok(result)
         } else {
-            Err(RustyError::SerializationError {
-                message: errors.join(";"),
-            })
+            Err(RustyError::SerializationError(errors.join(";")))
         }
     }
 }

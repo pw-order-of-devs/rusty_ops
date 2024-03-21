@@ -39,11 +39,7 @@ pub async fn get_last_assigned_pipeline(uuid: &str) -> Result<Pipeline, RustyErr
     parse_entries::<Vec<Pipeline>>(json_data)?
         .first()
         .map_or_else(
-            || {
-                Err(RustyError::RequestError {
-                    message: "No results".to_string(),
-                })
-            },
+            || Err(RustyError::RequestError("No results".to_string())),
             |pipe| Ok(pipe.clone()),
         )
 }

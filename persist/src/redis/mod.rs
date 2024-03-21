@@ -168,9 +168,9 @@ impl Persistence for RedisClient {
                 .await?;
             Ok(id.to_string())
         } else {
-            Err(RustyError::RedisError {
-                message: format!("Item not found: `{index}`.`{id}`"),
-            })
+            Err(RustyError::RedisError(format!(
+                "Item not found: `{index}`.`{id}`"
+            )))
         }
     }
 

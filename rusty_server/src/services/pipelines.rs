@@ -49,13 +49,13 @@ pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String,
     })?;
 
     if jobs::get_by_id(db, &pipeline.job_id).await?.is_none() {
-        Err(RustyError::ValidationError {
-            message: json!({
+        Err(RustyError::ValidationError(
+            json!({
                 "errors": [],
                 "properties": {"job_id": {"errors": ["job not found"]}}
             })
             .to_string(),
-        })
+        ))
     } else {
         let pipelines_count = get_all(db, Some(json!({ "job_id": pipeline.job_id })), None)
             .await?
@@ -90,17 +90,17 @@ pub async fn assign(
                 let message =
                     format!("`pipelines::assign` - exceeded {limit} pipeline(s) assigned to agent");
                 log::debug!("{message}");
-                Err(RustyError::AsyncGraphqlError { message })
+                Err(RustyError::AsyncGraphqlError(message))
             }
         } else {
             let message = "`pipelines::assign` - pipeline already assigned".to_string();
             log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError { message })
+            Err(RustyError::AsyncGraphqlError(message))
         }
     } else {
         let message = "`pipelines::assign` - pipeline not found".to_string();
         log::debug!("{message}");
-        Err(RustyError::AsyncGraphqlError { message })
+        Err(RustyError::AsyncGraphqlError(message))
     }
 }
 
@@ -119,12 +119,12 @@ pub async fn set_running(
         } else {
             let message = "`pipelines::setRunning` - cannot update".to_string();
             log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError { message })
+            Err(RustyError::AsyncGraphqlError(message))
         }
     } else {
         let message = "`pipelines::setRunning` - pipeline not found".to_string();
         log::debug!("{message}");
-        Err(RustyError::AsyncGraphqlError { message })
+        Err(RustyError::AsyncGraphqlError(message))
     }
 }
 
@@ -144,12 +144,12 @@ pub async fn finalize(
         } else {
             let message = "`pipelines::finalize` - cannot update".to_string();
             log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError { message })
+            Err(RustyError::AsyncGraphqlError(message))
         }
     } else {
         let message = "`pipelines::finalize` - pipeline not found".to_string();
         log::debug!("{message}");
-        Err(RustyError::AsyncGraphqlError { message })
+        Err(RustyError::AsyncGraphqlError(message))
     }
 }
 

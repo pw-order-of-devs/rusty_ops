@@ -76,11 +76,7 @@ async fn initialize_connection(
                 resp,
                 Message::Text("{\"type\":\"connection_ack\"}".to_string())
             ),
-            Err(err) => {
-                return Err(RustyError::AsyncGraphqlError {
-                    message: err.to_string(),
-                })
-            }
+            Err(err) => return Err(RustyError::AsyncGraphqlError(err.to_string())),
         },
     };
 

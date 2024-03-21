@@ -13,9 +13,9 @@ pub fn var<T: FromStr>(key: &str) -> Result<T, RustyError> {
     match std::env::var(key) {
         Ok(res) => T::from_str(&res).map_or_else(
             |_| {
-                Err(RustyError::EnvVarError {
-                    message: "Failed parsing the result".to_string(),
-                })
+                Err(RustyError::EnvVarError(
+                    "Failed parsing the result".to_string(),
+                ))
             },
             |res| Ok(res),
         ),

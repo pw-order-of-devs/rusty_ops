@@ -19,8 +19,7 @@ path = "src/lib.rs"
 errors = []
 wasm = ["reqwasm"]
 logging = ["log4rs"]
-mongo = ["mongodb"]
-redis = ["bb8-redis"]
+persist = ["mongodb", "bb8-redis"]
 ws = ["tokio-tungstenite"]
 
 [dependencies]

@@ -16,7 +16,7 @@ name = "persist"
 path = "src/lib.rs"
 
 [dependencies]
-commons = { path = "../commons", features = ["errors", "logging", "mongo", "redis"] }
+commons = { path = "../commons", features = ["errors", "logging", "persist"] }
 domain = { path = "../domain", features = ["uuid_v4"] }
 
 async-stream.workspace = true
@@ -25,5 +25,6 @@ bb8-redis.workspace = true
 futures-util.workspace = true
 log.workspace = true
 mongodb.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true

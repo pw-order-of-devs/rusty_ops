@@ -18,8 +18,8 @@ use crate::{Persistence, PersistenceBuilder};
 /// Represents a `MongoDB` client.
 #[derive(Clone, Debug)]
 pub struct MongoDBClient {
-    database: String,
     client: Client,
+    database: String,
 }
 
 impl MongoDBClient {
@@ -29,9 +29,9 @@ impl MongoDBClient {
             .expect("error while parsing mongodb connection string");
         Self::configure(&mut client_options);
         Self {
-            database: var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
             client: Client::with_options(client_options)
                 .expect("error while building mongodb client"),
+            database: var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
         }
     }
 
@@ -116,9 +116,7 @@ impl Persistence for MongoDBClient {
             .collection::<T>(index)
             .insert_one(item, None)
             .await
-            .map_err(|err| RustyError::MongoDBError {
-                message: err.kind.to_string(),
-            })
+            .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|_| item.id())
     }
 
@@ -138,14 +136,12 @@ impl Persistence for MongoDBClient {
                     None,
                 )
                 .await
-                .map_err(|err| RustyError::MongoDBError {
-                    message: err.kind.to_string(),
-                })
+                .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
                 .map(|_| item.id())
         } else {
-            Err(RustyError::MongoDBError {
-                message: format!("Item not found: `{index}`.`{id}`"),
-            })
+            Err(RustyError::MongoDBError(format!(
+                "Item not found: `{index}`.`{id}`"
+            )))
         }
     }
 
@@ -159,9 +155,7 @@ impl Persistence for MongoDBClient {
             .collection::<Document>(index)
             .delete_one(to_document(&filter)?, None)
             .await
-            .map_err(|err| RustyError::MongoDBError {
-                message: err.kind.to_string(),
-            })
+            .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|res| res.deleted_count)
     }
 
@@ -171,9 +165,7 @@ impl Persistence for MongoDBClient {
             .collection::<Document>(index)
             .delete_many(doc! {}, None)
             .await
-            .map_err(|err| RustyError::MongoDBError {
-                message: err.kind.to_string(),
-            })
+            .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|res| res.deleted_count)
     }
 

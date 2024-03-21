@@ -47,13 +47,13 @@ pub async fn create(db: &DbClient, job: RegisterJob) -> Result<String, RustyErro
     })?;
 
     if projects::get_by_id(db, &job.project_id).await?.is_none() {
-        Err(RustyError::ValidationError {
-            message: json!({
+        Err(RustyError::ValidationError(
+            json!({
                 "errors": [],
                 "properties": {"project_id": {"errors": ["project not found"]}}
             })
             .to_string(),
-        })
+        ))
     } else {
         let id = db
             .create(JOBS_INDEX, &Job::from(&job))

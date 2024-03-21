@@ -28,11 +28,7 @@ pub async fn get_pipeline_template(id: String) -> Result<PipelineTemplate, Rusty
     json_data["data"]["jobs"]["getById"]["template"]
         .as_str()
         .map_or_else(
-            || {
-                Err(RustyError::RequestError {
-                    message: "No results".to_string(),
-                })
-            },
+            || Err(RustyError::RequestError("No results".to_string())),
             PipelineTemplate::from_yaml,
         )
 }
