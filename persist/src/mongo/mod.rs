@@ -174,20 +174,22 @@ impl Persistence for MongoDBClient {
         index: &'a str,
     ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>> {
         Box::pin(async_stream::stream! {
-            let mut change_stream = self.client
+            if let Ok(mut change_stream) = self.client
                 .database(&self.database)
                 .collection::<T>(index)
                 .watch(None, None)
-                .await
-                .unwrap_or_else(|_| panic!("Error while obtaining change stream for `{index}`"));
-            while let Some(event) = change_stream.next().await {
-                if let Ok(event) = event {
-                    if event.operation_type == OperationType::Insert {
-                        if let Some(document) = event.full_document {
-                            yield document;
+                .await {
+                while let Some(event) = change_stream.next().await {
+                    if let Ok(event) = event {
+                        if event.operation_type == OperationType::Insert {
+                            if let Some(document) = event.full_document {
+                                yield document;
+                            }
                         }
                     }
                 }
+            } else {
+                log::debug!("Error while obtaining a change stream for `{index}`: not supported in current server configuration");
             }
         })
     }

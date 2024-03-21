@@ -4,7 +4,48 @@ use domain::pipelines::{Pipeline, PipelineStatus};
 use crate::api::client::reqwest_post;
 use crate::api::utils::parse_entries;
 
-/// Function to retrieve unassigned pipelines from a GraphQL endpoint.
+/// Function to retrieve one unassigned pipeline from a GraphQL endpoint.
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+#[allow(clippy::future_not_send)]
+pub async fn get_unassigned_pipeline() -> Result<Pipeline, RustyError> {
+    let payload = serde_json::json!({
+        "query": r#"query {
+            pipelines {
+                get(
+                    filter: { status: Defined },
+        			options: { sortMode: ASCENDING, sortField: "number", pageSize: 1 }
+                ) {
+                    id
+                    number
+                    startDate
+                    registerDate
+                    endDate
+                    status
+                    jobId
+                    agentId
+                }
+            }
+        }"#,
+        "variables": {}
+    });
+
+    let data = reqwest_post(&payload).await?;
+    let json_data: serde_json::Value = serde_json::from_str(&data)?;
+    let json_data = json_data["data"]["pipelines"]["get"].clone();
+    parse_entries::<Vec<Pipeline>>(json_data)?
+        .first()
+        .map_or_else(
+            || Err(RustyError::RequestError("No results".to_string())),
+            |pipe| Ok(pipe.clone()),
+        )
+}
+
+/// Function to retrieve last assigned pipeline for agent from a GraphQL endpoint.
 ///
 /// # Errors
 ///
@@ -24,6 +65,7 @@ pub async fn get_last_assigned_pipeline(uuid: &str) -> Result<Pipeline, RustyErr
                     number
                     startDate
                     registerDate
+                    endDate
                     status
                     jobId
                     agentId

@@ -1,6 +1,6 @@
 use futures_util::stream::SplitStream;
 use futures_util::{SinkExt, StreamExt};
-use serde_json::{json, Value};
+use serde_json::json;
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::http::header;
 use tokio_tungstenite::tungstenite::Message;
@@ -8,9 +8,8 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream};
 
 use commons::env::var_or_default;
 use commons::errors::RustyError;
-use domain::pipelines::Pipeline;
 
-use crate::api::pipelines::assign_pipeline;
+use crate::resolver::assignment::assign_pipeline;
 
 pub(crate) async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError> {
     // Initialize subscription read channel
@@ -19,19 +18,7 @@ pub(crate) async fn pipeline_created_subscription(uuid: &str) -> Result<(), Rust
     // Process incoming messages
     while let Some(message) = read.next().await {
         match message? {
-            Message::Text(text) => {
-                log::trace!("Obtained message: {text}");
-                let message = serde_json::from_str::<Value>(&text)?;
-                let message = message["payload"]["data"]["pipelines"].clone();
-                match serde_json::from_value::<Pipeline>(message) {
-                    Ok(pipeline) => {
-                        log::trace!("Parsed pipeline: {pipeline:?}");
-                        let res = assign_pipeline(&pipeline.id, uuid).await;
-                        log::trace!("assign pipeline result: {res:?}");
-                    }
-                    Err(err) => log::warn!("Error while parsing message: {err}"),
-                };
-            }
+            Message::Text(text) => assign_pipeline(uuid, &text).await?,
             other => log::debug!("Unknown message: {other:?}"),
         }
     }

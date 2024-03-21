@@ -42,6 +42,7 @@ fn default_logger() {
         .build();
     let config = Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
+        .logger(Logger::builder().build("hyper_util", LevelFilter::Off))
         .logger(Logger::builder().build("reqwest", LevelFilter::Off))
         .build(Root::builder().appender("stdout").build(level_filter))
         .unwrap();

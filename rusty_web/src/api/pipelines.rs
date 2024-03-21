@@ -23,8 +23,11 @@ pub async fn get_pipelines_for_job(job_id: String) -> Result<Vec<Pipeline>, Rust
                     id
                     number
                     startDate
+                    registerDate
+                    endDate
                     status
                     jobId
+                    agentId
                 }}
             }}
         }}"#, job_id),
@@ -59,8 +62,11 @@ pub async fn get_last_pipeline_for_job(job_id: String) -> Result<Option<Pipeline
                     id
                     number
                     startDate
+                    registerDate
+                    endDate
                     status
                     jobId
+                    agentId
                 }}
             }}
         }}"#, job_id),

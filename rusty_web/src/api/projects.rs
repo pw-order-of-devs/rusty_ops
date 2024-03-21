@@ -21,6 +21,7 @@ pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
                 get {{
                     id
                     name
+                    url
                 }}
             }}
         }}"#),
