@@ -11,11 +11,11 @@ COPY Cargo.lock .
 COPY commons/ commons/
 COPY domain/ domain/
 COPY persist/ persist/
-COPY rusty_server/ rusty_server/
+COPY rusty_agent/ rusty_agent/
 
 RUN cargo build --release --target x86_64-unknown-linux-musl
 
 FROM alpine:3.19 as final-stage
 
-COPY --from=build-stage /usr/app/src/target/x86_64-unknown-linux-musl/release/rusty_server /app/
-CMD ["/app/rusty_server"]
+COPY --from=build-stage /usr/app/src/target/x86_64-unknown-linux-musl/release/rusty_agent /app/
+CMD ["/app/rusty_agent"]
