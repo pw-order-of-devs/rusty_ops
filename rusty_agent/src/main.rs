@@ -31,9 +31,15 @@ fn health() -> String {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> Result<(), std::io::Error> {
     commons::logger::init();
-    resolver::init();
+
+    let uuid = uuid::Uuid::new_v4().to_string();
+    api::agents::register(&uuid)
+        .await
+        .expect("Error while registering the agent");
+    resolver::init(uuid.clone());
+    log::debug!("Initialized with id: `{uuid}`");
 
     // start the http server
     let app = Route::new().at("/health", get(health));

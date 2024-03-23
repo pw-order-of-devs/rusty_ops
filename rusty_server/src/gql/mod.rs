@@ -4,6 +4,7 @@ use persist::db_client::DbClient;
 
 use crate::gql::pipelines::PipelineSubscription;
 
+mod agents;
 mod jobs;
 mod pipelines;
 mod projects;
@@ -20,6 +21,11 @@ pub struct Query;
 
 #[Object]
 impl Query {
+    // agents interface
+    async fn agents(&self) -> agents::AgentsQuery {
+        agents::AgentsQuery
+    }
+
     // jobs interface
     async fn jobs(&self) -> jobs::JobsQuery {
         jobs::JobsQuery
@@ -40,6 +46,11 @@ pub struct Mutation;
 
 #[Object]
 impl Mutation {
+    // agents interface
+    async fn agents(&self) -> agents::AgentsMutation {
+        agents::AgentsMutation
+    }
+
     // jobs interface
     async fn jobs(&self) -> jobs::JobsMutation {
         jobs::JobsMutation

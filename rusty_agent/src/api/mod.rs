@@ -1,3 +1,6 @@
+/// Server API for agents.
+pub mod agents;
+
 /// Server API client wrapper.
 pub mod client;
 

@@ -42,7 +42,7 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Job>, RustyErro
 
 pub async fn create(db: &DbClient, job: RegisterJob) -> Result<String, RustyError> {
     job.validate().map_err(|err| {
-        log::error!("`job::create`: {err}");
+        log::error!("`jobs::create`: {err}");
         err
     })?;
 
@@ -59,7 +59,7 @@ pub async fn create(db: &DbClient, job: RegisterJob) -> Result<String, RustyErro
             .create(JOBS_INDEX, &Job::from(&job))
             .await
             .map_err(|err| {
-                log::error!("`projects::create`: {err}");
+                log::error!("`jobs::create`: {err}");
                 err
             })?;
         Ok(id)

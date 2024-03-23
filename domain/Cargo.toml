@@ -23,6 +23,7 @@ commons = { path = "../commons", features = ["errors"] }
 
 async-graphql.workspace = true
 base64-url.workspace = true
+chrono.workspace = true
 serde.workspace = true
 serde_valid.workspace = true
 serde_yaml.workspace = true

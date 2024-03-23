@@ -23,6 +23,7 @@ use commons::env::var_or_default;
 
 mod gql;
 mod middleware;
+mod schedulers;
 mod services;
 
 #[handler]
@@ -34,6 +35,7 @@ fn health() -> String {
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     commons::logger::init();
     let db = persist::init().await;
+    schedulers::init(&db);
     let schema = gql::build_schema(&db);
 
     // start the http server

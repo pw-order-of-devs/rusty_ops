@@ -58,7 +58,7 @@ impl JobsMutation {
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `jobs::deleteById` request");
         let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
-        log::debug!("`jobs::deleteById`: deleted jobs with id `{id}`");
+        log::debug!("`jobs::deleteById`: deleted job with id `{id}`");
         Ok(deleted)
     }
 }

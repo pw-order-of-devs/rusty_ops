@@ -16,6 +16,9 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+/// # Agents Module
+pub mod agents;
+
 /// # Filters Module
 pub mod filters;
 
