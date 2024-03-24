@@ -28,6 +28,7 @@ use domain::RustyDomainItem;
 use crate::db_client::DbClient;
 use crate::db_type::DbType;
 use crate::mongo::MongoDBClient;
+use crate::postgre::PostgreSQLClient;
 use crate::redis::RedisClient;
 
 /// Wrapper for DB client
@@ -36,6 +37,9 @@ mod db_type;
 
 /// # `MongoDB` Module
 pub mod mongo;
+
+/// # `PostgreSQL` Module
+pub mod postgre;
 
 /// # `Redis` Module
 pub mod redis;
@@ -243,6 +247,7 @@ pub trait Persistence: Send + Sync {
 pub async fn init() -> DbClient {
     match DbType::parse() {
         DbType::MongoDb => DbClient::MongoDb(MongoDBClient::build().await),
+        DbType::PostgreSQL => DbClient::PostgreSql(PostgreSQLClient::build().await),
         DbType::Redis => DbClient::Redis(RedisClient::build().await),
     }
 }

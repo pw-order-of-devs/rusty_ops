@@ -10,6 +10,8 @@ use commons::env::var;
 pub enum DbType {
     /// A `MongoDb` client for connecting to a `MongoDb` server.
     MongoDb,
+    /// A `PostgreSQL` client for connecting to a `PostgreSQL` server.
+    PostgreSQL,
     /// A `Redis` client for connecting to a `Redis` server.
     Redis,
 }
@@ -22,6 +24,7 @@ impl DbType {
     ///
     /// # Returns
     /// - `DbType::MongoDb` if the `RUSTY_PERSISTENCE` value is `mongodb` or `mongo_db`
+    /// - `DbType::PostgreSQL` if the `RUSTY_PERSISTENCE` value is `postgre` or `postgresql` or `pg`
     /// - `DbType::Redis` if the `RUSTY_PERSISTENCE` value is `redis`
     #[must_use]
     pub fn parse() -> Self {
@@ -31,6 +34,7 @@ impl DbType {
 
         match db_type.as_str() {
             "mongodb" | "mongo_db" => Self::MongoDb,
+            "postgre" | "postgresql" | "pg" => Self::PostgreSQL,
             "redis" => Self::Redis,
             _ => panic!("Unsupported database: {db_type}"),
         }

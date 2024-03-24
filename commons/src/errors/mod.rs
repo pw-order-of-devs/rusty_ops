@@ -12,6 +12,8 @@ pub enum RustyError {
     EnvVarError(String),
     /// MongoDb operation related error
     MongoDBError(String),
+    /// PostgresSQL operation related error
+    PostgresSQLError(String),
     /// Redis operation related error
     RedisError(String),
     /// Reqwest|Reqwasm operation related error
@@ -44,6 +46,9 @@ impl Display for RustyError {
             }
             Self::MongoDBError(message) => {
                 write!(f, "MongoDB error: {message}")
+            }
+            Self::PostgresSQLError(message) => {
+                write!(f, "PostgresSQL error: {message}")
             }
             Self::RedisError(message) => {
                 write!(f, "Redis error: {message}")
@@ -103,6 +108,20 @@ impl From<mongodb::bson::de::Error> for RustyError {
 impl From<mongodb::bson::ser::Error> for RustyError {
     fn from(err: mongodb::bson::ser::Error) -> Self {
         Self::MongoDBError(err.to_string())
+    }
+}
+
+#[cfg(feature = "bb8-postgres")]
+impl From<bb8_postgres::tokio_postgres::Error> for RustyError {
+    fn from(err: bb8_postgres::tokio_postgres::Error) -> Self {
+        Self::PostgresSQLError(err.to_string())
+    }
+}
+
+#[cfg(feature = "bb8-postgres")]
+impl From<bb8_redis::bb8::RunError<bb8_postgres::tokio_postgres::Error>> for RustyError {
+    fn from(err: bb8_redis::bb8::RunError<bb8_postgres::tokio_postgres::Error>) -> Self {
+        Self::RedisError(err.to_string())
     }
 }
 

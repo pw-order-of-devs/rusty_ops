@@ -117,11 +117,10 @@ impl Persistence for RedisClient {
             .map(|value| serde_json::from_value(value))
             .collect::<Result<Vec<T>, _>>()?;
 
-        let mut page_number = usize::try_from(options.page_number.unwrap_or(1))?;
-        if page_number == 0 {
-            page_number = 1;
-        };
+        let page_number = usize::try_from(options.page_number.unwrap_or(1))?;
+        let page_number = if page_number == 0 { 1 } else { page_number };
         let page_size = usize::try_from(options.page_size.unwrap_or(20))?;
+        let page_size = if page_size == 0 { 20 } else { page_size };
         Ok(filtered
             .into_iter()
             .skip((page_number - 1) * page_size)

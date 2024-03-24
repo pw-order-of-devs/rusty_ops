@@ -5,6 +5,7 @@ use domain::filters::search::SearchOptions;
 use domain::RustyDomainItem;
 
 use crate::mongo::MongoDBClient;
+use crate::postgre::PostgreSQLClient;
 use crate::redis::RedisClient;
 use crate::Persistence;
 
@@ -13,6 +14,8 @@ use crate::Persistence;
 pub enum DbClient {
     /// DbClient variant - `MongoDb` client
     MongoDb(MongoDBClient),
+    /// DbClient variant - `PostgreSql` client
+    PostgreSql(PostgreSQLClient),
     /// DbClient variant - `Redis` client
     Redis(RedisClient),
 }
@@ -33,6 +36,7 @@ impl DbClient {
     ) -> Result<Vec<T>, RustyError> {
         match self {
             Self::MongoDb(client) => client.get_all(index, filter, options).await,
+            Self::PostgreSql(client) => client.get_all(index, filter, options).await,
             Self::Redis(client) => client.get_all(index, filter, options).await,
         }
     }
@@ -51,6 +55,7 @@ impl DbClient {
     ) -> Result<Option<T>, RustyError> {
         match self {
             Self::MongoDb(client) => client.get_one(index, filter).await,
+            Self::PostgreSql(client) => client.get_one(index, filter).await,
             Self::Redis(client) => client.get_one(index, filter).await,
         }
     }
@@ -69,6 +74,7 @@ impl DbClient {
     ) -> Result<String, RustyError> {
         match self {
             Self::MongoDb(client) => client.create(index, item).await,
+            Self::PostgreSql(client) => client.create(index, item).await,
             Self::Redis(client) => client.create(index, item).await,
         }
     }
@@ -88,6 +94,7 @@ impl DbClient {
     ) -> Result<String, RustyError> {
         match self {
             Self::MongoDb(client) => client.update(index, id, item).await,
+            Self::PostgreSql(client) => client.update(index, id, item).await,
             Self::Redis(client) => client.update(index, id, item).await,
         }
     }
@@ -106,6 +113,7 @@ impl DbClient {
     ) -> Result<u64, RustyError> {
         match self {
             Self::MongoDb(client) => client.delete_one::<T>(index, filter).await,
+            Self::PostgreSql(client) => client.delete_one::<T>(index, filter).await,
             Self::Redis(client) => client.delete_one::<T>(index, filter).await,
         }
     }
@@ -120,6 +128,7 @@ impl DbClient {
     pub async fn delete_all(&self, index: &str) -> Result<u64, RustyError> {
         match self {
             Self::MongoDb(client) => client.delete_all(index).await,
+            Self::PostgreSql(client) => client.delete_all(index).await,
             Self::Redis(client) => client.delete_all(index).await,
         }
     }
@@ -137,6 +146,7 @@ impl DbClient {
     ) -> impl futures_util::Stream<Item = T> + 'a {
         match self {
             Self::MongoDb(client) => client.change_stream(index),
+            Self::PostgreSql(client) => client.change_stream(index),
             Self::Redis(client) => client.change_stream(index),
         }
     }

@@ -210,8 +210,9 @@ fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
         || None,
         |value| {
             let page_number = value.page_number.unwrap_or(1);
-            let page_number = if page_number > 0 { page_number } else { 1 };
+            let page_number = if page_number == 0 { 1 } else { page_number };
             let page_size = value.page_size.unwrap_or(20);
+            let page_size = if page_size == 0 { 20 } else { page_size };
             let sort_mode = value.sort_mode.unwrap_or_default();
             let sort = if value.sort_field.is_some() {
                 let field = value.clone().sort_field.unwrap();
