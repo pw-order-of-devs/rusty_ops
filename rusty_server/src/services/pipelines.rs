@@ -8,6 +8,7 @@ use domain::filters::search::SearchOptions;
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
+use crate::services::agents;
 use crate::services::jobs;
 
 const PIPELINES_INDEX: &str = "pipelines";
@@ -99,6 +100,28 @@ pub async fn assign(
         }
     } else {
         let message = "`pipelines::assign` - pipeline not found".to_string();
+        log::debug!("{message}");
+        Err(RustyError::AsyncGraphqlError(message))
+    }
+}
+
+pub async fn reset(db: &DbClient, pipeline_id: &str) -> Result<String, RustyError> {
+    if let Some(mut pipe) = get_by_id(db, pipeline_id).await? {
+        if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status)
+            && agents::get_by_id(db, &pipe.agent_id.unwrap())
+                .await?
+                .is_none()
+        {
+            pipe.status = PipelineStatus::Defined;
+            pipe.agent_id = None;
+            db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+        } else {
+            let message = "`pipelines::reset` - cannot update".to_string();
+            log::debug!("{message}");
+            Err(RustyError::AsyncGraphqlError(message))
+        }
+    } else {
+        let message = "`pipelines::reset` - pipeline not found".to_string();
         log::debug!("{message}");
         Err(RustyError::AsyncGraphqlError(message))
     }

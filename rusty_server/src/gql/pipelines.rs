@@ -60,7 +60,9 @@ impl PipelinesMutation {
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::assign` request");
         let id = service::assign(ctx.data::<DbClient>()?, &pipeline_id, &agent_id).await?;
-        log::debug!("`pipelines::assign`: assigned pipeline with id `{id}` to agent `{agent_id}`");
+        log::debug!(
+            "`pipelines::assign`: assigned pipeline with id `{pipeline_id}` to agent `{agent_id}`"
+        );
         Ok(id)
     }
 
