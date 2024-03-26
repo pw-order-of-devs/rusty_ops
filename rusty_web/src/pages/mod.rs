@@ -1,3 +1,6 @@
+/// Web pages for managing agents.
+pub mod agents;
+
 /// error pages.
 pub mod errors;
 

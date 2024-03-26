@@ -1,9 +1,10 @@
-use crate::pages::errors::not_found::NotFoundPage;
-use crate::pages::home::Home;
-use crate::pages::jobs::view::JobView;
 use leptos::{component, view, IntoView};
 use leptos_router::{Route, Router, Routes};
 
+use crate::pages::agents::list::AgentsList;
+use crate::pages::errors::not_found::NotFoundPage;
+use crate::pages::home::Home;
+use crate::pages::jobs::view::JobView;
 use crate::pages::projects::list::ProjectsList;
 use crate::pages::projects::view::ProjectView;
 
@@ -14,6 +15,7 @@ pub fn RustyRouter() -> impl IntoView {
         <Router>
             <Routes>
                 <Route path="/" view=Home/>
+                <Route path="/agents" view=AgentsList/>
                 <Route path="/projects" view=ProjectsList/>
                 <Route path="/projects/:id" view=ProjectView/>
                 <Route path="/jobs/:id" view=JobView/>
