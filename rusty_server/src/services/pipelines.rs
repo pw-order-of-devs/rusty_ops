@@ -1,15 +1,13 @@
 use async_graphql::futures_util::Stream;
 use serde_json::{json, Value};
-use serde_valid::Validate;
 
 use commons::env::var_or_default;
 use commons::errors::RustyError;
-use domain::filters::search::SearchOptions;
-use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
+use domain::commons::search::SearchOptions;
+use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
-use crate::services::agents;
-use crate::services::jobs;
+use crate::services::{agents, jobs, shared};
 
 const PIPELINES_INDEX: &str = "pipelines";
 
@@ -17,38 +15,35 @@ const PIPELINES_INDEX: &str = "pipelines";
 
 pub async fn get_all(
     db: &DbClient,
-    filter: Option<Value>,
-    options: Option<SearchOptions>,
+    filter: &Option<Value>,
+    options: &Option<SearchOptions>,
 ) -> Result<Vec<Pipeline>, RustyError> {
-    let entries = db
-        .get_all(PIPELINES_INDEX, filter, options)
-        .await
-        .map_err(|err| {
-            log::error!("`pipelines::get`: {err}");
-            err
-        })?;
-    Ok(entries)
+    shared::get_all(db, PIPELINES_INDEX, filter, options, false).await
+}
+
+pub async fn get_all_paged(
+    db: &DbClient,
+    filter: &Option<Value>,
+    options: &Option<SearchOptions>,
+) -> Result<PagedPipelines, RustyError> {
+    let count = shared::get_total_count::<Pipeline>(db, PIPELINES_INDEX, filter).await?;
+    let entries = shared::get_all(db, PIPELINES_INDEX, filter, options, true).await?;
+    let (page, page_size) = shared::to_paged(options)?;
+    Ok(PagedPipelines {
+        total: count,
+        page,
+        page_size,
+        entries,
+    })
 }
 
 pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Pipeline>, RustyError> {
-    let entry = db
-        .get_one::<Pipeline>(PIPELINES_INDEX, json!({ "id": id }))
-        .await
-        .map_err(|err| {
-            log::error!("`pipelines::getById`: {err}");
-            err
-        })?;
-    Ok(entry)
+    shared::get_by_id(db, PIPELINES_INDEX, id).await
 }
 
 // mutate
 
 pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String, RustyError> {
-    pipeline.validate().map_err(|err| {
-        log::error!("`pipeline::create`: {err}");
-        err
-    })?;
-
     if jobs::get_by_id(db, &pipeline.job_id).await?.is_none() {
         Err(RustyError::ValidationError(
             json!({
@@ -58,18 +53,15 @@ pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String,
             .to_string(),
         ))
     } else {
-        let pipelines_count = get_all(db, Some(json!({ "job_id": pipeline.job_id })), None)
+        let pipelines_count = get_all(db, &Some(json!({ "job_id": pipeline.job_id })), &None)
             .await?
             .len() as u64;
 
+        let register = pipeline.clone();
         let mut pipeline = Pipeline::from(&pipeline);
         pipeline.number = pipelines_count + 1;
         pipeline.register_date = chrono::Utc::now().to_rfc3339();
-        let id = db.create(PIPELINES_INDEX, &pipeline).await.map_err(|err| {
-            log::error!("`pipelines::create`: {err}");
-            err
-        })?;
-        Ok(id)
+        shared::create(db, PIPELINES_INDEX, register, |_| pipeline).await
     }
 }
 
@@ -85,7 +77,7 @@ pub async fn assign(
 
             let limit = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
             let condition = json!({ "status": "ASSIGNED", "agent_id": agent_id });
-            if get_all(db, Some(condition), None).await?.len() < limit {
+            if get_all(db, &Some(condition), &None).await?.len() < limit {
                 db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
             } else {
                 let message =
@@ -177,22 +169,11 @@ pub async fn finalize(
 }
 
 pub async fn delete_by_id(db: &DbClient, id: &str) -> Result<u64, RustyError> {
-    let id = db
-        .delete_one::<Pipeline>(PIPELINES_INDEX, json!({ "id": id }))
-        .await
-        .map_err(|err| {
-            log::error!("`pipelines::deleteById`: {err}");
-            err
-        })?;
-    Ok(id)
+    shared::delete_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await
 }
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
-    let id = db.delete_all(PIPELINES_INDEX).await.map_err(|err| {
-        log::error!("`pipelines::deleteAll`: {err}");
-        err
-    })?;
-    Ok(id)
+    shared::delete_all(db, PIPELINES_INDEX).await
 }
 
 // subscriptions

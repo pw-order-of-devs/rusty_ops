@@ -8,7 +8,7 @@ use serde_json::{json, Value};
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
-use domain::filters::search::{SearchOptions, SortOptions};
+use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
 use crate::redis::pubsub::RedisPubSubConnectionManager;
@@ -73,8 +73,9 @@ impl Persistence for RedisClient {
     async fn get_all<T: RustyDomainItem>(
         &self,
         index: &str,
-        filter: Option<Value>,
-        options: Option<SearchOptions>,
+        filter: &Option<Value>,
+        options: &Option<SearchOptions>,
+        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         let mut conn = self.client.get().await?;
         let keys: Vec<String> = conn.keys(format!("{index}_*")).await?;
@@ -85,7 +86,7 @@ impl Persistence for RedisClient {
             values.push(serde_json::from_str(&value)?);
         }
 
-        let filter = filter.unwrap_or(Value::Null);
+        let filter = filter.clone().unwrap_or(Value::Null);
         let mut filtered = values
             .into_iter()
             .filter(|item| {
@@ -95,7 +96,7 @@ impl Persistence for RedisClient {
             })
             .collect::<Vec<Value>>();
 
-        let options = options.unwrap_or_default();
+        let options = options.clone().unwrap_or_default();
         let sort_field = &options.sort_field.unwrap_or_else(|| "id".to_string());
         filtered.sort_by(
             |a, b| match (a[sort_field].clone(), b[sort_field].clone()) {
@@ -117,15 +118,19 @@ impl Persistence for RedisClient {
             .map(|value| serde_json::from_value(value))
             .collect::<Result<Vec<T>, _>>()?;
 
-        let page_number = usize::try_from(options.page_number.unwrap_or(1))?;
-        let page_number = if page_number == 0 { 1 } else { page_number };
-        let page_size = usize::try_from(options.page_size.unwrap_or(20))?;
-        let page_size = if page_size == 0 { 20 } else { page_size };
-        Ok(filtered
-            .into_iter()
-            .skip((page_number - 1) * page_size)
-            .take(page_size)
-            .collect())
+        if paged {
+            let page_number = usize::try_from(options.page_number.unwrap_or(1))?;
+            let page_number = if page_number == 0 { 1 } else { page_number };
+            let page_size = usize::try_from(options.page_size.unwrap_or(20))?;
+            let page_size = if page_size == 0 { 20 } else { page_size };
+            Ok(filtered
+                .into_iter()
+                .skip((page_number - 1) * page_size)
+                .take(page_size)
+                .collect())
+        } else {
+            Ok(filtered)
+        }
     }
 
     async fn get_one<T: RustyDomainItem>(
@@ -133,7 +138,7 @@ impl Persistence for RedisClient {
         index: &str,
         filter: Value,
     ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, Some(filter), None).await?;
+        let values: Vec<T> = self.get_all(index, &Some(filter), &None, false).await?;
         if values.len() == 1 {
             Ok(Some(values[0].clone()))
         } else {

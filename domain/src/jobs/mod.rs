@@ -85,8 +85,15 @@ impl RustyDomainItem for Job {
     }
 }
 
-impl RustyDomainItem for RegisterJob {
-    fn id(&self) -> String {
-        todo!()
-    }
+/// A struct representing a paged result Jobs.
+#[derive(Clone, Debug, SimpleObject, Serialize)]
+pub struct PagedJobs {
+    /// total amount of entries found
+    pub total: usize,
+    /// current page
+    pub page: usize,
+    /// size of a page
+    pub page_size: usize,
+    /// data returned by query
+    pub entries: Vec<Job>,
 }

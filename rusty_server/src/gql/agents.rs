@@ -2,8 +2,8 @@ use async_graphql::{Context, Object};
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::agents::{Agent, RegisterAgent};
-use domain::filters::search::SearchOptions;
+use domain::agents::{Agent, PagedAgents, RegisterAgent};
+use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
 use crate::services::agents as service;
@@ -17,10 +17,10 @@ impl AgentsQuery {
         ctx: &Context<'_>,
         filter: Option<Value>,
         options: Option<SearchOptions>,
-    ) -> async_graphql::Result<Vec<Agent>, RustyError> {
+    ) -> async_graphql::Result<PagedAgents, RustyError> {
         log::debug!("handling `agents::get` request");
-        let entries = service::get_all(ctx.data::<DbClient>()?, filter, options).await?;
-        log::debug!("`agents::get`: found {} entries", entries.len());
+        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
+        log::debug!("`agents::get`: found {} entries", entries.total);
         Ok(entries)
     }
 
@@ -70,6 +70,13 @@ impl AgentsMutation {
         log::debug!("handling `agents::deleteById` request");
         let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`agents::deleteById`: deleted agent with id `{id}`");
+        Ok(deleted)
+    }
+
+    async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
+        log::debug!("handling `agents::deleteAll` request");
+        let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;
+        log::debug!("`agents::deleteAll`: deleted {deleted} agents");
         Ok(deleted)
     }
 }

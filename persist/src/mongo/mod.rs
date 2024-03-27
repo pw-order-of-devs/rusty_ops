@@ -10,7 +10,7 @@ use serde_json::{json, Map, Value};
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
-use domain::filters::search::{SearchOptions, SortOptions};
+use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
@@ -76,14 +76,15 @@ impl Persistence for MongoDBClient {
     async fn get_all<T: RustyDomainItem>(
         &self,
         index: &str,
-        filter: Option<Value>,
-        options: Option<SearchOptions>,
+        filter: &Option<Value>,
+        options: &Option<SearchOptions>,
+        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         let mut cursor = self
             .client
             .database(&self.database)
             .collection::<T>(index)
-            .find(parse_filter(&filter)?, parse_options(&options))
+            .find(parse_filter(filter)?, parse_options(options, paged))
             .await?;
 
         let mut result: Vec<T> = Vec::new();
@@ -205,7 +206,7 @@ fn parse_filter(filter: &Option<Value>) -> Result<Option<Document>, RustyError> 
     )
 }
 
-fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
+fn parse_options(options: &Option<SearchOptions>, paged: bool) -> Option<FindOptions> {
     options.as_ref().map_or_else(
         || None,
         |value| {
@@ -225,13 +226,17 @@ fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
             } else {
                 None
             };
-            Some(
+
+            let options = if paged {
                 FindOptions::builder()
                     .limit(page_size.try_into().unwrap_or(i64::MAX))
                     .skip((page_number - 1) * page_size)
                     .sort(sort)
-                    .build(),
-            )
+                    .build()
+            } else {
+                FindOptions::builder().sort(sort).build()
+            };
+            Some(options)
         },
     )
 }

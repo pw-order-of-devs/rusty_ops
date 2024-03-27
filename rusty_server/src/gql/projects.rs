@@ -2,8 +2,8 @@ use async_graphql::{Context, Object};
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchOptions;
-use domain::projects::{Project, RegisterProject};
+use domain::commons::search::SearchOptions;
+use domain::projects::{PagedProjects, Project, RegisterProject};
 use persist::db_client::DbClient;
 
 use crate::services::projects as service;
@@ -17,10 +17,10 @@ impl ProjectsQuery {
         ctx: &Context<'_>,
         filter: Option<Value>,
         options: Option<SearchOptions>,
-    ) -> async_graphql::Result<Vec<Project>, RustyError> {
+    ) -> async_graphql::Result<PagedProjects, RustyError> {
         log::debug!("handling `projects::get` request");
-        let entries = service::get_all(ctx.data::<DbClient>()?, filter, options).await?;
-        log::debug!("`projects::get`: found {} entries", entries.len());
+        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
+        log::debug!("`projects::get`: found {} entries", entries.total);
         Ok(entries)
     }
 
@@ -59,6 +59,13 @@ impl ProjectsMutation {
         log::debug!("handling `projects::deleteById` request");
         let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`projects::deleteById`: deleted project with id `{id}`");
+        Ok(deleted)
+    }
+
+    async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
+        log::debug!("handling `projects::deleteAll` request");
+        let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;
+        log::debug!("`projects::deleteAll`: deleted {deleted} projects");
         Ok(deleted)
     }
 }

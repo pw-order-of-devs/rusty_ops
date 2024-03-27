@@ -3,8 +3,8 @@ use async_graphql::{Context, Object, Subscription};
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchOptions;
-use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
+use domain::commons::search::SearchOptions;
+use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
 use crate::services::pipelines as service;
@@ -18,10 +18,10 @@ impl PipelinesQuery {
         ctx: &Context<'_>,
         filter: Option<Value>,
         options: Option<SearchOptions>,
-    ) -> async_graphql::Result<Vec<Pipeline>, RustyError> {
+    ) -> async_graphql::Result<PagedPipelines, RustyError> {
         log::debug!("handling `pipelines::get` request");
-        let entries = service::get_all(ctx.data::<DbClient>()?, filter, options).await?;
-        log::debug!("`pipelines::get`: found {} entries", entries.len());
+        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
+        log::debug!("`pipelines::get`: found {} entries", entries.total);
         Ok(entries)
     }
 

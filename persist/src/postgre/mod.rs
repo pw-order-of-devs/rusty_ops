@@ -6,7 +6,7 @@ use std::pin::Pin;
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
-use domain::filters::search::{SearchOptions, SortOptions};
+use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
 use crate::{Persistence, PersistenceBuilder};
@@ -70,18 +70,19 @@ impl Persistence for PostgreSQLClient {
     async fn get_all<T: RustyDomainItem>(
         &self,
         index: &str,
-        filter: Option<Value>,
-        options: Option<SearchOptions>,
+        filter: &Option<Value>,
+        options: &Option<SearchOptions>,
+        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         let conn = self.client.get().await?;
 
-        let values = parse_filter(&filter, true);
+        let values = parse_filter(filter, true);
         let where_clause = if values.is_empty() {
             String::new()
         } else {
             format!(" where {}", values.join(" and "))
         };
-        let options = parse_options(&options);
+        let options = parse_options(options, paged);
 
         let statement = format!(
             "select * from {}.{}{}{}",
@@ -230,7 +231,7 @@ fn parse_row(row: &Row) -> Value {
     Value::Object(value)
 }
 
-fn parse_options(options: &Option<SearchOptions>) -> String {
+fn parse_options(options: &Option<SearchOptions>, paged: bool) -> String {
     let options = options.clone().unwrap_or_default();
     let sort_field = options.sort_field.unwrap_or_else(|| "id".to_string());
     let sort_mode = match options.sort_mode.unwrap_or_default() {
@@ -241,11 +242,14 @@ fn parse_options(options: &Option<SearchOptions>) -> String {
     let page_number = if page_number == 0 { 1 } else { page_number };
     let page_size = options.page_size.unwrap_or(20);
     let page_size = if page_size == 0 { 20 } else { page_size };
-    format!(
-        " order by {} {} limit {} offset {}",
-        sort_field,
-        sort_mode,
-        page_size,
-        page_size * (page_number - 1),
-    )
+
+    if paged {
+        format!(
+            " order by {sort_field} {sort_mode} limit {} offset {}",
+            page_size,
+            page_size * (page_number - 1),
+        )
+    } else {
+        format!(" order by {sort_field} {sort_mode}")
+    }
 }

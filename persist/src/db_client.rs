@@ -1,7 +1,7 @@
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchOptions;
+use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
 use crate::mongo::MongoDBClient;
@@ -31,13 +31,14 @@ impl DbClient {
     pub async fn get_all<T: RustyDomainItem>(
         &self,
         index: &str,
-        filter: Option<Value>,
-        options: Option<SearchOptions>,
+        filter: &Option<Value>,
+        options: &Option<SearchOptions>,
+        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         match self {
-            Self::MongoDb(client) => client.get_all(index, filter, options).await,
-            Self::PostgreSql(client) => client.get_all(index, filter, options).await,
-            Self::Redis(client) => client.get_all(index, filter, options).await,
+            Self::MongoDb(client) => client.get_all(index, filter, options, paged).await,
+            Self::PostgreSql(client) => client.get_all(index, filter, options, paged).await,
+            Self::Redis(client) => client.get_all(index, filter, options, paged).await,
         }
     }
 

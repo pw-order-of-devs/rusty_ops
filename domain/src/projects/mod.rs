@@ -60,8 +60,16 @@ impl RustyDomainItem for Project {
         self.clone().id
     }
 }
-impl RustyDomainItem for RegisterProject {
-    fn id(&self) -> String {
-        todo!()
-    }
+
+/// A struct representing a paged result Projects.
+#[derive(Clone, Debug, SimpleObject, Serialize)]
+pub struct PagedProjects {
+    /// total amount of entries found
+    pub total: usize,
+    /// current page
+    pub page: usize,
+    /// size of a page
+    pub page_size: usize,
+    /// data returned by query
+    pub entries: Vec<Project>,
 }

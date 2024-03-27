@@ -22,7 +22,7 @@ use std::pin::Pin;
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::filters::search::SearchOptions;
+use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
 use crate::db_client::DbClient;
@@ -103,8 +103,9 @@ pub trait Persistence: Send + Sync {
     fn get_all<T: RustyDomainItem>(
         &self,
         index: &str,
-        filter: Option<Value>,
-        options: Option<SearchOptions>,
+        filter: &Option<Value>,
+        options: &Option<SearchOptions>,
+        paged: bool,
     ) -> impl Future<Output = Result<Vec<T>, RustyError>> + Send;
 
     /// Retrieves an item by index and filter document.

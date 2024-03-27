@@ -16,11 +16,13 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+use async_graphql::OutputType;
+
 /// # Agents Module
 pub mod agents;
 
-/// # Filters Module
-pub mod filters;
+/// # Common Module
+pub mod commons;
 
 /// # Jobs Module
 pub mod jobs;
@@ -37,13 +39,12 @@ pub mod templates;
 /// The `RustyDomainItem` trait represents an item in a read-only domain.
 ///
 /// It defines the basic requirements that an item must fulfill in order to be considered
-/// a valid member of a read-only domain. This trait extends the `Send`, `Sync`, `Debug`,
-/// `Unpin`, `Serialize`, and `Deserialize` traits from the standard library.
+/// a valid member of a read-only domain.
 ///
 /// # Implementing `RustyDomainItem`
 ///
-/// To implement the `RustyDomainItem` trait, you need to ensure that your type satisfies all the
-/// trait's associated traits (`Send`, `Sync`, `Debug`, `Unpin`, `Serialize`, and `Deserialize`).
+/// To implement the `RustyDomainItem` trait,
+/// you need to ensure that your type satisfies all the trait's associated traits.
 pub trait RustyDomainItem:
     Send
     + Sync
@@ -52,6 +53,7 @@ pub trait RustyDomainItem:
     + Unpin
     + serde::ser::Serialize
     + for<'de> serde::de::Deserialize<'de>
+    + OutputType
 {
     /// Returns the identifier of an object.
     fn id(&self) -> String;

@@ -48,8 +48,15 @@ impl RustyDomainItem for Agent {
     }
 }
 
-impl RustyDomainItem for RegisterAgent {
-    fn id(&self) -> String {
-        todo!()
-    }
+/// A struct representing a paged result Agents.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct PagedAgents {
+    /// total amount of entries found
+    pub total: usize,
+    /// current page
+    pub page: usize,
+    /// size of a page
+    pub page_size: usize,
+    /// data returned by query
+    pub entries: Vec<Agent>,
 }

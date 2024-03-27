@@ -1,10 +1,11 @@
-use serde_json::{json, Value};
-use serde_valid::Validate;
+use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::agents::{Agent, RegisterAgent};
-use domain::filters::search::SearchOptions;
+use domain::agents::{Agent, PagedAgents, RegisterAgent};
+use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
+
+use crate::services::shared;
 
 const AGENTS_INDEX: &str = "agents";
 
@@ -12,39 +13,35 @@ const AGENTS_INDEX: &str = "agents";
 
 pub async fn get_all(
     db: &DbClient,
-    filter: Option<Value>,
-    options: Option<SearchOptions>,
+    filter: &Option<Value>,
+    options: &Option<SearchOptions>,
 ) -> Result<Vec<Agent>, RustyError> {
-    let entries = db
-        .get_all(AGENTS_INDEX, filter, options)
-        .await
-        .map_err(|err| {
-            log::error!("`agents::get`: {err}");
-            err
-        })?;
-    Ok(entries)
+    shared::get_all(db, AGENTS_INDEX, filter, options, false).await
+}
+
+pub async fn get_all_paged(
+    db: &DbClient,
+    filter: &Option<Value>,
+    options: &Option<SearchOptions>,
+) -> Result<PagedAgents, RustyError> {
+    let count = shared::get_total_count::<Agent>(db, AGENTS_INDEX, filter).await?;
+    let entries = shared::get_all(db, AGENTS_INDEX, filter, options, true).await?;
+    let (page, page_size) = shared::to_paged(options)?;
+    Ok(PagedAgents {
+        total: count,
+        page,
+        page_size,
+        entries,
+    })
 }
 
 pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Agent>, RustyError> {
-    let entry = db
-        .get_one::<Agent>(AGENTS_INDEX, json!({ "id": id }))
-        .await
-        .map_err(|err| {
-            log::error!("`agents::getById`: {err}");
-            err
-        })?;
-    Ok(entry)
+    shared::get_by_id(db, AGENTS_INDEX, id).await
 }
 
 // mutate
 
 pub async fn create(db: &DbClient, agent: RegisterAgent) -> Result<String, RustyError> {
-    agent.validate().map_err(|err| {
-        log::error!("`agents::create`: {err}");
-        err
-    })?;
-
-    let agent = Agent::from(&agent);
     if get_by_id(db, &agent.id).await?.is_some() {
         return Err(RustyError::AsyncGraphqlError(format!(
             "agent with id `{}` already exists",
@@ -52,11 +49,7 @@ pub async fn create(db: &DbClient, agent: RegisterAgent) -> Result<String, Rusty
         )));
     }
 
-    let id = db.create(AGENTS_INDEX, &agent).await.map_err(|err| {
-        log::error!("`agents::create`: {err}");
-        err
-    })?;
-    Ok(id)
+    shared::create(db, AGENTS_INDEX, agent, |r| Agent::from(&r)).await
 }
 
 pub async fn healthcheck(db: &DbClient, id: &str) -> Result<String, RustyError> {
@@ -71,12 +64,9 @@ pub async fn healthcheck(db: &DbClient, id: &str) -> Result<String, RustyError> 
 }
 
 pub async fn delete_by_id(db: &DbClient, id: &str) -> Result<u64, RustyError> {
-    let id = db
-        .delete_one::<Agent>(AGENTS_INDEX, json!({ "id": id }))
-        .await
-        .map_err(|err| {
-            log::error!("`agents::deleteById`: {err}");
-            err
-        })?;
-    Ok(id)
+    shared::delete_by_id::<Agent>(db, AGENTS_INDEX, id).await
+}
+
+pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
+    shared::delete_all(db, AGENTS_INDEX).await
 }

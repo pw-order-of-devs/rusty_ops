@@ -23,7 +23,7 @@ fn scheduler_agent_ttl(db: &DbClient) {
         loop {
             task.tick().await;
             log::trace!("running `agents::expire` scheduled task");
-            if let Ok(agents) = agents_service::get_all(&db, None, None).await {
+            if let Ok(agents) = agents_service::get_all(&db, &None, &None).await {
                 for agent in agents {
                     if agent.expiry < chrono::Utc::now().timestamp() {
                         log::debug!("agent `{}` expired.", &agent.id);
@@ -45,7 +45,7 @@ fn scheduler_pipelines_cleanup(db: &DbClient) {
         loop {
             task.tick().await;
             log::trace!("running `pipelines::cleanup` scheduled task");
-            if let Ok(pipes) = pipelines_service::get_all(&db, None, None).await {
+            if let Ok(pipes) = pipelines_service::get_all(&db, &None, &None).await {
                 for pipe in pipes {
                     if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status)
                     {

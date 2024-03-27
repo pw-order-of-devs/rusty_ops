@@ -13,36 +13,7 @@ use crate::api::utils::parse_entries;
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
 pub async fn get_unassigned_pipeline() -> Result<Pipeline, RustyError> {
-    let payload = serde_json::json!({
-        "query": r#"query {
-            pipelines {
-                get(
-                    filter: { status: Defined },
-        			options: { sortMode: ASCENDING, sortField: "number", pageSize: 1 }
-                ) {
-                    id
-                    number
-                    startDate
-                    registerDate
-                    endDate
-                    status
-                    jobId
-                    agentId
-                }
-            }
-        }"#,
-        "variables": {}
-    });
-
-    let data = reqwest_post(&payload).await?;
-    let json_data: serde_json::Value = serde_json::from_str(&data)?;
-    let json_data = json_data["data"]["pipelines"]["get"].clone();
-    parse_entries::<Vec<Pipeline>>(json_data)?
-        .first()
-        .map_or_else(
-            || Err(RustyError::RequestError("No results".to_string())),
-            |pipe| Ok(pipe.clone()),
-        )
+    get_pipeline("{ status: Defined }").await
 }
 
 /// Function to retrieve last assigned pipeline for agent from a GraphQL endpoint.
@@ -54,30 +25,42 @@ pub async fn get_unassigned_pipeline() -> Result<Pipeline, RustyError> {
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
 pub async fn get_last_assigned_pipeline(uuid: &str) -> Result<Pipeline, RustyError> {
-    let payload = serde_json::json!({
-        "query": format!(r#"query {{
+    get_pipeline(&format!(
+        r#"{{ status: Assigned, agent_id: "{uuid}" }}"#
+    ))
+    .await
+}
+
+async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {
+    let query = format!(r#"query {{
             pipelines {{
                 get(
-                    filter: {{ status: Assigned, agent_id: "{}" }},
+                    filter: {filter},
         			options: {{ sortMode: ASCENDING, sortField: "number", pageSize: 1 }}
                 ) {{
-                    id
-                    number
-                    startDate
-                    registerDate
-                    endDate
-                    status
-                    jobId
-                    agentId
+                    total
+                    page
+                    pageSize
+                    entries {{
+                        id
+                        number
+                        startDate
+                        registerDate
+                        status
+                        jobId
+                        agentId
+                    }}
                 }}
             }}
-        }}"#, uuid),
+        }}"#);
+    let payload = serde_json::json!({
+        "query": query,
         "variables": {}
     });
 
     let data = reqwest_post(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
-    let json_data = json_data["data"]["pipelines"]["get"].clone();
+    let json_data = json_data["data"]["pipelines"]["get"]["entries"].clone();
     parse_entries::<Vec<Pipeline>>(json_data)?
         .first()
         .map_or_else(
