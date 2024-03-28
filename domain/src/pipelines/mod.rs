@@ -93,7 +93,7 @@ impl RustyDomainItem for Pipeline {
 }
 
 /// A struct representing a paged result Pipelines.
-#[derive(Clone, Debug, SimpleObject, Serialize)]
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct PagedPipelines {
     /// total amount of entries found
     pub total: usize,

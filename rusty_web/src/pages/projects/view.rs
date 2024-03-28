@@ -76,7 +76,7 @@ fn ProjectJobsView(
 
     move || {
         jobs.and_then(|jobs| {
-            jobs.iter()
+            jobs.entries.iter()
                 .map(|data| {
                     view! {
                         <a href=format!("/jobs/{}", data.clone().id) class="card button">

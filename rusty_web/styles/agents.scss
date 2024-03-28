@@ -1,0 +1,15 @@
+.container-agents-list {
+  height: calc(100vh - 18rem) !important;
+  grid-template-rows: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+    .text-field {
+      line-clamp: 1 !important;
+      -webkit-line-clamp: 1 !important;
+    }
+  }
+}

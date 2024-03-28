@@ -25,14 +25,12 @@ pub async fn get_unassigned_pipeline() -> Result<Pipeline, RustyError> {
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
 pub async fn get_last_assigned_pipeline(uuid: &str) -> Result<Pipeline, RustyError> {
-    get_pipeline(&format!(
-        r#"{{ status: Assigned, agent_id: "{uuid}" }}"#
-    ))
-    .await
+    get_pipeline(&format!(r#"{{ status: Assigned, agent_id: "{uuid}" }}"#)).await
 }
 
 async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {
-    let query = format!(r#"query {{
+    let query = format!(
+        r#"query {{
             pipelines {{
                 get(
                     filter: {filter},
@@ -52,7 +50,8 @@ async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {
                     }}
                 }}
             }}
-        }}"#);
+        }}"#
+    );
     let payload = serde_json::json!({
         "query": query,
         "variables": {}

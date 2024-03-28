@@ -19,7 +19,8 @@ pub fn ProjectsList() -> impl IntoView {
 
     let projects_view = move || {
         projects.and_then(|data| {
-            data.iter()
+            data.entries
+                .iter()
                 .map(|p| {
                     view! {
                         <a href=format!("/projects/{}", p.id) class="card button">

@@ -1,6 +1,7 @@
 @import "variables";
 @import "fonts";
 
+@import "agents";
 @import "errors";
 @import "header";
 @import "home";
@@ -30,4 +31,8 @@ a {
 
 .bold {
     font-weight: bold;
+}
+
+.pd-2-rem {
+    padding: 2rem;
 }

@@ -16,19 +16,26 @@ pub fn AgentsList() -> impl IntoView {
 
     let agents_view = move || {
         agents.and_then(|data| {
-            data.iter()
-                .map(|p| {
-                    let expiry = chrono::DateTime::from_timestamp(p.clone().expiry, 0)
-                        .unwrap()
-                        .to_rfc2822();
-                    view! {
-                        <div class="card">
-                            <div class="text-field"> "Agent id: " { p.clone().id } </div>
-                            <div class="text-field"> "Expires at: " { expiry } </div>
-                        </div>
-                    }
-                })
-                .collect_view()
+            if data.total == 0 {
+                (0..1)
+                    .map(|_| view! { <div class="list-empty">No registered agents</div> })
+                    .collect_view()
+            } else {
+                data.entries
+                    .iter()
+                    .map(|p| {
+                        let expiry = chrono::DateTime::from_timestamp(p.clone().expiry, 0)
+                            .unwrap()
+                            .to_rfc2822();
+                        view! {
+                            <div class="card">
+                                <div class="text-field"> "Agent id: " { p.clone().id } </div>
+                                <div class="text-field"> "Expires at: " { expiry } </div>
+                            </div>
+                        }
+                    })
+                    .collect_view()
+            }
         })
     };
 
@@ -38,7 +45,7 @@ pub fn AgentsList() -> impl IntoView {
                 <div class="title-text"> "Available agents:" </div>
             </div>
             <div class="container container-agents-list scrollable">
-                <Transition fallback=move || { view! { <div>"Loading ..."</div> } }>
+                <Transition fallback=move || { view! { <div class="pd-2-rem">"Loading ..."</div> } }>
                     <ErrorBoundary fallback>
                         { agents_view }
                     </ErrorBoundary>

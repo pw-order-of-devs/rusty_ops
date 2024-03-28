@@ -62,7 +62,7 @@ impl RustyDomainItem for Project {
 }
 
 /// A struct representing a paged result Projects.
-#[derive(Clone, Debug, SimpleObject, Serialize)]
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct PagedProjects {
     /// total amount of entries found
     pub total: usize,

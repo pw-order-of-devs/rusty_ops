@@ -86,7 +86,7 @@ impl RustyDomainItem for Job {
 }
 
 /// A struct representing a paged result Jobs.
-#[derive(Clone, Debug, SimpleObject, Serialize)]
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct PagedJobs {
     /// total amount of entries found
     pub total: usize,

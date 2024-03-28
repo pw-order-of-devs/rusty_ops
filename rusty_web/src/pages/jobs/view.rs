@@ -107,8 +107,10 @@ fn JobPipelinesView(
     );
 
     move || {
-        pipelines.and_then(|jobs| {
-            jobs.iter()
+        pipelines.and_then(|pipes| {
+            pipes
+                .entries
+                .iter()
                 .map(|data| {
                     let status_icon = get_pipeline_status_icon(&data.status);
                     let date = parse_date(&data.start_date);

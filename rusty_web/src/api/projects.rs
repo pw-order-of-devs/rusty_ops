@@ -1,10 +1,10 @@
 use serde_json::Value;
 
 use commons::errors::RustyError;
-use domain::projects::{Project, RegisterProject};
+use domain::projects::{PagedProjects, Project, RegisterProject};
 
 use crate::api::client::reqwasm_post;
-use crate::api::utils::parse_entries;
+use crate::api::utils::{parse_entries, parse_paged};
 
 /// Function to retrieve projects from a GraphQL endpoint.
 ///
@@ -14,14 +14,19 @@ use crate::api::utils::parse_entries;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
+pub async fn get_projects() -> Result<PagedProjects, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
             projects {{
-                get {{
-                    id
-                    name
-                    url
+                get(options: {{ pageSize: 99 }}) {{
+                    total
+                    page
+                    pageSize
+                    entries {{
+                        id
+                        name
+                        url
+                    }}
                 }}
             }}
         }}"#),
@@ -31,7 +36,14 @@ pub async fn get_projects() -> Result<Vec<Project>, RustyError> {
     let data = reqwasm_post(&payload).await?;
     let json_data: Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["projects"]["get"].clone();
-    parse_entries(json_data)
+    let (total, page, page_size, entries) = parse_paged(&json_data)?;
+    let entries = parse_entries(entries)?;
+    Ok(PagedProjects {
+        total,
+        page,
+        page_size,
+        entries,
+    })
 }
 
 /// Function to retrieve a project from a GraphQL endpoint by id.
