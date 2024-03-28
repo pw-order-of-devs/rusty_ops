@@ -1,5 +1,6 @@
 use serde_json::Value;
 
+use commons::env::var_or_default;
 use commons::errors::RustyError;
 use domain::agents::{Agent, PagedAgents, RegisterAgent};
 use domain::commons::search::SearchOptions;
@@ -42,6 +43,13 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Agent>, RustyEr
 // mutate
 
 pub async fn create(db: &DbClient, agent: RegisterAgent) -> Result<String, RustyError> {
+    let max_agents = var_or_default("AGENTS_REGISTERED_MAX", 24);
+    if get_all(db, &None, &None).await?.len() >= max_agents {
+        return Err(RustyError::AsyncGraphqlError(format!(
+            "Exceeded maximum number of registered agents: {max_agents}"
+        )));
+    }
+
     if get_by_id(db, &agent.id).await?.is_some() {
         return Err(RustyError::AsyncGraphqlError(format!(
             "agent with id `{}` already exists",
