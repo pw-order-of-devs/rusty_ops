@@ -16,7 +16,7 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
     // if image: run in docker
 
     let working_directory = format!("/tmp/rusty/{}", uuid::Uuid::new_v4());
-    let _ = std::fs::create_dir_all(&working_directory)?;
+    std::fs::create_dir_all(&working_directory)?;
     clone_repository(&working_directory, uuid, &pipeline.id, &repo_url).await?;
     let project_directory = format!("{working_directory}/source");
     if let Ok(temp) = fetch_template_from_files(&project_directory) {
@@ -67,6 +67,14 @@ fn run_bash_command(dir: &str, command: &str) -> std::io::Result<()> {
 
     if let Some(ref mut stdout) = process.stdout {
         let reader = std::io::BufReader::new(stdout);
+
+        for line in reader.lines() {
+            println!("{}", line?);
+        }
+    }
+
+    if let Some(ref mut stderr) = process.stderr {
+        let reader = std::io::BufReader::new(stderr);
 
         for line in reader.lines() {
             println!("{}", line?);
