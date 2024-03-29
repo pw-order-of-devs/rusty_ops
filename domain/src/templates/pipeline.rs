@@ -1,6 +1,6 @@
+use async_graphql::indexmap::IndexMap;
 use commons::errors::RustyError;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 /// Pipeline script
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -23,22 +23,12 @@ pub struct Stage {
 pub struct PipelineTemplate {
     /// pipeline docker image
     pub image: Option<String>,
-    /// pipeline before each stage
-    #[serde(rename(
-        deserialize = "beforeEach",
-        deserialize = "before-each",
-        deserialize = "before_each",
-    ))]
-    pub before_each: Option<Script>,
-    /// pipeline after each stage
-    #[serde(rename(
-        deserialize = "afterEach",
-        deserialize = "after-each",
-        deserialize = "after_each",
-    ))]
-    pub after_each: Option<Script>,
+    /// pipeline before stage
+    pub before: Option<Script>,
+    /// pipeline after stage
+    pub after: Option<Script>,
     /// pipeline stages
-    pub stages: HashMap<String, Stage>,
+    pub stages: IndexMap<String, Stage>,
 }
 
 impl PipelineTemplate {
@@ -67,13 +57,13 @@ impl PipelineTemplate {
             });
         }
 
-        if let Some(before) = result.clone().before_each {
+        if let Some(before) = result.clone().before {
             if before.script.is_empty() {
-                errors.push("Pipeline template: before_each.scripts cannot be empty");
+                errors.push("Pipeline template: before.scripts cannot be empty");
             }
         }
 
-        if let Some(after) = result.clone().after_each {
+        if let Some(after) = result.clone().after {
             if after.script.is_empty() {
                 errors.push("Pipeline template: after_each.scripts cannot be empty");
             }

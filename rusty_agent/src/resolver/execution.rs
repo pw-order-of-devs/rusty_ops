@@ -100,6 +100,7 @@ async fn clone_repository(
 
 fn fetch_template_from_files(dir: &str) -> Result<PipelineTemplate, RustyError> {
     let file = read_to_string(format!("{dir}/rusty_ci.yaml"))?;
+    let file = base64_url::encode(&file);
     PipelineTemplate::from_yaml(&file)
 }
 

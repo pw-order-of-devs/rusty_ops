@@ -19,6 +19,7 @@ path = "src/main.rs"
 commons = { path = "../commons", features = ["errors", "logging", "ws"] }
 domain = { path = "../domain" }
 
+base64-url.workspace = true
 futures-util.workspace = true
 lazy_static.workspace = true
 log.workspace = true
