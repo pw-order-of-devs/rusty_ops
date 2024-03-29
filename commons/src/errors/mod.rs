@@ -10,6 +10,8 @@ pub enum RustyError {
     ConvertError(String),
     /// Environment variable error
     EnvVarError(String),
+    /// IO error
+    IoError(String),
     /// MongoDb operation related error
     MongoDBError(String),
     /// PostgresSQL operation related error
@@ -43,6 +45,9 @@ impl Display for RustyError {
             }
             Self::EnvVarError(message) => {
                 write!(f, "Env variable error: {message}")
+            }
+            Self::IoError(message) => {
+                write!(f, "IO error: {message}")
             }
             Self::MongoDBError(message) => {
                 write!(f, "MongoDB error: {message}")
@@ -184,6 +189,12 @@ impl From<std::string::FromUtf8Error> for RustyError {
 impl From<std::env::VarError> for RustyError {
     fn from(err: std::env::VarError) -> Self {
         Self::EnvVarError(err.to_string())
+    }
+}
+
+impl From<std::io::Error> for RustyError {
+    fn from(err: std::io::Error) -> Self {
+        Self::IoError(err.to_string())
     }
 }
 

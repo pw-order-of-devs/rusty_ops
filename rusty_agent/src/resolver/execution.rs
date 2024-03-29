@@ -1,7 +1,9 @@
+use std::fs::read_to_string;
 use std::io::BufRead;
 
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
+use domain::templates::pipeline::PipelineTemplate;
 
 use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
@@ -9,26 +11,21 @@ use crate::api::projects::get_pipeline_repository;
 
 pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
-    let (project_id, template) = get_pipeline_template(pipeline.job_id).await?;
+    let (project_id, mut template) = get_pipeline_template(pipeline.job_id).await?;
     let repo_url = get_pipeline_repository(project_id).await?;
     // if image: run in docker
 
     let working_directory = format!("/tmp/{}", uuid::Uuid::new_v4());
     let _ = std::fs::create_dir(&working_directory);
-    if let Err(err) = run_bash_command(&working_directory, &format!("git clone {repo_url} source"))
-    {
-        log::error!("Error in pipeline {}: {}", &pipeline.id, err);
-        cleanup(
-            &working_directory,
-            &pipeline.id,
-            uuid,
-            PipelineStatus::Failure,
-        )
-        .await;
-        return Ok(());
-    }
-
+    clone_repository(&working_directory, uuid, &pipeline.id, &repo_url).await?;
     let project_directory = format!("{working_directory}/source");
+    if let Ok(temp) = fetch_template_from_files(&project_directory) {
+        log::debug!("found template in project files.");
+        template = temp;
+    } else {
+        log::debug!("no template in project files, using default one.");
+    };
+
     for (name, stage) in template.stages {
         log::debug!("running stage: {name}");
         // if image: run in docker
@@ -84,6 +81,26 @@ fn run_bash_command(dir: &str, command: &str) -> std::io::Result<()> {
     }
 
     Ok(())
+}
+
+async fn clone_repository(
+    dir: &str,
+    uuid: &str,
+    pipeline_id: &str,
+    repo_url: &str,
+) -> Result<(), RustyError> {
+    if let Err(err) = run_bash_command(dir, &format!("git clone {repo_url} source")) {
+        log::error!("Error in pipeline {}: {}", &pipeline_id, err);
+        cleanup(dir, pipeline_id, uuid, PipelineStatus::Failure).await;
+        Err(RustyError::from(err))
+    } else {
+        Ok(())
+    }
+}
+
+fn fetch_template_from_files(dir: &str) -> Result<PipelineTemplate, RustyError> {
+    let file = read_to_string(format!("{dir}/rusty_ci.yaml"))?;
+    PipelineTemplate::from_yaml(&file)
 }
 
 async fn cleanup(dir: &str, pipe_id: &str, uuid: &str, status: PipelineStatus) {
