@@ -1,0 +1,18 @@
+stages:
+  prepare:
+    script:
+      - make prepare_env
+
+  build:
+    script:
+      - make build
+
+  lint:
+    script:
+      - make lint
+
+  docker:
+    script:
+      - make build_server
+      - make build_agent
+      - make build_web
