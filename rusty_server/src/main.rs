@@ -32,7 +32,7 @@ fn health() -> String {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> std::io::Result<()> {
     commons::logger::init();
     let db = persist::init().await;
     schedulers::init(&db);
@@ -50,6 +50,5 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Server is listening at: :{port}/graphql");
     Server::new(TcpListener::bind(format!("{host}:{port}")))
         .run(app)
-        .await?;
-    Ok(())
+        .await
 }

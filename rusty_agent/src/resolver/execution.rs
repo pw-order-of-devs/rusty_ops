@@ -1,5 +1,6 @@
-use std::fs::read_to_string;
-use std::io::BufRead;
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Command;
+use tokio::spawn;
 
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
@@ -30,7 +31,7 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
         log::debug!("running stage: {name}");
         // if image: run in docker
         for command in stage.script {
-            if let Err(err) = run_bash_command(&project_directory, &command) {
+            if let Err(err) = run_bash_command(&project_directory, &command).await {
                 log::error!("Error in pipeline {}: {}", &pipeline.id, err);
                 cleanup(
                     &working_directory,
@@ -56,36 +57,48 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
     Ok(())
 }
 
-fn run_bash_command(dir: &str, command: &str) -> std::io::Result<()> {
-    let mut process = std::process::Command::new("sh")
+async fn run_bash_command(dir: &str, command: &str) -> std::io::Result<()> {
+    let mut process = Command::new("sh")
         .current_dir(dir)
         .arg("-c")
         .arg(command)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
+        .kill_on_drop(true)
         .spawn()?;
 
-    if let Some(ref mut stdout) = process.stdout {
-        let reader = std::io::BufReader::new(stdout);
+    let stdout = process.stdout.take().unwrap();
+    let stderr = process.stderr.take().unwrap();
 
-        for line in reader.lines() {
-            println!("{}", line?);
+    let stdout_handle = spawn(async move {
+        let reader = BufReader::new(stdout);
+        let mut lines = reader.lines();
+
+        while let Some(line) = lines.next_line().await.unwrap() {
+            println!("{}", line);
         }
-    }
+    });
 
-    if let Some(ref mut stderr) = process.stderr {
-        let reader = std::io::BufReader::new(stderr);
+    // Spawn a thread to capture stderr
+    let stderr_handle = spawn(async move {
+        let reader = BufReader::new(stderr);
+        let mut lines = reader.lines();
 
-        for line in reader.lines() {
-            println!("{}", line?);
+        while let Some(line) = lines.next_line().await.unwrap() {
+            eprintln!("{}", line);
         }
-    }
+    });
 
-    let output = process.wait_with_output()?;
+    // Wait for command to complete
+    let status = process.wait().await?;
 
-    if !output.status.success() {
-        // handle pipeline error
-        log::error!("Command executed with error: {}", output.status);
+    // Wait for both threads to complete
+    stdout_handle.await.unwrap();
+    stderr_handle.await.unwrap();
+
+    if !status.success() {
+        // react to pipeline errors
+        log::error!("Command executed with error: {}", status);
     }
 
     Ok(())
@@ -97,7 +110,7 @@ async fn clone_repository(
     pipeline_id: &str,
     repo_url: &str,
 ) -> Result<(), RustyError> {
-    if let Err(err) = run_bash_command(dir, &format!("git clone {repo_url} source")) {
+    if let Err(err) = run_bash_command(dir, &format!("git clone {repo_url} source")).await {
         log::error!("Error in pipeline {}: {}", &pipeline_id, err);
         cleanup(dir, pipeline_id, uuid, PipelineStatus::Failure).await;
         Err(RustyError::from(err))
@@ -107,12 +120,12 @@ async fn clone_repository(
 }
 
 fn fetch_template_from_files(dir: &str) -> Result<PipelineTemplate, RustyError> {
-    let file = read_to_string(format!("{dir}/rusty_ci.yaml"))?;
+    let file = std::fs::read_to_string(format!("{dir}/rusty_ci.yaml"))?;
     let file = base64_url::encode(&file);
     PipelineTemplate::from_yaml(&file)
 }
 
 async fn cleanup(dir: &str, pipe_id: &str, uuid: &str, status: PipelineStatus) {
-    let _ = std::fs::remove_dir(dir);
+    let _ = std::fs::remove_dir_all(dir);
     let _ = finalize(pipe_id, uuid, status).await;
 }
