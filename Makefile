@@ -10,7 +10,7 @@ format:
 	cargo fmt
 
 lint:
-	 cargo clippy --all-targets --all-features -- -D warnings
+	cargo clippy --all-targets --all-features -- -D warnings
 
 build_server:
 	docker build -t rusty-server -f rusty_server/Dockerfile .
