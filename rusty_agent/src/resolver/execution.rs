@@ -1,4 +1,4 @@
-use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
 use tokio::process::Command;
 use tokio::spawn;
 
@@ -68,31 +68,17 @@ async fn run_bash_command(dir: &str, command: &str) -> std::io::Result<()> {
         .spawn()?;
 
     let stdout = process.stdout.take().unwrap();
-    let stderr = process.stderr.take().unwrap();
 
     let stdout_handle = spawn(async move {
-        let reader = BufReader::new(stdout);
-        let mut lines = reader.lines();
-
-        while let Some(line) = lines.next_line().await.unwrap() {
-            println!("{}", line);
-        }
+        print_line(stdout).await;
     });
 
-    // Spawn a thread to capture stderr
+    let stderr = process.stderr.take().unwrap();
     let stderr_handle = spawn(async move {
-        let reader = BufReader::new(stderr);
-        let mut lines = reader.lines();
-
-        while let Some(line) = lines.next_line().await.unwrap() {
-            eprintln!("{}", line);
-        }
+        print_line(stderr).await;
     });
 
-    // Wait for command to complete
     let status = process.wait().await?;
-
-    // Wait for both threads to complete
     stdout_handle.await.unwrap();
     stderr_handle.await.unwrap();
 
@@ -128,4 +114,13 @@ fn fetch_template_from_files(dir: &str) -> Result<PipelineTemplate, RustyError> 
 async fn cleanup(dir: &str, pipe_id: &str, uuid: &str, status: PipelineStatus) {
     let _ = std::fs::remove_dir_all(dir);
     let _ = finalize(pipe_id, uuid, status).await;
+}
+
+async fn print_line(writer: impl AsyncRead + Unpin + Send) {
+    let reader = BufReader::new(writer);
+    let mut lines = reader.lines();
+
+    while let Some(line) = lines.next_line().await.unwrap() {
+        eprintln!("{line}");
+    }
 }

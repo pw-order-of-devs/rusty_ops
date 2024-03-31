@@ -48,7 +48,15 @@ async fn main() -> Result<(), std::io::Error> {
     let port = var_or_default("AGENT_PORT", "8800".to_string());
     log::info!("Agent is listening at: :{port}/graphql");
     Server::new(TcpListener::bind(format!("{host}:{port}")))
-        .run(app)
+        .run_with_graceful_shutdown(
+            app,
+            async move {
+                let _ = tokio::signal::ctrl_c().await;
+            },
+            Some(std::time::Duration::from_secs(5)),
+        )
         .await?;
+
+    let _ = api::agents::unregister(&uuid).await;
     Ok(())
 }
