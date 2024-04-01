@@ -16,7 +16,8 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
-use poem::{get, handler, listener::TcpListener, Route, Server};
+use axum::{routing, Router};
+use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
 
@@ -25,13 +26,8 @@ mod api;
 /// scheduler for resolving pipelines
 mod resolver;
 
-#[handler]
-fn health() -> String {
-    "ok".to_string()
-}
-
 #[tokio::main]
-async fn main() -> Result<(), std::io::Error> {
+async fn main() {
     commons::logger::init();
 
     let uuid = uuid::Uuid::new_v4().to_string();
@@ -42,21 +38,45 @@ async fn main() -> Result<(), std::io::Error> {
     log::debug!("Initialized with id: `{uuid}`");
 
     // start the http server
-    let app = Route::new().at("/health", get(health));
+    let app = Router::new().route("/health", routing::get(|| async { "ok" }));
 
     let host = var_or_default("AGENT_ADDR", "0.0.0.0".to_string());
     let port = var_or_default("AGENT_PORT", "8800".to_string());
+    let addr: std::net::SocketAddr = format!("{host}:{port}")
+        .parse()
+        .expect("Failed parsing server address");
+
+    let listener = TcpListener::bind(addr).await.unwrap();
     log::info!("Agent is listening at: :{port}/graphql");
-    Server::new(TcpListener::bind(format!("{host}:{port}")))
-        .run_with_graceful_shutdown(
-            app,
-            async move {
-                let _ = tokio::signal::ctrl_c().await;
-            },
-            Some(std::time::Duration::from_secs(5)),
-        )
-        .await?;
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .expect("Failed to start server");
 
     let _ = api::agents::unregister(&uuid).await;
-    Ok(())
+    log::info!("Server is shut down");
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        () = ctrl_c => {},
+        () = terminate => {},
+    }
 }

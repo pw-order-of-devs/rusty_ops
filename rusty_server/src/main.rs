@@ -16,8 +16,9 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
-use async_graphql_poem::{GraphQL, GraphQLSubscription};
-use poem::{get, handler, listener::TcpListener, EndpointExt, Route, Server};
+use async_graphql_axum::{GraphQL, GraphQLSubscription};
+use axum::{routing, Router};
+use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
 
@@ -26,29 +27,34 @@ mod middleware;
 mod schedulers;
 mod services;
 
-#[handler]
-fn health() -> String {
-    "ok".to_string()
-}
-
 #[tokio::main]
-async fn main() -> std::io::Result<()> {
+async fn main() {
     commons::logger::init();
     let db = persist::init().await;
     schedulers::init(&db);
     let schema = gql::build_schema(&db);
 
     // start the http server
-    let app = Route::new()
-        .at("/health", get(health))
-        .at("/graphql", GraphQL::new(schema.clone()))
-        .at("/ws", get(GraphQLSubscription::new(schema)))
-        .with(middleware::cors::cors_config());
+    let app = Router::new()
+        .route("/health", routing::get(|| async { "ok" }))
+        .route(
+            "/graphql",
+            routing::post_service(GraphQL::new(schema.clone())),
+        )
+        .route_service("/ws", GraphQLSubscription::new(schema))
+        .layer(middleware::cors::cors_layer());
 
     let host = var_or_default("SERVER_ADDR", "0.0.0.0".to_string());
     let port = var_or_default("SERVER_PORT", "8000".to_string());
+    let addr: std::net::SocketAddr = format!("{host}:{port}")
+        .parse()
+        .expect("Failed parsing server address");
+
+    let listener = TcpListener::bind(addr).await.unwrap();
     log::info!("Server is listening at: :{port}/graphql");
-    Server::new(TcpListener::bind(format!("{host}:{port}")))
-        .run(app)
+    axum::serve(listener, app)
         .await
+        .expect("Failed to start server");
+
+    log::info!("Server is shut down");
 }

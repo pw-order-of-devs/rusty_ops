@@ -47,7 +47,9 @@ pub async fn unregister(uuid: &str) -> Result<u64, RustyError> {
 
     let data = reqwest_post(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
-    Ok(json_data["data"]["agents"]["deleteById"].as_u64().unwrap_or(0))
+    Ok(json_data["data"]["agents"]["deleteById"]
+        .as_u64()
+        .unwrap_or(0))
 }
 
 /// Function to call a healthcheck for agent via GraphQL endpoint.
