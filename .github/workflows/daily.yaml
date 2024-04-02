@@ -1,0 +1,17 @@
+name: Daily Job
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: scripts/daily.sh
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Daily update
