@@ -1,12 +1,9 @@
-name: default build
+name: Default build
 
 on:
   push:
     branches: ['**']
   workflow_dispatch:
-
-env:
-  APP_API_URL: http://dummy
 
 jobs:
   build:

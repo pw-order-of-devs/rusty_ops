@@ -1,4 +1,4 @@
-start_date=2024-02-01
+start_date=2024-03-01
 end_date=$(date +%Y-%m-%d)
 
 d="$start_date"
