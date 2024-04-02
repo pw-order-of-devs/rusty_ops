@@ -57,67 +57,115 @@ Date: 2024-02-28
   No commits were made this day.
 Date: 2024-02-29 
   No commits were made this day.
-Date: 2024-03-01 
-  No commits were made this day.
-Date: 2024-03-02 
-  No commits were made this day.
-Date: 2024-03-03 
-  No commits were made this day.
-Date: 2024-03-04 
-  No commits were made this day.
-Date: 2024-03-05 
-  No commits were made this day.
-Date: 2024-03-06 
-  No commits were made this day.
-Date: 2024-03-07 
-  No commits were made this day.
-Date: 2024-03-08 
-  No commits were made this day.
-Date: 2024-03-09 
-  No commits were made this day.
-Date: 2024-03-10 
-  No commits were made this day.
-Date: 2024-03-11 
-  No commits were made this day.
-Date: 2024-03-12 
-  No commits were made this day.
-Date: 2024-03-13 
-  No commits were made this day.
-Date: 2024-03-14 
-  No commits were made this day.
-Date: 2024-03-15 
-  No commits were made this day.
-Date: 2024-03-16 
-  No commits were made this day.
-Date: 2024-03-17 
-  No commits were made this day.
-Date: 2024-03-18 
-  No commits were made this day.
-Date: 2024-03-19 
-  No commits were made this day.
-Date: 2024-03-20 
-  No commits were made this day.
-Date: 2024-03-21 
-  No commits were made this day.
-Date: 2024-03-22 
-  No commits were made this day.
-Date: 2024-03-23 
-  No commits were made this day.
-Date: 2024-03-24 
-  No commits were made this day.
-Date: 2024-03-25 
-  No commits were made this day.
-Date: 2024-03-26 
-  No commits were made this day.
-Date: 2024-03-27 
-  No commits were made this day.
-Date: 2024-03-28 
-  No commits were made this day.
-Date: 2024-03-29 
-  No commits were made this day.
-Date: 2024-03-30 
-  No commits were made this day.
-Date: 2024-03-31 
-  No commits were made this day.
-Date: 2024-04-01 
-  No commits were made this day.
+Date: 2024-03-01
+  649db24 server template
+  cebcf93 Update issue templates
+  6820a79 simple github action
+  cf28c57 Create template.md for pull request
+Date: 2024-03-02
+  b8501c7 persistence template - MongoDB client
+  8f0e805 template mongodb+gql interface for jobs; template for package errors;
+Date: 2024-03-03
+  267e283 workspace cleanup
+  2f7d470 extend gql models; extend persistence
+  da59991 lint cleanup; documentation template
+Date: 2024-03-04
+  fc57013 web ui template view; features for shared modules
+Date: 2024-03-05
+  3b93bf9 documentation - current ADR list
+Date: 2024-03-06
+  861eaf7 ui - project preview
+Date: 2024-03-07
+  22f817b docker build for server and web
+  1d9f1ec ui - home page template; styling clean up
+  6b9446d ui - home page template; styling clean up
+  3281cbe gql+persist - filtering and pagination
+Date: 2024-03-08
+  d3c01cd clean up docker images
+  6d9871f extend models; job preview; pipeline preview; not found error page
+  0d696f2 extend .gitignore
+  530f843 docker images update - set versions
+Date: 2024-03-09
+  3d7b699 update rust to 1.76
+  9e58cfb cargo rustfmt
+  58e4d89 crate errors definitions; logger configuration from file + sample file
+  197ee45 cleanup - fmt+clippy
+  99f2fbb cleanup - fmt+clippy
+  c6e1f6d configurable api url for web
+  3da4305 cors config; configurable api url for web
+  8b7c081 cors config; configurable api url for web
+Date: 2024-03-10
+  56ce771 cors config
+  23562eb clippy cleanup
+  9d33867 styling; register project modal view + handling
+Date: 2024-03-11
+  1d2e32e refactor gql models - split into modules
+  6d5399c cargo rustfmt
+  3c29779 register job; pipeline template from yaml
+  cfee56c job view update
+  2713bb5 cleanup
+  6a9b1f8 run pipeline from ui
+Date: 2024-03-12
+  17e072d api validations
+  977eff8 assign pipeline to agent; switch from gloo_net to reqwasm; health check;
+  e30410f cargo rustfmt
+Date: 2024-03-13
+  8b56c03 server - update pipeline status
+Date: 2024-03-14
+  9d9d770 cargo rustfmt
+  d443160 fix github action
+Date: 2024-03-15
+  b21d877 server - pipelines - subscription on new pipe inserted
+  564e618 mongo - update operation refactored
+  9de1dc2 mongo - update operation refactored
+  6a42556 pipelines extension
+  5e476f0 env variables common handler
+  d893659 pipelines extension fix
+  09f86e5 server - finalize pipeline
+  9602d57 agent - initial service
+  5e7d3a9 logging update
+  6406db9 cargo rustfmt
+Date: 2024-03-16
+  4d5ecc8 service layer for server
+Date: 2024-03-17
+  eb68e03 require mongodb as replica set
+Date: 2024-03-18
+  616afcb redis support
+  20aa68d redis bb8 pubsub
+Date: 2024-03-19
+  44ed535 mongo+redis - auth update
+Date: 2024-03-20
+  b905296 extend default github action
+Date: 2024-03-21
+  f9ee32c general cleanup
+  020eece optional subscription support for mongo; agent refactor
+  cdd0f38 Remove versions.toml
+Date: 2024-03-22
+  9521ea1 docker update; makefile update; agent - execute flow update
+Date: 2024-03-23
+  b5b76e7 register agent on boot; send agent healthcheck; delete agent on ttl expired;
+Date: 2024-03-24
+  1fdff25 postgresql support
+Date: 2024-03-25
+  fa389e8 cleanup pipelines with unknown agent assigned
+Date: 2024-03-26
+  aca146f agents list view
+Date: 2024-03-27
+  0e4e4d6 backend - pagination
+Date: 2024-03-28
+  e8bfd00 server - limit agents registered
+  e8e31b2 view fix
+Date: 2024-03-29
+  4f16fa7 execute pipeline extension
+  121689b pipeline template
+  b43c346 execute pipeline update
+  c915a19 execute pipeline update
+  67ebf27 execute pipeline update
+  f83cd9d execute pipeline update
+Date: 2024-03-30
+  1b35f12 fix rusty_web env generator
+  3015700 pipeline execution - async update; versions update
+Date: 2024-03-31
+  e8de7f0 agent - graceful shutdown - unregister; pipeline execution - minor fix
+Date: 2024-04-01
+  9f739be switch from poem to axum as backend server
