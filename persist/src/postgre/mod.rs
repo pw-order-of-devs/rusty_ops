@@ -3,6 +3,7 @@ use bb8_postgres::tokio_postgres::{types::Type, NoTls, Row};
 use bb8_postgres::PostgresConnectionManager;
 use serde_json::{Map, Value};
 use std::pin::Pin;
+use std::time::Duration;
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
@@ -24,8 +25,11 @@ impl PostgreSQLClient {
             PostgresConnectionManager::new_from_stringlike(Self::get_conn_string(), NoTls)
                 .expect("error while parsing postgresql connection string");
 
+        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
+        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
         let pool = Pool::builder()
-            .max_size(24)
+            .max_size(max_pool_size)
+            .connection_timeout(Duration::from_secs(timeout))
             .build(manager)
             .await
             .expect("error while building postgresql client");

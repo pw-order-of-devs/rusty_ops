@@ -45,9 +45,10 @@ impl MongoDBClient {
 
     fn configure(client_options: &mut ClientOptions) {
         client_options.credential = Self::get_credential();
-        client_options.connect_timeout = Some(Duration::new(30, 0));
-        client_options.min_pool_size = Some(8);
-        client_options.max_pool_size = Some(24);
+        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
+        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
+        client_options.connect_timeout = Some(Duration::from_secs(timeout));
+        client_options.max_pool_size = Some(max_pool_size);
     }
 
     fn get_credential() -> Option<Credential> {

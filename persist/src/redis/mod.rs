@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::pin::Pin;
+use std::time::Duration;
 
 use bb8_redis::redis::AsyncCommands;
 use bb8_redis::{bb8, RedisConnectionManager};
@@ -27,7 +28,12 @@ impl RedisClient {
     async fn build_client() -> Self {
         let manager = RedisConnectionManager::new(Self::get_conn_string())
             .expect("error while building redis client");
+
+        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
+        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
         let client = bb8::Pool::builder()
+            .connection_timeout(Duration::from_secs(timeout))
+            .max_size(max_pool_size)
             .build(manager)
             .await
             .expect("error while building redis client");
