@@ -144,7 +144,7 @@ impl DbClient {
     pub fn change_stream<'a, T: RustyDomainItem + 'static>(
         &'a self,
         index: &'a str,
-    ) -> impl futures_util::Stream<Item = T> + 'a {
+    ) -> impl futures_util::Stream<Item = Option<T>> + 'a {
         match self {
             Self::MongoDb(client) => client.change_stream(index),
             Self::PostgreSql(client) => client.change_stream(index),

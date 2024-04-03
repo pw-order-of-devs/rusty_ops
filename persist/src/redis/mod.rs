@@ -205,7 +205,7 @@ impl Persistence for RedisClient {
     fn change_stream<'a, T: RustyDomainItem + 'static>(
         &'a self,
         index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>> {
+    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
         Box::pin(async_stream::stream! {
             let mut conn = self.pubsub.dedicated_connection().await
                 .expect("Error while obtaining redis connection");
@@ -215,7 +215,7 @@ impl Persistence for RedisClient {
             while let Some(msg) = conn.on_message().next().await {
                 if let Ok(payload) = msg.get_payload::<String>() {
                     if let Ok(item) = serde_json::from_str::<T>(&payload) {
-                        yield item
+                        yield Some(item)
                     }
                 }
             }

@@ -173,7 +173,7 @@ impl Persistence for MongoDBClient {
     fn change_stream<'a, T: RustyDomainItem + 'static>(
         &'a self,
         index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>> {
+    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
         Box::pin(async_stream::stream! {
             if let Ok(mut change_stream) = self.client
                 .database(&self.database)
@@ -184,13 +184,14 @@ impl Persistence for MongoDBClient {
                     if let Ok(event) = event {
                         if event.operation_type == OperationType::Insert {
                             if let Some(document) = event.full_document {
-                                yield document;
+                                yield Some(document);
                             }
                         }
                     }
                 }
             } else {
-                log::debug!("Error while obtaining a change stream for `{index}`: not supported in current server configuration");
+                log::trace!("Error while obtaining a change stream for `{index}`: not supported in current server configuration");
+                yield None;
             }
         })
     }

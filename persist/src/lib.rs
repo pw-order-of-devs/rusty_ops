@@ -239,7 +239,7 @@ pub trait Persistence: Send + Sync {
     fn change_stream<'a, T: RustyDomainItem + 'static>(
         &'a self,
         index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>>;
+    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>>;
 }
 
 /// Initializes the persistence layer based on the configured database type.

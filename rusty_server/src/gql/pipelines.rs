@@ -114,7 +114,10 @@ pub struct PipelineSubscription;
 
 #[Subscription]
 impl PipelineSubscription {
-    async fn pipelines<'a>(&'a self, ctx: &Context<'a>) -> impl Stream<Item = Pipeline> + 'a {
+    async fn pipelines<'a>(
+        &'a self,
+        ctx: &Context<'a>,
+    ) -> impl Stream<Item = Option<Pipeline>> + 'a {
         log::debug!("handling `pipelines::inserted` subscription");
         let stream = ctx
             .data::<DbClient>()

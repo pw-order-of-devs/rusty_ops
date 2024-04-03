@@ -183,8 +183,10 @@ impl Persistence for PostgreSQLClient {
     fn change_stream<'a, T: RustyDomainItem + 'static>(
         &'a self,
         _index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = T> + Send + 'a>> {
-        todo!()
+    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
+        Box::pin(async_stream::stream! {
+            yield None
+        })
     }
 }
 

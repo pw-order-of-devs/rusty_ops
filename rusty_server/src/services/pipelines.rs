@@ -177,6 +177,6 @@ pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
 }
 
 // subscriptions
-pub fn inserted_stream(db: &DbClient) -> impl Stream<Item = Pipeline> + '_ {
+pub fn inserted_stream(db: &DbClient) -> impl Stream<Item = Option<Pipeline>> + '_ {
     db.change_stream(PIPELINES_INDEX)
 }
