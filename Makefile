@@ -12,6 +12,12 @@ format:
 lint:
 	cargo clippy --all-targets --all-features -- -D warnings
 
+precommit:
+	git pull
+	make build
+	make format
+	make lint
+
 build_server:
 	docker build -t rusty-server -f rusty_server/Dockerfile .
 
