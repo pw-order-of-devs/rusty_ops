@@ -111,3 +111,11 @@ Date: 2024-03-31
   e8de7f0 agent - graceful shutdown - unregister; pipeline execution - minor fix
 Date: 2024-04-01
   9f739be switch from poem to axum as backend server
+Date: 2024-04-02
+  0a26b01 daily summary pipeline
+  9084136 workflows - manual dispatching
+  9be5217 Daily update
+  df265b7 daily action update
+  b7d0938 Daily update
+  0aaed8a jobs cleanup
+  fb46214 Daily update
