@@ -1,6 +1,7 @@
 use async_graphql::indexmap::IndexMap;
 use commons::errors::RustyError;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 /// Pipeline script
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -14,6 +15,8 @@ pub struct Script {
 pub struct Stage {
     /// pipeline stage docker image
     pub image: Option<String>,
+    /// pipeline stage environment variables
+    pub env: Option<HashMap<String, String>>,
     /// pipeline stage commands
     pub script: Vec<String>,
 }
@@ -23,6 +26,8 @@ pub struct Stage {
 pub struct PipelineTemplate {
     /// pipeline docker image
     pub image: Option<String>,
+    /// pipeline environment variables
+    pub env: Option<HashMap<String, String>>,
     /// pipeline before stage
     pub before: Option<Script>,
     /// pipeline after stage

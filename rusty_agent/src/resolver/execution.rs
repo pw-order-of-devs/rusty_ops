@@ -1,10 +1,11 @@
+use std::collections::HashMap;
 use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
 use tokio::process::Command;
 use tokio::spawn;
 
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
-use domain::templates::pipeline::PipelineTemplate;
+use domain::templates::pipeline::{PipelineTemplate, Stage};
 
 use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
@@ -27,11 +28,12 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
         log::debug!("no template in project files, using default one.");
     };
 
-    for (name, stage) in template.stages {
+    for (name, stage) in &template.stages {
         log::debug!("running stage: {name}");
         // if image: run in docker
-        for command in stage.script {
-            if let Err(err) = run_bash_command(&project_directory, &command).await {
+        let env = prepare_env(&template, stage);
+        for command in &stage.script {
+            if let Err(err) = run_bash_command(&project_directory, command, &env).await {
                 log::error!("Error in pipeline {}: {}", &pipeline.id, err);
                 cleanup(
                     &working_directory,
@@ -57,11 +59,31 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
     Ok(())
 }
 
-async fn run_bash_command(dir: &str, command: &str) -> std::io::Result<()> {
+fn prepare_env(template: &PipelineTemplate, stage: &Stage) -> HashMap<String, String> {
+    let mut envs = HashMap::new();
+    if let Some(env) = template.clone().env {
+        for (k, v) in env {
+            envs.insert(k, v);
+        }
+    }
+    if let Some(env) = stage.clone().env {
+        for (k, v) in env {
+            envs.insert(k, v);
+        }
+    }
+    envs
+}
+
+async fn run_bash_command(
+    dir: &str,
+    command: &str,
+    env: &HashMap<String, String>,
+) -> std::io::Result<()> {
     let mut process = Command::new("sh")
         .current_dir(dir)
         .arg("-c")
         .arg(command)
+        .envs(env)
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped())
         .kill_on_drop(true)
@@ -96,7 +118,13 @@ async fn clone_repository(
     pipeline_id: &str,
     repo_url: &str,
 ) -> Result<(), RustyError> {
-    if let Err(err) = run_bash_command(dir, &format!("git clone {repo_url} source")).await {
+    if let Err(err) = run_bash_command(
+        dir,
+        &format!("git clone {repo_url} source"),
+        &HashMap::new(),
+    )
+    .await
+    {
         log::error!("Error in pipeline {}: {}", &pipeline_id, err);
         cleanup(dir, pipeline_id, uuid, PipelineStatus::Failure).await;
         Err(RustyError::from(err))
