@@ -119,3 +119,11 @@ Date: 2024-04-02
   b7d0938 Daily update
   0aaed8a jobs cleanup
   fb46214 Daily update
+Date: 2024-04-03
+  c36d745 Daily update
+  d5b5b09 pipelines subscription - fix for not supported configuration
+  24acfcd makefile update
+  e6bd91b db connection configurations
+  969f308 daily job - cleanup
+Date: 2024-04-04
+  f845ff4 support for environment variables for pipeline and separate stage
