@@ -14,19 +14,6 @@
 
 ---
 
-## Modules
-
-The project integrates several modules:
-
-* **server**: [link to doc]
-* **agent**: [link to doc]
-* **web ui**: [link to doc]
-* **commons**: [link to doc]
-* **domain**: [link to doc]
-* **persist**: [link to doc]
-
----
-
 ## Setup Instructions
 
 [link to doc]\
@@ -37,6 +24,15 @@ Include instructions on how to set up your project here. Discuss any environment
 ## Architecture
 
 [todo] link to architecture docs
+
+The project integrates several modules:
+
+* **server**: [link to doc]
+* **agent**: [link to doc]
+* **web ui**: [link to doc]
+* **commons**: [link to doc]
+* **domain**: [link to doc]
+* **persist**: [link to doc]
 
 ## Contributing
 
