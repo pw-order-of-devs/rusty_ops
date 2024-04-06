@@ -127,3 +127,9 @@ Date: 2024-04-03
   969f308 daily job - cleanup
 Date: 2024-04-04
   f845ff4 support for environment variables for pipeline and separate stage
+Date: 2024-04-05
+  7561bd4 license update
+  28b9477 README template
+  ee5a7b9 README template update
+  6f398cb daily job update
+  71768c4 Daily update
