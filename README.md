@@ -9,6 +9,7 @@
 [![Stargazers][stars-shield]][stars-url]\
 [![LinkedIn][linkedin-shield]][linkedin-url]
 
+---
 
 `rusty_ops` - CI/CD system written in Rust
 
@@ -60,7 +61,7 @@ Thank you for considering a contribution to this project!
 
 ## License
 
-This project is licensed under MIT license. See `LICENSE` for more informations.
+This project is licensed under MIT license. See [LICENSE][license-url] for more informations.
 
 ---
 
@@ -69,17 +70,17 @@ This project is licensed under MIT license. See `LICENSE` for more informations.
 * Paweł Walus ([@pw-order-of-devs](http://github.com/pw-order-of-devs))
 
 <!-- links -->
-[language]: https://img.shields.io/badge/language-Rust-orange
-[build-status]: https://img.shields.io/github/actions/workflow/status/pw-order-of-devs/rusty_ops/default.yaml?branch=master
-[contributors-shield]: https://img.shields.io/github/contributors/pw-order-of-devs/rusty_ops
+[language]: https://img.shields.io/badge/language-Rust-orange?style=flat-square
+[build-status]: https://img.shields.io/github/actions/workflow/status/pw-order-of-devs/rusty_ops/default.yaml?branch=master&style=flat-square
+[contributors-shield]: https://img.shields.io/github/contributors/pw-order-of-devs/rusty_ops?style=flat-square
 [contributors-url]: https://github.com/pw-order-of-devs/rusty_ops/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/pw-order-of-devs/rusty_ops
+[forks-shield]: https://img.shields.io/github/forks/pw-order-of-devs/rusty_ops?style=flat-square
 [forks-url]: https://github.com/pw-order-of-devs/rusty_ops/network/members
-[stars-shield]: https://img.shields.io/github/stars/pw-order-of-devs/rusty_ops
+[stars-shield]: https://img.shields.io/github/stars/pw-order-of-devs/rusty_ops?style=flat-square
 [stars-url]: https://github.com/pw-order-of-devs/rusty_ops/stargazers
-[issues-shield]: https://img.shields.io/github/issues/pw-order-of-devs/rusty_ops
+[issues-shield]: https://img.shields.io/github/issues/pw-order-of-devs/rusty_ops?style=flat-square
 [issues-url]: https://github.com/pw-order-of-devs/rusty_ops/issues
-[license-shield]: https://img.shields.io/github/license/pw-order-of-devs/rusty_ops
+[license-shield]: https://img.shields.io/github/license/pw-order-of-devs/rusty_ops?style=flat-square
 [license-url]: https://github.com/pw-order-of-devs/rusty_ops/blob/master/LICENSE
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black?logo=linkedin&colorB=555
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black?logo=linkedin&colorB=555&style=flat-square
 [linkedin-url]: https://www.linkedin.com/in/pawe%C5%82-walus-23121697/
