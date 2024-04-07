@@ -52,10 +52,7 @@ impl PipelineTemplate {
         if result.stages.is_empty() {
             errors.push("Pipeline template: stages cannot be empty");
         } else {
-            result.stages.iter().for_each(|(name, stage)| {
-                if name.is_empty() {
-                    errors.push("Pipeline template: stages.name cannot be empty");
-                }
+            result.stages.values().for_each(|stage| {
                 if stage.script.is_empty() {
                     errors.push("Pipeline template: stages.script cannot be empty");
                 }
@@ -64,13 +61,13 @@ impl PipelineTemplate {
 
         if let Some(before) = result.clone().before {
             if before.script.is_empty() {
-                errors.push("Pipeline template: before.scripts cannot be empty");
+                errors.push("Pipeline template: before.script cannot be empty");
             }
         }
 
         if let Some(after) = result.clone().after {
             if after.script.is_empty() {
-                errors.push("Pipeline template: after_each.scripts cannot be empty");
+                errors.push("Pipeline template: after.script cannot be empty");
             }
         }
 
