@@ -26,6 +26,4 @@ bb8-redis.workspace = true
 futures-util.workspace = true
 log.workspace = true
 mongodb.workspace = true
-serde.workspace = true
 serde_json.workspace = true
-tokio.workspace = true
