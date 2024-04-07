@@ -18,6 +18,7 @@
 
 /// crate errors
 #[cfg(feature = "errors")]
+#[cfg(not(tarpaulin_include))]
 pub mod errors;
 
 /// environment variables wrapper
@@ -25,4 +26,5 @@ pub mod env;
 
 /// logging configuration
 #[cfg(feature = "logging")]
+#[cfg(not(tarpaulin_include))]
 pub mod logger;
