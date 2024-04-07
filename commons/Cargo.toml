@@ -37,3 +37,6 @@ serde_json.workspace = true
 serde_valid.workspace = true
 serde_yaml.workspace = true
 tokio-tungstenite = { workspace = true, optional = true }
+
+[dev-dependencies]
+rstest.workspace = true
