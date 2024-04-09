@@ -3,9 +3,9 @@ use rstest::rstest;
 use commons::errors::RustyError;
 
 trait VarValue:
-std::str::FromStr + Clone +
-std::fmt::Display + std::fmt::Debug +
-PartialEq + PartialOrd {}
+    std::str::FromStr + Clone + std::fmt::Display + std::fmt::Debug + PartialEq + PartialOrd
+{
+}
 
 impl VarValue for String {}
 impl VarValue for i32 {}
@@ -14,10 +14,7 @@ impl VarValue for i32 {}
 #[case("TEST_VAR_STR", Some("test".to_string()))]
 #[case("TEST_VAR_I32", Some(1234))]
 #[case("TEST_VAR_MISSING", None::<String>)]
-fn var_test<T: VarValue>(
-    #[case] key: &str,
-    #[case] value: Option<T>,
-) {
+fn var_test<T: VarValue>(#[case] key: &str, #[case] value: Option<T>) {
     before(key, &value);
     let result = commons::env::var::<T>(key);
     if let Some(value) = value.clone() {
@@ -38,19 +35,13 @@ fn var_test<T: VarValue>(
 
 #[rstest]
 #[case("TEST_VAR_STR", Some("test".to_string()))]
-fn var_parsing_failing_test<T: VarValue>(
-    #[case] key: &str,
-    #[case] value: Option<T>,
-) {
+fn var_parsing_failing_test<T: VarValue>(#[case] key: &str, #[case] value: Option<T>) {
     before(key, &value);
     let result = commons::env::var::<i32>(key);
     std::env::remove_var(key);
     assert!(result.is_err());
     assert_eq!(
-        RustyError::EnvVarError(
-            key.to_string(),
-            "Failed parsing the result".to_string()
-        ),
+        RustyError::EnvVarError(key.to_string(), "Failed parsing the result".to_string()),
         result.unwrap_err()
     );
 }
