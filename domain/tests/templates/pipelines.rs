@@ -55,7 +55,10 @@ fn validate_from_yaml_full_test() {
     assert!(pipeline.is_ok());
     let pipeline = pipeline.unwrap();
     assert_eq!(2, pipeline.stages.len());
-    assert_eq!("value", pipeline.stages[0].clone().env.unwrap()["test_key_stage_1"]);
+    assert_eq!(
+        "value",
+        pipeline.stages[0].clone().env.unwrap()["test_key_stage_1"]
+    );
 }
 
 #[test]
@@ -67,7 +70,10 @@ fn validate_from_yaml_error_empty_stages_test() {
     let encoded = base64_url::encode(&yaml);
     let pipeline = PipelineTemplate::from_yaml(&encoded);
     assert!(pipeline.is_err());
-    assert_eq!(RustyError::SerializationError("Pipeline template: stages cannot be empty".to_string()), pipeline.unwrap_err());
+    assert_eq!(
+        RustyError::SerializationError("Pipeline template: stages cannot be empty".to_string()),
+        pipeline.unwrap_err()
+    );
 }
 
 #[test]
@@ -81,7 +87,12 @@ fn validate_from_yaml_error_empty_stage_scripts_test() {
     let encoded = base64_url::encode(&yaml);
     let pipeline = PipelineTemplate::from_yaml(&encoded);
     assert!(pipeline.is_err());
-    assert_eq!(RustyError::SerializationError("Pipeline template: stages.script cannot be empty".to_string()), pipeline.unwrap_err());
+    assert_eq!(
+        RustyError::SerializationError(
+            "Pipeline template: stages.script cannot be empty".to_string()
+        ),
+        pipeline.unwrap_err()
+    );
 }
 
 #[test]
@@ -99,7 +110,12 @@ fn validate_from_yaml_error_empty_before_scripts_test() {
     let encoded = base64_url::encode(&yaml);
     let pipeline = PipelineTemplate::from_yaml(&encoded);
     assert!(pipeline.is_err());
-    assert_eq!(RustyError::SerializationError("Pipeline template: before.script cannot be empty".to_string()), pipeline.unwrap_err());
+    assert_eq!(
+        RustyError::SerializationError(
+            "Pipeline template: before.script cannot be empty".to_string()
+        ),
+        pipeline.unwrap_err()
+    );
 }
 
 #[test]
@@ -117,5 +133,10 @@ fn validate_from_yaml_error_empty_after_scripts_test() {
     let encoded = base64_url::encode(&yaml);
     let pipeline = PipelineTemplate::from_yaml(&encoded);
     assert!(pipeline.is_err());
-    assert_eq!(RustyError::SerializationError("Pipeline template: after.script cannot be empty".to_string()), pipeline.unwrap_err());
+    assert_eq!(
+        RustyError::SerializationError(
+            "Pipeline template: after.script cannot be empty".to_string()
+        ),
+        pipeline.unwrap_err()
+    );
 }
