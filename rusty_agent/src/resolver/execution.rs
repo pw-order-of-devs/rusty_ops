@@ -28,24 +28,28 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
         log::debug!("no template in project files, using default one.");
     };
 
-    for (name, stage) in &template.stages {
-        log::debug!("running stage: {name}");
-        // if image: run in docker
-        let env = prepare_env(&template, stage);
-        for command in &stage.script {
-            if let Err(err) = run_bash_command(&project_directory, command, &env).await {
-                log::error!("Error in pipeline {}: {}", &pipeline.id, err);
-                cleanup(
-                    &working_directory,
-                    &pipeline.id,
-                    uuid,
-                    PipelineStatus::Failure,
-                )
-                .await;
-                return Ok(());
+    let dependencies = template.dependency_tree();
+    for deps in dependencies {
+        for dep in deps {
+            let (name, stage) = template.stages.iter().find(|(n, _)| dep == **n).unwrap();
+            log::debug!("running stage: {name}");
+            // if image: run in docker
+            let env = prepare_env(&template, stage);
+            for command in &stage.script {
+                if let Err(err) = run_bash_command(&project_directory, command, &env).await {
+                    log::error!("Error in pipeline {}: {}", &pipeline.id, err);
+                    cleanup(
+                        &working_directory,
+                        &pipeline.id,
+                        uuid,
+                        PipelineStatus::Failure,
+                    )
+                    .await;
+                    return Ok(());
+                }
             }
+            log::debug!("done: running stage: {name}");
         }
-        log::debug!("done: running stage: {name}");
     }
 
     cleanup(

@@ -48,6 +48,8 @@ fn validate_from_yaml_full_test() {
             test_key_stage_2: value
           script:
             - echo "hello"
+          dependsOn:
+            - test_1
     "#;
 
     let encoded = base64_url::encode(&yaml);
@@ -71,7 +73,7 @@ fn validate_from_yaml_error_empty_stages_test() {
     let pipeline = PipelineTemplate::from_yaml(&encoded);
     assert!(pipeline.is_err());
     assert_eq!(
-        RustyError::SerializationError("Pipeline template: stages cannot be empty".to_string()),
+        RustyError::SerializationError("Pipeline template: [stages cannot be empty]".to_string()),
         pipeline.unwrap_err()
     );
 }
@@ -89,7 +91,7 @@ fn validate_from_yaml_error_empty_stage_scripts_test() {
     assert!(pipeline.is_err());
     assert_eq!(
         RustyError::SerializationError(
-            "Pipeline template: stages.script cannot be empty".to_string()
+            "Pipeline template: [stages.script cannot be empty]".to_string()
         ),
         pipeline.unwrap_err()
     );
@@ -112,7 +114,7 @@ fn validate_from_yaml_error_empty_before_scripts_test() {
     assert!(pipeline.is_err());
     assert_eq!(
         RustyError::SerializationError(
-            "Pipeline template: before.script cannot be empty".to_string()
+            "Pipeline template: [before.script cannot be empty]".to_string()
         ),
         pipeline.unwrap_err()
     );
@@ -135,8 +137,84 @@ fn validate_from_yaml_error_empty_after_scripts_test() {
     assert!(pipeline.is_err());
     assert_eq!(
         RustyError::SerializationError(
-            "Pipeline template: after.script cannot be empty".to_string()
+            "Pipeline template: [after.script cannot be empty]".to_string()
         ),
         pipeline.unwrap_err()
     );
+}
+
+#[test]
+fn validate_from_yaml_error_cannot_depend_on_itself_test() {
+    let yaml = r#"
+    stages:
+      test:
+        script:
+          - echo "hello"
+        depends_on:
+          - test
+    "#;
+
+    let encoded = base64_url::encode(&yaml);
+    let pipeline = PipelineTemplate::from_yaml(&encoded);
+    assert!(pipeline.is_err());
+    assert_eq!(
+        RustyError::SerializationError(
+            "Pipeline template: [stage cannot depend on itself]".to_string()
+        ),
+        pipeline.unwrap_err()
+    );
+}
+
+#[test]
+fn validate_from_yaml_error_depends_on_unknown_stage_test() {
+    let yaml = r#"
+    stages:
+      test:
+        script:
+          - echo "hello"
+        depends_on:
+          - err
+    "#;
+
+    let encoded = base64_url::encode(&yaml);
+    let pipeline = PipelineTemplate::from_yaml(&encoded);
+    assert!(pipeline.is_err());
+    assert_eq!(
+        RustyError::SerializationError(
+            "Pipeline template: [stage depends on an unknown stage]".to_string()
+        ),
+        pipeline.unwrap_err()
+    );
+}
+
+#[test]
+fn build_dependency_tree() {
+    let yaml = r#"
+    stages:
+       test_1_a:
+          script:
+            - echo "hello"
+       test_1_b:
+          script:
+            - echo "hello"
+       test_2:
+          script:
+            - echo "hello"
+          depends_on:
+            - test_1_a
+       test_3:
+          script:
+            - echo "hello"
+          depends_on:
+            - test_1_b
+            - test_2
+    "#;
+    let encoded = base64_url::encode(&yaml);
+    let pipeline = PipelineTemplate::from_yaml(&encoded);
+
+    let dependency_tree = pipeline.unwrap().dependency_tree();
+    assert_eq!(3, dependency_tree.len());
+    assert_eq!(vec!["test_1_a", "test_1_b"], dependency_tree[0]);
+    assert_eq!(vec!["test_2"], dependency_tree[1]);
+    assert_eq!(vec!["test_3"], dependency_tree[2]);
 }
