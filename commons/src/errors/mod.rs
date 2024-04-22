@@ -22,6 +22,8 @@ pub enum RustyError {
     RequestError(String),
     /// Serde operation related error
     SerializationError(String),
+    /// Tokio operation related error
+    TokioError(String),
     /// Serde_valid operation related error
     ValidationError(String),
     /// Websocket operation related error
@@ -63,6 +65,9 @@ impl Display for RustyError {
             }
             Self::SerializationError(message) => {
                 write!(f, "Serialization error: {message}")
+            }
+            Self::TokioError(message) => {
+                write!(f, "Tokio error: {message}")
             }
             Self::ValidationError(message) => {
                 write!(f, "{message}")
@@ -189,6 +194,12 @@ impl From<std::string::FromUtf8Error> for RustyError {
 impl From<std::io::Error> for RustyError {
     fn from(err: std::io::Error) -> Self {
         Self::IoError(err.to_string())
+    }
+}
+
+impl From<tokio::task::JoinError> for RustyError {
+    fn from(err: tokio::task::JoinError) -> Self {
+        Self::TokioError(err.to_string())
     }
 }
 

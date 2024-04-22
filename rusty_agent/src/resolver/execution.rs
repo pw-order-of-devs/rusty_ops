@@ -1,4 +1,6 @@
+use futures_util::future::try_join_all;
 use std::collections::HashMap;
+use std::time::Instant;
 use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
 use tokio::process::Command;
 use tokio::spawn;
@@ -13,7 +15,7 @@ use crate::api::projects::get_pipeline_repository;
 
 pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
-    let (project_id, mut template) = get_pipeline_template(pipeline.job_id).await?;
+    let (project_id, mut template) = get_pipeline_template(&pipeline.job_id).await?;
     let repo_url = get_pipeline_repository(project_id).await?;
     // if image: run in docker
 
@@ -28,28 +30,44 @@ pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(
         log::debug!("no template in project files, using default one.");
     };
 
-    let dependencies = template.dependency_tree();
-    for deps in dependencies {
-        for dep in deps {
-            let (name, stage) = template.stages.iter().find(|(n, _)| dep == **n).unwrap();
-            log::debug!("running stage: {name}");
-            // if image: run in docker
-            let env = prepare_env(&template, stage);
-            for command in &stage.script {
-                if let Err(err) = run_bash_command(&project_directory, command, &env).await {
-                    log::error!("Error in pipeline {}: {}", &pipeline.id, err);
-                    cleanup(
-                        &working_directory,
-                        &pipeline.id,
-                        uuid,
-                        PipelineStatus::Failure,
-                    )
-                    .await;
-                    return Ok(());
+    let stages_tree = template.dependency_tree();
+    for branch in stages_tree {
+        let mut tasks = Vec::new();
+
+        for leaf in branch {
+            let uuid = uuid.to_string();
+            let template = template.clone();
+            let project_directory = project_directory.to_string();
+            let working_directory = working_directory.to_string();
+            let pipeline = pipeline.clone();
+
+            let task = spawn(async move {
+                let start = Instant::now();
+                let (name, stage) = template.stages.iter().find(|(n, _)| leaf == **n).unwrap();
+                log::debug!("running stage: {name}");
+                // if image: run in docker
+                let env = prepare_env(&template, stage);
+                for command in &stage.script {
+                    if let Err(err) = run_bash_command(&project_directory, command, &env).await {
+                        log::error!("Error in pipeline {}: {}", &pipeline.id, err);
+                        cleanup(
+                            &working_directory,
+                            &pipeline.id,
+                            &uuid,
+                            PipelineStatus::Failure,
+                        )
+                        .await;
+                        return Err(());
+                    }
                 }
-            }
-            log::debug!("done: running stage: {name}");
+                let duration = start.elapsed().as_millis();
+                log::debug!("done: running stage: {name} in {duration} ms");
+                Ok(())
+            });
+            tasks.push(task);
         }
+
+        try_join_all(tasks).await?;
     }
 
     cleanup(

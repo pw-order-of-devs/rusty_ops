@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 
-use dotenv::dotenv;
+use dotenvy::dotenv;
 
 fn main() {
     println!("cargo:rerun-if-changed=.env");

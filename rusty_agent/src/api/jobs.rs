@@ -11,7 +11,7 @@ use crate::api::client::reqwest_post;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_pipeline_template(id: String) -> Result<(String, PipelineTemplate), RustyError> {
+pub async fn get_pipeline_template(id: &str) -> Result<(String, PipelineTemplate), RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
             jobs {{
@@ -20,7 +20,7 @@ pub async fn get_pipeline_template(id: String) -> Result<(String, PipelineTempla
                     template
                 }}
             }}
-        }}"#, id),
+        }}"#, id.to_string()),
         "variables": {}
     });
 

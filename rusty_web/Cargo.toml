@@ -31,4 +31,4 @@ serde_json.workspace = true
 url.workspace = true
 
 [build-dependencies]
-dotenv.workspace = true
+dotenvy.workspace = true
