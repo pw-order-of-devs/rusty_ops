@@ -31,7 +31,7 @@ impl MongoDBClient {
         Self {
             client: Client::with_options(client_options)
                 .expect("error while building mongodb client"),
-            database: var("MONGODB_DATABASE").expect("MONGODB_DATABASE variable is required"),
+            database: var("MONGODB_DATABASE").unwrap_or_else(|_| "test".to_string()),
         }
     }
 
