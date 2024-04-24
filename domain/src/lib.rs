@@ -21,6 +21,9 @@ use async_graphql::OutputType;
 /// # Agents Module
 pub mod agents;
 
+/// # Authentication Module
+pub mod auth;
+
 /// # Common Module
 pub mod commons;
 

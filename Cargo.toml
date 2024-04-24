@@ -1,6 +1,6 @@
 [workspace]
-members = ["rusty_*", "commons", "domain", "persist"]
-default-members = ["rusty_*", "commons", "domain", "persist"]
+members = ["rusty_*", "auth", "commons", "domain", "persist"]
+default-members = ["rusty_*", "auth", "commons", "domain", "persist"]
 resolver = "2"
 
 [workspace.package]

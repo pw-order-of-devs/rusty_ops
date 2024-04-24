@@ -24,6 +24,8 @@ pub enum RustyError {
     SerializationError(String),
     /// Tokio operation related error
     TokioError(String),
+    /// Authentication User Not Found error
+    UserNotFoundError,
     /// Serde_valid operation related error
     ValidationError(String),
     /// Websocket operation related error
@@ -68,6 +70,9 @@ impl Display for RustyError {
             }
             Self::TokioError(message) => {
                 write!(f, "Tokio error: {message}")
+            }
+            Self::UserNotFoundError => {
+                write!(f, "Auth error: User not found")
             }
             Self::ValidationError(message) => {
                 write!(f, "{message}")

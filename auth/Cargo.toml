@@ -1,0 +1,24 @@
+[package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+name = "auth"
+description = "rusty_ops - auth module"
+
+[lib]
+name = "auth"
+path = "src/lib.rs"
+
+[dependencies]
+commons = { path = "../commons", features = ["errors", "logging", "persist"] }
+domain = { path = "../domain" }
+persist = { path = "../persist" }
+
+serde_json.workspace = true
+tokio.workspace = true
