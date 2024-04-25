@@ -60,23 +60,22 @@ pub trait PersistenceBuilder {
     /// safety requirements for the underlying storage technology.
     type PersistentType: Persistence;
 
-    /// `build` is a function that builds and constructs an object asynchronously.
-    /// It returns a future that will eventually produce the constructed object.
+    /// Builds an instance of `Self` asynchronously.
     ///
-    /// The returned future is a placeholder for the actual implementation of
-    /// constructing the object asynchronously. The output type of the future is
-    /// expected to be the same type as the struct on which the `build` function is
-    /// defined.
-    ///
-    /// The `+ Send` constraint on the future indicates that it can be safely sent
-    /// across threads.
-    ///
-    /// # Return Value
-    ///
-    /// The function returns a future that will produce the constructed object.
-    /// The future's `Output` type is the same as the struct that defines the `build`
-    /// function.
+    /// # Returns
+    /// An implementation of `Future` that resolves to `Self` once the build process is complete.
     fn build() -> impl Future<Output = Self> + Send;
+
+    /// Creates a new instance of `Self` from a string representation of a connection.
+    ///
+    /// # Arguments
+    ///
+    /// * `conn` - The string representation of a connection.
+    ///
+    /// # Returns
+    ///
+    /// A future that resolves to a new instance of `Self`.
+    fn from_string(conn: &str) -> impl Future<Output = Self> + Send;
 }
 
 /// Defines the Persistence trait which represents a persistence mechanism for storing and retrieving data.

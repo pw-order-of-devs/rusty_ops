@@ -16,5 +16,23 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
+use domain::auth::user::User;
+use persist::db_client::DbClient;
+
 /// authenticate user
 pub mod authenticate;
+
+/// authenticate user using his credential
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+pub async fn authenticate(db: &DbClient, credential: &Credential) -> Result<User, RustyError> {
+    match credential {
+        Credential::Basic(user, pass) => authenticate::basic_auth(db, user, pass).await,
+    }
+}

@@ -20,26 +20,6 @@ pub struct PostgreSQLClient {
 }
 
 impl PostgreSQLClient {
-    async fn build_client() -> Self {
-        let manager =
-            PostgresConnectionManager::new_from_stringlike(Self::get_conn_string(), NoTls)
-                .expect("error while parsing postgresql connection string");
-
-        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
-        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
-        let pool = Pool::builder()
-            .max_size(max_pool_size)
-            .connection_timeout(Duration::from_secs(timeout))
-            .build(manager)
-            .await
-            .expect("error while building postgresql client");
-
-        Self {
-            client: pool,
-            schema: var_or_default("POSTGRESQL_SCHEMA", "public".to_string()),
-        }
-    }
-
     fn get_conn_string() -> String {
         format!(
             "postgres://{}{}:{}/{}",
@@ -66,7 +46,26 @@ impl PersistenceBuilder for PostgreSQLClient {
     type PersistentType = Self;
 
     async fn build() -> Self {
-        Self::build_client().await
+        Self::from_string(&Self::get_conn_string()).await
+    }
+
+    async fn from_string(conn: &str) -> Self {
+        let manager = PostgresConnectionManager::new_from_stringlike(conn, NoTls)
+            .expect("error while parsing postgresql connection string");
+
+        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
+        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
+        let pool = Pool::builder()
+            .max_size(max_pool_size)
+            .connection_timeout(Duration::from_secs(timeout))
+            .build(manager)
+            .await
+            .expect("error while building postgresql client");
+
+        Self {
+            client: pool,
+            schema: var_or_default("POSTGRESQL_SCHEMA", "public".to_string()),
+        }
     }
 }
 

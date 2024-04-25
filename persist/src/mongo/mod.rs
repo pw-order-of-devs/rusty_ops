@@ -23,18 +23,6 @@ pub struct MongoDBClient {
 }
 
 impl MongoDBClient {
-    async fn build_client() -> Self {
-        let mut client_options = ClientOptions::parse_async(Self::get_conn_string())
-            .await
-            .expect("error while parsing mongodb connection string");
-        Self::configure(&mut client_options);
-        Self {
-            client: Client::with_options(client_options)
-                .expect("error while building mongodb client"),
-            database: var("MONGODB_DATABASE").unwrap_or_else(|_| "test".to_string()),
-        }
-    }
-
     fn get_conn_string() -> String {
         format!(
             "mongodb://{}:{}",
@@ -69,7 +57,19 @@ impl PersistenceBuilder for MongoDBClient {
     type PersistentType = Self;
 
     async fn build() -> Self {
-        Self::build_client().await
+        Self::from_string(&Self::get_conn_string()).await
+    }
+
+    async fn from_string(conn: &str) -> Self {
+        let mut client_options = ClientOptions::parse_async(conn)
+            .await
+            .expect("error while parsing mongodb connection string");
+        Self::configure(&mut client_options);
+        Self {
+            client: Client::with_options(client_options)
+                .expect("error while building mongodb client"),
+            database: var("MONGODB_DATABASE").unwrap_or_else(|_| "test".to_string()),
+        }
     }
 }
 

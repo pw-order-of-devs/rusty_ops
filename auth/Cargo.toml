@@ -22,3 +22,7 @@ persist = { path = "../persist" }
 
 serde_json.workspace = true
 tokio.workspace = true
+
+[dev-dependencies]
+testcontainers.workspace = true
+testcontainers-modules = { workspace = true, features = ["mongo"] }

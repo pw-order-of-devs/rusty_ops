@@ -25,29 +25,6 @@ pub struct RedisClient {
 }
 
 impl RedisClient {
-    async fn build_client() -> Self {
-        let manager = RedisConnectionManager::new(Self::get_conn_string())
-            .expect("error while building redis client");
-
-        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
-        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
-        let client = bb8::Pool::builder()
-            .connection_timeout(Duration::from_secs(timeout))
-            .max_size(max_pool_size)
-            .build(manager)
-            .await
-            .expect("error while building redis client");
-
-        let pubsub_manager = RedisPubSubConnectionManager::new(Self::get_conn_string())
-            .expect("error while building redis pubsub client");
-        let pubsub = bb8::Pool::builder()
-            .build(pubsub_manager)
-            .await
-            .expect("error while building redis client");
-
-        Self { client, pubsub }
-    }
-
     fn get_conn_string() -> String {
         format!(
             "redis://{}{}:{}",
@@ -71,7 +48,29 @@ impl PersistenceBuilder for RedisClient {
     type PersistentType = Self;
 
     async fn build() -> Self {
-        Self::build_client().await
+        Self::from_string(&Self::get_conn_string()).await
+    }
+
+    async fn from_string(conn: &str) -> Self {
+        let manager = RedisConnectionManager::new(conn).expect("error while building redis client");
+
+        let timeout = var_or_default("DB_CONNECT_TIMEOUT", 30);
+        let max_pool_size = var_or_default("DB_POOL_MAX", 24);
+        let client = bb8::Pool::builder()
+            .connection_timeout(Duration::from_secs(timeout))
+            .max_size(max_pool_size)
+            .build(manager)
+            .await
+            .expect("error while building redis client");
+
+        let pubsub_manager = RedisPubSubConnectionManager::new(Self::get_conn_string())
+            .expect("error while building redis pubsub client");
+        let pubsub = bb8::Pool::builder()
+            .build(pubsub_manager)
+            .await
+            .expect("error while building redis client");
+
+        Self { client, pubsub }
     }
 }
 
