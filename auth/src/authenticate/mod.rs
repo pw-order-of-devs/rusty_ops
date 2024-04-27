@@ -8,9 +8,7 @@ pub(crate) async fn basic_auth(
     db: &DbClient,
     user: &str,
     password: &str,
-) -> Result<User, RustyError> {
-    let user = db
-        .get_one("users", json!({ "username": user, "password": password }))
-        .await?;
-    user.ok_or(RustyError::UserNotFoundError)
+) -> Result<Option<User>, RustyError> {
+    db.get_one::<User>("users", json!({ "username": user, "password": password }))
+        .await
 }

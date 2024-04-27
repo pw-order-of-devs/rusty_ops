@@ -2,6 +2,7 @@ use async_graphql::{Context, Object};
 use serde_json::Value;
 
 use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use domain::projects::{PagedProjects, Project, RegisterProject};
 use persist::db_client::DbClient;
@@ -12,6 +13,7 @@ pub struct ProjectsQuery;
 
 #[Object]
 impl ProjectsQuery {
+    #[auth_macro::authenticate]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -24,6 +26,7 @@ impl ProjectsQuery {
         Ok(entries)
     }
 
+    #[auth_macro::authenticate]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -40,6 +43,7 @@ pub struct ProjectsMutation;
 
 #[Object]
 impl ProjectsMutation {
+    #[auth_macro::authenticate]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -51,6 +55,7 @@ impl ProjectsMutation {
         Ok(id)
     }
 
+    #[auth_macro::authenticate]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -62,6 +67,7 @@ impl ProjectsMutation {
         Ok(deleted)
     }
 
+    #[auth_macro::authenticate]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `projects::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

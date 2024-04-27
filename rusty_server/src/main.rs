@@ -16,15 +16,17 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
-use async_graphql_axum::{GraphQL, GraphQLSubscription};
 use axum::{routing, Router};
 use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
 
+use crate::server_ext::{graphql_handler, graphql_ws_handler};
+
 mod gql;
 mod middleware;
 mod schedulers;
+mod server_ext;
 mod services;
 
 #[tokio::main]
@@ -37,12 +39,10 @@ async fn main() {
     // start the http server
     let app = Router::new()
         .route("/health", routing::get(|| async { "ok" }))
-        .route(
-            "/graphql",
-            routing::post_service(GraphQL::new(schema.clone())),
-        )
-        .route_service("/ws", GraphQLSubscription::new(schema))
-        .layer(middleware::cors::cors_layer());
+        .route("/graphql", routing::post(graphql_handler))
+        .route("/ws", routing::get(graphql_ws_handler))
+        .layer(middleware::cors::cors_layer())
+        .with_state(schema);
 
     let host = var_or_default("SERVER_ADDR", "0.0.0.0".to_string());
     let port = var_or_default("SERVER_PORT", "8000".to_string());

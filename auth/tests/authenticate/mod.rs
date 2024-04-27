@@ -1,6 +1,5 @@
 use testcontainers_modules::{mongo::Mongo, testcontainers::clients::Cli};
 
-use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::auth::user::User;
 use persist::db_client::DbClient;
@@ -19,8 +18,8 @@ async fn basic_auth_test() {
     // user does not exist
     let credential = Credential::Basic("user".to_string(), "pass".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
-    assert!(authenticated.is_err());
-    assert_eq!(RustyError::UserNotFoundError, authenticated.unwrap_err());
+    assert!(authenticated.is_ok());
+    assert!(authenticated.clone().unwrap().is_none());
 
     // user exists
     let _ = db_client
@@ -34,5 +33,6 @@ async fn basic_auth_test() {
         .await;
     let authenticated = auth::authenticate(&db_client, &credential).await;
     assert!(authenticated.is_ok());
-    assert_eq!("user", authenticated.unwrap().username);
+    assert!(authenticated.clone().unwrap().is_some());
+    assert_eq!("user", authenticated.unwrap().unwrap().username);
 }

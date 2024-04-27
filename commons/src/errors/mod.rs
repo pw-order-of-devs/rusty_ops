@@ -4,6 +4,11 @@ use std::fmt::{Debug, Display, Formatter};
 /// `RustyOps` Error definition
 #[derive(Clone, PartialOrd, PartialEq, Eq, Serialize, Deserialize)]
 pub enum RustyError {
+    /// Authentication Missing Credential error
+    CredentialMissingError,
+    /// Authentication User Not Found error
+    UnauthenticatedError,
+
     /// AsyncGraphql operation related error
     AsyncGraphqlError(String),
     /// Convert operation related error
@@ -24,8 +29,6 @@ pub enum RustyError {
     SerializationError(String),
     /// Tokio operation related error
     TokioError(String),
-    /// Authentication User Not Found error
-    UserNotFoundError,
     /// Serde_valid operation related error
     ValidationError(String),
     /// Websocket operation related error
@@ -41,6 +44,13 @@ impl Debug for RustyError {
 impl Display for RustyError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::CredentialMissingError => {
+                write!(f, "Auth error: Missing credential")
+            }
+            Self::UnauthenticatedError => {
+                write!(f, "Auth error: Failed to authenticate user")
+            }
+
             Self::AsyncGraphqlError(message) => {
                 write!(f, "GraphQL error: {message}")
             }
@@ -70,9 +80,6 @@ impl Display for RustyError {
             }
             Self::TokioError(message) => {
                 write!(f, "Tokio error: {message}")
-            }
-            Self::UserNotFoundError => {
-                write!(f, "Auth error: User not found")
             }
             Self::ValidationError(message) => {
                 write!(f, "{message}")

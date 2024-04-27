@@ -2,6 +2,7 @@ use async_graphql::{Context, Object};
 use serde_json::Value;
 
 use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use domain::jobs::{Job, PagedJobs, RegisterJob};
 use persist::db_client::DbClient;
@@ -12,6 +13,7 @@ pub struct JobsQuery;
 
 #[Object]
 impl JobsQuery {
+    #[auth_macro::authenticate]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -24,6 +26,7 @@ impl JobsQuery {
         Ok(entries)
     }
 
+    #[auth_macro::authenticate]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -40,6 +43,7 @@ pub struct JobsMutation;
 
 #[Object]
 impl JobsMutation {
+    #[auth_macro::authenticate]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -51,6 +55,7 @@ impl JobsMutation {
         Ok(id)
     }
 
+    #[auth_macro::authenticate]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -62,6 +67,7 @@ impl JobsMutation {
         Ok(deleted)
     }
 
+    #[auth_macro::authenticate]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `jobs::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

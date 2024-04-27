@@ -1,6 +1,6 @@
 use futures_util::stream::SplitStream;
 use futures_util::{SinkExt, StreamExt};
-use serde_json::json;
+use serde_json::{json, Value};
 use tokio::net::TcpStream;
 use tokio_tungstenite::tungstenite::http::header;
 use tokio_tungstenite::tungstenite::Message;
@@ -18,7 +18,27 @@ pub(crate) async fn pipeline_created_subscription(uuid: &str) -> Result<(), Rust
     // Process incoming messages
     while let Some(message) = read.next().await {
         match message? {
-            Message::Text(text) => assign_pipeline(uuid, &text).await?,
+            Message::Text(text) => {
+                let value = serde_json::from_str::<Value>(&text)?;
+                match value["payload"].as_object() {
+                    Some(payload) => {
+                        if payload["data"].as_object().is_some() {
+                            assign_pipeline(uuid, &text).await?;
+                        } else if payload["errors"].as_array().is_some() {
+                            let errors = payload["errors"]
+                                .as_array()
+                                .unwrap()
+                                .iter()
+                                .map(|err| err["message"].as_str().unwrap_or(""))
+                                .collect::<Vec<&str>>();
+                            log::error!("subscription error occurred: {:?}", errors);
+                        } else {
+                            continue;
+                        };
+                    }
+                    None => continue,
+                }
+            }
             other => log::debug!("Unknown message: {other:?}"),
         }
     }
@@ -48,8 +68,10 @@ async fn initialize_connection(
     let (mut write, mut read) = ws_stream.split();
     log::debug!("WebSocket handshake has been successfully completed");
 
+    let credential = crate::api::get_credential()?;
     let subscribe_message = json!({
-        "type": "connection_init"
+        "type": "connection_init",
+        "payload": { "auth": credential },
     })
     .to_string();
     write.send(Message::Text(subscribe_message)).await?;

@@ -3,6 +3,7 @@ use async_graphql::{Context, Object, Subscription};
 use serde_json::Value;
 
 use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
@@ -13,6 +14,7 @@ pub struct PipelinesQuery;
 
 #[Object]
 impl PipelinesQuery {
+    #[auth_macro::authenticate]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -25,6 +27,7 @@ impl PipelinesQuery {
         Ok(entries)
     }
 
+    #[auth_macro::authenticate]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -41,6 +44,7 @@ pub struct PipelinesMutation;
 
 #[Object]
 impl PipelinesMutation {
+    #[auth_macro::authenticate]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -52,6 +56,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
+    #[auth_macro::authenticate]
     async fn assign(
         &self,
         ctx: &Context<'_>,
@@ -66,6 +71,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
+    #[auth_macro::authenticate]
     async fn set_running(
         &self,
         ctx: &Context<'_>,
@@ -78,6 +84,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
+    #[auth_macro::authenticate]
     async fn finalize(
         &self,
         ctx: &Context<'_>,
@@ -91,6 +98,8 @@ impl PipelinesMutation {
         log::debug!("`pipelines::finalize`: updated pipeline with id `{id}` as `{status:?}`");
         Ok(id)
     }
+
+    #[auth_macro::authenticate]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -102,6 +111,7 @@ impl PipelinesMutation {
         Ok(deleted)
     }
 
+    #[auth_macro::authenticate]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `pipelines::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;
@@ -117,11 +127,13 @@ impl PipelineSubscription {
     async fn pipelines<'a>(
         &'a self,
         ctx: &Context<'a>,
-    ) -> impl Stream<Item = Option<Pipeline>> + 'a {
+    ) -> Result<impl Stream<Item = Option<Pipeline>> + 'a, RustyError> {
         log::debug!("handling `pipelines::inserted` subscription");
-        let stream = ctx
-            .data::<DbClient>()
-            .expect("Error while obtaining db client");
-        service::inserted_stream(stream)
+        let db = ctx.data::<DbClient>()?;
+        let cred = ctx.data::<Credential>()?;
+        if auth::authenticate(db, cred).await?.is_none() {
+            return Err(RustyError::UnauthenticatedError);
+        }
+        Ok(service::inserted_stream(db))
     }
 }

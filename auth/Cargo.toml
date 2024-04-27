@@ -20,6 +20,8 @@ commons = { path = "../commons", features = ["errors", "logging", "persist"] }
 domain = { path = "../domain" }
 persist = { path = "../persist" }
 
+base64.workspace = true
+log.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 
