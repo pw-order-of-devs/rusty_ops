@@ -36,6 +36,7 @@ serde.workspace = true
 serde_json.workspace = true
 serde_valid.workspace = true
 serde_yaml.workspace = true
+sha2.workspace = true
 tokio.workspace = true
 tokio-tungstenite = { workspace = true, optional = true }
 

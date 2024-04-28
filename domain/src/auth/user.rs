@@ -6,6 +6,8 @@ use crate::RustyDomainItem;
 /// A struct representing a User.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct User {
+    /// user id
+    pub id: String,
     /// username
     pub username: String,
     /// username
@@ -14,6 +16,6 @@ pub struct User {
 
 impl RustyDomainItem for User {
     fn id(&self) -> String {
-        self.clone().username
+        self.clone().id
     }
 }

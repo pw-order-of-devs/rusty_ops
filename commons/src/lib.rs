@@ -16,13 +16,16 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+/// environment variables wrapper
+pub mod env;
+
 /// crate errors
 #[cfg(feature = "errors")]
 #[cfg(not(tarpaulin_include))]
 pub mod errors;
 
-/// environment variables wrapper
-pub mod env;
+/// hashing functions
+pub mod hashing;
 
 /// logging configuration
 #[cfg(feature = "logging")]
