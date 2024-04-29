@@ -2,7 +2,7 @@ use testcontainers::runners::AsyncRunner;
 use testcontainers::RunnableImage;
 use testcontainers_modules::mongo::Mongo;
 
-use commons::hashing::sha512;
+use commons::hashing::bcrypt::encode;
 use domain::auth::credentials::Credential;
 use domain::auth::user::User;
 use persist::db_client::DbClient;
@@ -30,7 +30,7 @@ async fn basic_auth_test() {
             &User {
                 id: "d81e7711-8eed-4cac-9191-d2ec48f36e13".to_string(),
                 username: "user".to_string(),
-                password: sha512("pass"),
+                password: encode("pass").unwrap(),
             },
         )
         .await;

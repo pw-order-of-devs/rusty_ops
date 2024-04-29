@@ -25,6 +25,7 @@ ws = ["tokio-tungstenite"]
 [dependencies]
 async-graphql.workspace = true
 base64-url.workspace = true
+bcrypt.workspace = true
 log.workspace = true
 log4rs = { workspace = true, features = ["gzip", "all_components"], optional = true }
 mongodb = { workspace = true, optional = true }
