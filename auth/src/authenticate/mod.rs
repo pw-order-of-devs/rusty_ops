@@ -9,18 +9,18 @@ pub(crate) async fn basic_auth(
     db: &DbClient,
     user: &str,
     password: &str,
-) -> Result<Option<User>, RustyError> {
+) -> Result<String, RustyError> {
     match db
         .get_one::<User>("users", json!({ "username": user }))
         .await?
     {
         Some(user) => {
             if validate(password, &user.password)? {
-                Ok(Some(user))
+                Ok(user.username)
             } else {
-                Ok(None)
+                Err(RustyError::UnauthenticatedError)
             }
         }
-        None => Ok(None),
+        None => Err(RustyError::UnauthenticatedError),
     }
 }

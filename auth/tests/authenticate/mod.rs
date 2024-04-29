@@ -1,3 +1,4 @@
+use commons::errors::RustyError;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::RunnableImage;
 use testcontainers_modules::mongo::Mongo;
@@ -20,8 +21,11 @@ async fn basic_auth_test() {
     // user does not exist
     let credential = Credential::Basic("user".to_string(), "pass".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
-    assert!(authenticated.is_ok());
-    assert!(authenticated.clone().unwrap().is_none());
+    assert!(authenticated.is_err());
+    assert_eq!(
+        RustyError::UnauthenticatedError,
+        authenticated.clone().unwrap_err()
+    );
 
     // user exists
     let _ = db_client
@@ -36,6 +40,5 @@ async fn basic_auth_test() {
         .await;
     let authenticated = auth::authenticate(&db_client, &credential).await;
     assert!(authenticated.is_ok());
-    assert!(authenticated.clone().unwrap().is_some());
-    assert_eq!("user", authenticated.unwrap().unwrap().username);
+    assert_eq!("user", authenticated.unwrap());
 }

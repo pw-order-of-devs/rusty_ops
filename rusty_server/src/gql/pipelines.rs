@@ -131,7 +131,7 @@ impl PipelineSubscription {
         log::debug!("handling `pipelines::inserted` subscription");
         let db = ctx.data::<DbClient>()?;
         let cred = ctx.data::<Credential>()?;
-        if auth::authenticate(db, cred).await?.is_none() {
+        if auth::authenticate(db, cred).await.is_err() {
             return Err(RustyError::UnauthenticatedError);
         }
         Ok(service::inserted_stream(db))

@@ -19,7 +19,6 @@
 use base64::Engine;
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
-use domain::auth::user::User;
 use persist::db_client::DbClient;
 
 /// authenticate user
@@ -76,12 +75,9 @@ pub fn parse_auth_header(header: &str) -> Credential {
 /// This function can generate the following errors:
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
-pub async fn authenticate(
-    db: &DbClient,
-    credential: &Credential,
-) -> Result<Option<User>, RustyError> {
+pub async fn authenticate(db: &DbClient, credential: &Credential) -> Result<String, RustyError> {
     match credential {
         Credential::Basic(user, pass) => authenticate::basic_auth(db, user, pass).await,
-        Credential::None => Ok(None),
+        Credential::None => Ok(String::new()),
     }
 }

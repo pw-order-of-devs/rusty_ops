@@ -46,13 +46,13 @@ pub fn authenticate(_: TokenStream, input: TokenStream) -> TokenStream {
                 return Err(RustyError::CredentialMissingError);
             }
             let db = #ctx.data::<DbClient>()?;
-            match auth::authenticate(db, cred).await? {
-                Some(user) => {
+            match auth::authenticate(db, cred).await {
+                Ok(user) => {
                     log::info!("successfully authenticated user `{}`", cred);
                 },
-                None => {
+                Err(err) => {
                     log::error!("failed to authenticate user `{}`", cred);
-                    return Err(RustyError::UnauthenticatedError)
+                    return Err(err)
                 },
             };
             #block
