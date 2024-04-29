@@ -190,3 +190,6 @@ Date: 2024-04-26
 Date: 2024-04-27
   29abf2f Daily update
   a41ba97 basic auth support for agent communication
+Date: 2024-04-28
+  b4f2116 Daily update
+  5603b1b user - added uuid; password hashed with sha512
