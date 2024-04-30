@@ -8,6 +8,7 @@ mod agents;
 mod jobs;
 mod pipelines;
 mod projects;
+mod users;
 
 pub type RustySchema = Schema<Query, Mutation, PipelineSubscription>;
 
@@ -40,6 +41,11 @@ impl Query {
     async fn projects(&self) -> projects::ProjectsQuery {
         projects::ProjectsQuery
     }
+
+    // projects interface
+    async fn users(&self) -> users::UsersQuery {
+        users::UsersQuery
+    }
 }
 
 pub struct Mutation;
@@ -64,5 +70,10 @@ impl Mutation {
     // projects interface
     async fn projects(&self) -> projects::ProjectsMutation {
         projects::ProjectsMutation
+    }
+
+    // projects interface
+    async fn users(&self) -> users::UsersMutation {
+        users::UsersMutation
     }
 }

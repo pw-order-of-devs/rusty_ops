@@ -29,3 +29,6 @@ serde_valid.workspace = true
 serde_yaml.workspace = true
 uuid = { workspace = true, features = ["v4"], optional = true }
 url.workspace = true
+
+[dev-dependencies]
+rstest.workspace = true

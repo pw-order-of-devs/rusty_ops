@@ -2,6 +2,9 @@
 mod agents;
 
 #[cfg(test)]
+mod auth;
+
+#[cfg(test)]
 mod jobs;
 
 #[cfg(test)]
