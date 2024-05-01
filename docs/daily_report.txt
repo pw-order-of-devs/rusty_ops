@@ -197,3 +197,6 @@ Date: 2024-04-29
   c8d1543 Daily update
   9350032 switch to bcrypt for user password
   5cfbe4c clean up auth function
+Date: 2024-04-30
+  668da36 Daily update
+  22aae36 user - register and get endpoints; user validation
