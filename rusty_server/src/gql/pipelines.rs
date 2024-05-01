@@ -8,6 +8,7 @@ use domain::commons::search::SearchOptions;
 use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
+use crate::gql::get_public_gql_endpoints;
 use crate::services::pipelines as service;
 
 pub struct PipelinesQuery;

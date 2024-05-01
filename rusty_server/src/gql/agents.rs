@@ -7,6 +7,7 @@ use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
+use crate::gql::get_public_gql_endpoints;
 use crate::services::agents as service;
 
 pub struct AgentsQuery;

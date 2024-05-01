@@ -7,6 +7,7 @@ use domain::commons::search::SearchOptions;
 use domain::projects::{PagedProjects, Project, RegisterProject};
 use persist::db_client::DbClient;
 
+use crate::gql::get_public_gql_endpoints;
 use crate::services::projects as service;
 
 pub struct ProjectsQuery;

@@ -1,4 +1,7 @@
 use async_graphql::{Object, Schema};
+use commons::env::var_or_default;
+use once_cell::sync::Lazy;
+use std::sync::Mutex;
 
 use persist::db_client::DbClient;
 
@@ -9,6 +12,21 @@ mod jobs;
 mod pipelines;
 mod projects;
 mod users;
+
+static PUBLIC_ENDPOINTS: Lazy<Mutex<Vec<String>>> = Lazy::new(|| Mutex::new(vec![]));
+
+pub fn public_gql_endpoints_init() {
+    if var_or_default("PUBLIC_USER_REGISTER_ENABLED", false) {
+        PUBLIC_ENDPOINTS
+            .lock()
+            .unwrap()
+            .push("mutation:users:register".to_string());
+    };
+}
+
+pub fn get_public_gql_endpoints() -> Vec<String> {
+    PUBLIC_ENDPOINTS.lock().unwrap().to_vec()
+}
 
 pub type RustySchema = Schema<Query, Mutation, PipelineSubscription>;
 

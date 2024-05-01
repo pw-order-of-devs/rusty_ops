@@ -51,21 +51,22 @@ fn expand_fn(input: &ItemFn, ctx: &PatIdent) -> TokenStream {
             let query = ctx.data::<(String, String, String)>()?;
             let endpoint = format!("{}:{}:{}", query.0, query.1, query.2);
             let cred = ctx.data::<Credential>()?;
-            if cred == &Credential::None {
-                // check if path is available for unauthorized users
-                log::error!("missing credential for endpoint `{}`", endpoint);
-                return Err(RustyError::CredentialMissingError);
+            if !get_public_gql_endpoints().contains(&endpoint) {
+                if cred == &Credential::None {
+                    log::error!("missing credential for endpoint `{}`", endpoint);
+                    return Err(RustyError::CredentialMissingError);
+                }
+                let db = #ctx.data::<DbClient>()?;
+                match auth::authenticate(db, cred).await {
+                    Ok(user) => {
+                        log::info!("authenticated user `{}` for endpoint `{}`: success", cred, endpoint);
+                    },
+                    Err(err) => {
+                        log::error!("authenticated user `{}` for endpoint `{}`: error", cred, endpoint);
+                        return Err(err)
+                    },
+                };
             }
-            let db = #ctx.data::<DbClient>()?;
-            match auth::authenticate(db, cred).await {
-                Ok(user) => {
-                    log::info!("authenticated user `{}` for endpoint `{}`: success", cred, endpoint);
-                },
-                Err(err) => {
-                    log::error!("authenticated user `{}` for endpoint `{}`: error", cred, endpoint);
-                    return Err(err)
-                },
-            };
             #block
         }
     };

@@ -21,8 +21,6 @@ use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
 
-use crate::server_ext::{graphql_handler, graphql_ws_handler};
-
 mod gql;
 mod middleware;
 mod schedulers;
@@ -34,13 +32,14 @@ async fn main() {
     commons::logger::init();
     let db = persist::init().await;
     schedulers::init(&db);
+    gql::public_gql_endpoints_init();
     let schema = gql::build_schema(&db);
 
     // start the http server
     let app = Router::new()
         .route("/health", routing::get(|| async { "ok" }))
-        .route("/graphql", routing::post(graphql_handler))
-        .route("/ws", routing::get(graphql_ws_handler))
+        .route("/graphql", routing::post(server_ext::graphql_handler))
+        .route("/ws", routing::get(server_ext::graphql_ws_handler))
         .layer(middleware::cors::cors_layer())
         .with_state(schema);
 

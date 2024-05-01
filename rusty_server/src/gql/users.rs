@@ -7,6 +7,7 @@ use domain::auth::user::{PagedUsers, RegisterUser, User};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
+use crate::gql::get_public_gql_endpoints;
 use crate::services::users as service;
 
 pub struct UsersQuery;
