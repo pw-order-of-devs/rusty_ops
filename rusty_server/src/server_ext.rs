@@ -15,7 +15,7 @@ fn extract_auth_header(headers: &HeaderMap) -> Credential {
     let Some(value) = headers.get("Authorization") else {
         return Credential::None;
     };
-    auth::parse_auth_header(value.to_str().unwrap_or(""))
+    parse_auth_header(value.to_str().unwrap_or(""))
 }
 
 fn remove_whitespace(input: &str) -> String {
@@ -23,11 +23,10 @@ fn remove_whitespace(input: &str) -> String {
 }
 
 fn parse_query(query: &str) -> (String, String, String) {
+    let query = query.splitn(2, '(').collect::<Vec<&str>>()[0];
     let query = query.splitn(2, ' ').collect::<Vec<&str>>();
-    let r#type = query[0];
-    let query = query[1];
-    let query = query.replace(' ', "");
-    let query = remove_whitespace(&query);
+    let (r#type, query) = (query[0], query[1]);
+    let query = remove_whitespace(&query.replace(' ', ""));
     let query = query.splitn(4, '{').skip(1).take(2).collect::<Vec<&str>>();
     (
         r#type.to_string(),

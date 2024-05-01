@@ -1,17 +1,22 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, ItemFn};
+use syn::{parse_macro_input, ItemFn, PatIdent};
 
 #[proc_macro_attribute]
 pub fn authenticate(_: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
 
+    // Extract the context parameter
+    let ctx = extract_ctx(&input);
+
+    // expand function
+    expand_fn(&input, &ctx)
+}
+
+fn extract_ctx(input: &ItemFn) -> PatIdent {
     // Extract the components of the function
-    let sig = input.sig;
-    let name = sig.clone().ident;
+    let sig = input.clone().sig;
     let inputs = sig.clone().inputs;
-    let output = sig.clone().output;
-    let block = input.block;
 
     // Iterate over the function arguments and find the one named "ctx"
     let ctx_arg = inputs.iter().find_map(|arg| {
@@ -26,38 +31,43 @@ pub fn authenticate(_: TokenStream, input: TokenStream) -> TokenStream {
     });
 
     // Check if `ctx` argument exists
-    let ctx = match ctx_arg {
-        Some(ident) => ident,
-        None => {
-            return syn::Error::new_spanned(sig, "Function must have an argument named 'ctx'")
-                .to_compile_error()
-                .into();
-        }
-    };
+    match ctx_arg {
+        Some(ident) => ident.clone(),
+        None => panic!("Function must have an argument named 'ctx'"),
+    }
+}
+
+fn expand_fn(input: &ItemFn, ctx: &PatIdent) -> TokenStream {
+    let sig = input.clone().sig;
+    let name = sig.clone().ident;
+    let inputs = sig.clone().inputs;
+    let output = sig.clone().output;
+    let block = input.clone().block;
 
     // Check if the function is async
     let is_async = sig.clone().asyncness;
     let expanded = quote! {
         #is_async fn #name(#inputs) #output {
             let query = ctx.data::<(String, String, String)>()?;
+            let endpoint = format!("{}:{}:{}", query.0, query.1, query.2);
             let cred = ctx.data::<Credential>()?;
             if cred == &Credential::None {
                 // check if path is available for unauthorized users
+                log::error!("missing credential for endpoint `{}`", endpoint);
                 return Err(RustyError::CredentialMissingError);
             }
             let db = #ctx.data::<DbClient>()?;
             match auth::authenticate(db, cred).await {
                 Ok(user) => {
-                    log::info!("successfully authenticated user `{}`", cred);
+                    log::info!("authenticated user `{}` for endpoint `{}`: success", cred, endpoint);
                 },
                 Err(err) => {
-                    log::error!("failed to authenticate user `{}`", cred);
+                    log::error!("authenticated user `{}` for endpoint `{}`: error", cred, endpoint);
                     return Err(err)
                 },
             };
             #block
         }
     };
-
-    TokenStream::from(expanded)
+    expanded.into()
 }
