@@ -6,6 +6,15 @@ use crate::RustyDomainItem;
 
 /// A struct representing a User.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct UserModel {
+    /// user id
+    pub id: String,
+    /// username
+    pub username: String,
+}
+
+/// A struct representing a User.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct User {
     /// user id
     pub id: String,
@@ -64,6 +73,12 @@ impl From<&RegisterUser> for User {
     }
 }
 
+impl RustyDomainItem for UserModel {
+    fn id(&self) -> String {
+        self.clone().id
+    }
+}
+
 impl RustyDomainItem for User {
     fn id(&self) -> String {
         self.clone().id
@@ -80,5 +95,5 @@ pub struct PagedUsers {
     /// size of a page
     pub page_size: usize,
     /// data returned by query
-    pub entries: Vec<User>,
+    pub entries: Vec<UserModel>,
 }

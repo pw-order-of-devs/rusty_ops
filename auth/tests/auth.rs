@@ -1,6 +1,6 @@
 use rstest::rstest;
-use auth::parse_auth_header;
 
+use auth::parse_auth_header;
 use domain::auth::credentials::Credential;
 
 #[cfg(test)]

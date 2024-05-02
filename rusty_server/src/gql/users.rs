@@ -3,7 +3,7 @@ use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
-use domain::auth::user::{PagedUsers, RegisterUser, User};
+use domain::auth::user::{PagedUsers, RegisterUser, UserModel};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
@@ -32,7 +32,7 @@ impl UsersQuery {
         &self,
         ctx: &Context<'_>,
         id: String,
-    ) -> async_graphql::Result<Option<User>, RustyError> {
+    ) -> async_graphql::Result<Option<UserModel>, RustyError> {
         log::debug!("handling `users::getById` request");
         let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
         log::debug!("`users::getById`: found entry by id: `{}`", id);

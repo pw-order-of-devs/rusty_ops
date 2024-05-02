@@ -1,5 +1,5 @@
 use commons::errors::RustyError;
-use domain::auth::user::{PagedUsers, RegisterUser, User};
+use domain::auth::user::{PagedUsers, RegisterUser, User, UserModel};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 use serde_json::Value;
@@ -15,7 +15,7 @@ pub async fn get_all_paged(
     filter: &Option<Value>,
     options: &Option<SearchOptions>,
 ) -> Result<PagedUsers, RustyError> {
-    let count = shared::get_total_count::<User>(db, USERS_INDEX, filter).await?;
+    let count = shared::get_total_count::<UserModel>(db, USERS_INDEX, filter).await?;
     let entries = shared::get_all(db, USERS_INDEX, filter, options, true).await?;
     let (page, page_size) = shared::to_paged(options)?;
     Ok(PagedUsers {
@@ -26,7 +26,7 @@ pub async fn get_all_paged(
     })
 }
 
-pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<User>, RustyError> {
+pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<UserModel>, RustyError> {
     shared::get_by_id(db, USERS_INDEX, id).await
 }
 
