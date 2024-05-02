@@ -8,6 +8,7 @@ use persist::db_client::DbClient;
 use crate::gql::pipelines::PipelineSubscription;
 
 mod agents;
+mod auth;
 mod jobs;
 mod pipelines;
 mod projects;
@@ -43,6 +44,11 @@ impl Query {
     // agents interface
     async fn agents(&self) -> agents::AgentsQuery {
         agents::AgentsQuery
+    }
+
+    // authentication interface
+    async fn auth(&self) -> auth::AuthQuery {
+        auth::AuthQuery
     }
 
     // jobs interface

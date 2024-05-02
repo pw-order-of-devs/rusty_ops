@@ -23,6 +23,11 @@ fn remove_whitespace(input: &str) -> String {
 }
 
 fn parse_query(query: &str) -> (String, String, String) {
+    let query = if query.starts_with('{') {
+        format!("query {query}")
+    } else {
+        query.to_string()
+    };
     let query = query.splitn(2, '(').collect::<Vec<&str>>()[0];
     let query = query.splitn(2, ' ').collect::<Vec<&str>>();
     let (r#type, query) = (query[0], query[1]);
