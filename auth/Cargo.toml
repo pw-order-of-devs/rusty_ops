@@ -26,5 +26,6 @@ serde_json.workspace = true
 tokio.workspace = true
 
 [dev-dependencies]
+rstest.workspace = true
 testcontainers.workspace = true
 testcontainers-modules = { workspace = true, features = ["mongo"] }
