@@ -45,13 +45,7 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Pipeline>, Rust
 
 pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String, RustyError> {
     if jobs::get_by_id(db, &pipeline.job_id).await?.is_none() {
-        Err(RustyError::ValidationError(
-            json!({
-                "errors": [],
-                "properties": {"job_id": {"errors": ["job not found"]}}
-            })
-            .to_string(),
-        ))
+        Err(RustyError::ValidationError("job not found".to_string()))
     } else {
         let pipelines_count = get_all(db, &Some(json!({ "job_id": pipeline.job_id })), &None)
             .await?

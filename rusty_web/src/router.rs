@@ -8,6 +8,7 @@ use crate::pages::jobs::view::JobView;
 use crate::pages::projects::list::ProjectsList;
 use crate::pages::projects::view::ProjectView;
 
+/// Application Routing component
 #[component]
 #[must_use]
 pub fn RustyRouter() -> impl IntoView {

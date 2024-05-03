@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
@@ -35,13 +35,7 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Job>, RustyErro
 
 pub async fn create(db: &DbClient, job: RegisterJob) -> Result<String, RustyError> {
     if projects::get_by_id(db, &job.project_id).await?.is_none() {
-        Err(RustyError::ValidationError(
-            json!({
-                "errors": [],
-                "properties": {"project_id": {"errors": ["project not found"]}}
-            })
-            .to_string(),
-        ))
+        Err(RustyError::ValidationError("project not found".to_string()))
     } else {
         shared::create(db, JOBS_INDEX, job, |r| Job::from(&r)).await
     }

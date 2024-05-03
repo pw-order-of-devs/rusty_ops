@@ -7,6 +7,7 @@ use std::time::Duration;
 use crate::api::agents::get_agents;
 use crate::components::fallback::fallback;
 
+/// Agents List component
 #[component]
 #[must_use]
 pub fn AgentsList() -> impl IntoView {

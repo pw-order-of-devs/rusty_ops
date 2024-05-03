@@ -12,11 +12,11 @@ use crate::Persistence;
 /// Wrapper for database client
 #[derive(Clone, Debug)]
 pub enum DbClient {
-    /// DbClient variant - `MongoDb` client
+    /// `DbClient` variant - `MongoDb` client
     MongoDb(MongoDBClient),
-    /// DbClient variant - `PostgreSql` client
+    /// `DbClient` variant - `PostgreSql` client
     PostgreSql(PostgreSQLClient),
-    /// DbClient variant - `Redis` client
+    /// `DbClient` variant - `Redis` client
     Redis(RedisClient),
 }
 

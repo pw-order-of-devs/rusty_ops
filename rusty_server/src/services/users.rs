@@ -1,14 +1,23 @@
+use serde_json::{json, Value};
+
 use commons::errors::RustyError;
 use domain::auth::user::{PagedUsers, RegisterUser, User, UserModel};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
-use serde_json::Value;
 
 use crate::services::shared;
 
 const USERS_INDEX: &str = "users";
 
 // query
+
+pub async fn get_all(
+    db: &DbClient,
+    filter: &Option<Value>,
+    options: &Option<SearchOptions>,
+) -> Result<Vec<UserModel>, RustyError> {
+    shared::get_all(db, USERS_INDEX, filter, options, false).await
+}
 
 pub async fn get_all_paged(
     db: &DbClient,
@@ -33,5 +42,14 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<UserModel>, Rus
 // mutate
 
 pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyError> {
-    shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await
+    if get_all(db, &Some(json!({ "username": user.username })), &None)
+        .await?
+        .is_empty()
+    {
+        shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await
+    } else {
+        Err(RustyError::ValidationError(
+            "user already exists".to_string(),
+        ))
+    }
 }

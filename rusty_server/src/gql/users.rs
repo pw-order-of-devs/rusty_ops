@@ -47,10 +47,10 @@ impl UsersMutation {
     async fn register(
         &self,
         ctx: &Context<'_>,
-        project: RegisterUser,
+        user: RegisterUser,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `users::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, project).await?;
+        let id = service::create(ctx.data::<DbClient>()?, user).await?;
         log::debug!("`users::register`: registered user with id `{id}`");
         Ok(id)
     }

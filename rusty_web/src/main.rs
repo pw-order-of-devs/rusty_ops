@@ -45,6 +45,7 @@ fn main() {
     mount_to_body(|| view! { <App/> });
 }
 
+/// Application main component
 #[component]
 fn App() -> impl IntoView {
     provide_meta_context();

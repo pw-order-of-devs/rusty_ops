@@ -9,7 +9,7 @@ pub enum RustyError {
     /// Authentication User Not Found error
     UnauthenticatedError,
 
-    /// AsyncGraphql operation related error
+    /// `AsyncGraphql` operation related error
     AsyncGraphqlError(String),
     /// Convert operation related error
     ConvertError(String),
@@ -19,9 +19,9 @@ pub enum RustyError {
     HashingError(String),
     /// IO error
     IoError(String),
-    /// MongoDb operation related error
+    /// `MongoDb` operation related error
     MongoDBError(String),
-    /// PostgresSQL operation related error
+    /// `PostgresSQL` operation related error
     PostgresSQLError(String),
     /// Redis operation related error
     RedisError(String),
@@ -31,7 +31,7 @@ pub enum RustyError {
     SerializationError(String),
     /// Tokio operation related error
     TokioError(String),
-    /// Serde_valid operation related error
+    /// `serde_valid` operation related error
     ValidationError(String),
     /// Websocket operation related error
     WsError(String),

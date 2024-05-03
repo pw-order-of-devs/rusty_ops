@@ -1,5 +1,6 @@
 use leptos::{component, view, IntoView};
 
+/// Application header component
 #[component]
 #[must_use]
 pub fn Header() -> impl IntoView {
