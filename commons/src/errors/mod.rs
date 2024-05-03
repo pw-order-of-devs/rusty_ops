@@ -8,6 +8,8 @@ pub enum RustyError {
     CredentialMissingError,
     /// Authentication User Not Found error
     UnauthenticatedError,
+    /// Wrong Credential Type error
+    WrongCredentialTypeError,
 
     /// `AsyncGraphql` operation related error
     AsyncGraphqlError(String),
@@ -19,6 +21,8 @@ pub enum RustyError {
     HashingError(String),
     /// IO error
     IoError(String),
+    /// JWT error
+    JwtError(String),
     /// `MongoDb` operation related error
     MongoDBError(String),
     /// `PostgresSQL` operation related error
@@ -52,6 +56,9 @@ impl Display for RustyError {
             Self::UnauthenticatedError => {
                 write!(f, "Auth error: Failed to authenticate user")
             }
+            Self::WrongCredentialTypeError => {
+                write!(f, "Auth error: Unsupported credential type")
+            }
 
             Self::AsyncGraphqlError(message) => {
                 write!(f, "GraphQL error: {message}")
@@ -67,6 +74,9 @@ impl Display for RustyError {
             }
             Self::IoError(message) => {
                 write!(f, "IO error: {message}")
+            }
+            Self::JwtError(message) => {
+                write!(f, "JWT error: {message}")
             }
             Self::MongoDBError(message) => {
                 write!(f, "MongoDB error: {message}")

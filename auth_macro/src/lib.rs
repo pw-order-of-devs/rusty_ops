@@ -4,14 +4,26 @@ use syn::{parse_macro_input, ItemFn, PatIdent};
 
 #[proc_macro_attribute]
 #[cfg(not(tarpaulin_include))]
-pub fn authenticate(_: TokenStream, input: TokenStream) -> TokenStream {
+pub fn authenticate_basic(_: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
 
     // Extract the context parameter
     let ctx = extract_ctx(&input);
 
     // expand function
-    expand_fn(&input, &ctx)
+    expand_fn("basic", &input, &ctx)
+}
+
+#[proc_macro_attribute]
+#[cfg(not(tarpaulin_include))]
+pub fn authenticate_bearer(_: TokenStream, input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as ItemFn);
+
+    // Extract the context parameter
+    let ctx = extract_ctx(&input);
+
+    // expand function
+    expand_fn("bearer", &input, &ctx)
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -40,7 +52,7 @@ fn extract_ctx(input: &ItemFn) -> PatIdent {
 }
 
 #[cfg(not(tarpaulin_include))]
-fn expand_fn(input: &ItemFn, ctx: &PatIdent) -> TokenStream {
+fn expand_fn(supported: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
     let sig = input.clone().sig;
     let name = sig.clone().ident;
     let inputs = sig.clone().inputs;
@@ -55,9 +67,18 @@ fn expand_fn(input: &ItemFn, ctx: &PatIdent) -> TokenStream {
             let endpoint = format!("{}:{}:{}", query.0, query.1, query.2);
             let cred = ctx.data::<Credential>()?;
             if !get_public_gql_endpoints().contains(&endpoint) {
-                if cred == &Credential::None {
-                    log::error!("missing credential for endpoint `{}`", endpoint);
-                    return Err(RustyError::CredentialMissingError);
+                let supported = #supported.split(',').collect::<Vec<&str>>();
+                let cred_type = match cred {
+                    Credential::Basic(_, _) => "basic",
+                    Credential::Bearer(_) => "bearer",
+                    Credential::None => {
+                        log::error!("missing credential for endpoint `{}`", endpoint);
+                        return Err(RustyError::CredentialMissingError);
+                    },
+                };
+                if !supported.contains(&cred_type) {
+                    log::error!("mismatching credential type for endpoint `{}`", endpoint);
+                    return Err(RustyError::WrongCredentialTypeError);
                 }
                 let db = #ctx.data::<DbClient>()?;
                 match auth::authenticate(db, cred).await {

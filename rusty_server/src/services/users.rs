@@ -39,6 +39,10 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<UserModel>, Rus
     shared::get_by_id(db, USERS_INDEX, id).await
 }
 
+pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<User>, RustyError> {
+    shared::get_one(db, USERS_INDEX, &json!({ "username": username })).await
+}
+
 // mutate
 
 pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyError> {
