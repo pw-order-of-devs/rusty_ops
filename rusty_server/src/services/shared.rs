@@ -59,6 +59,17 @@ pub async fn get_by_id<T: RustyDomainItem>(
     })
 }
 
+pub async fn get_one<T: RustyDomainItem>(
+    db: &DbClient,
+    index: &str,
+    filter: &Value,
+) -> Result<Option<T>, RustyError> {
+    db.get_one(index, filter.clone()).await.map_err(|err| {
+        log::error!("`{index}::get`: {err}");
+        err
+    })
+}
+
 pub async fn create<S, T, F>(
     db: &DbClient,
     index: &str,

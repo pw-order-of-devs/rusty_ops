@@ -28,11 +28,19 @@ fn parse_query(query: &str) -> (String, String, String) {
     } else {
         query.to_string()
     };
-    let query = query.splitn(2, '(').collect::<Vec<&str>>()[0];
+    let split_char = if query.contains('(') { '(' } else { '}' };
+    let query = query.splitn(2, split_char).collect::<Vec<&str>>()[0];
     let query = query.splitn(2, ' ').collect::<Vec<&str>>();
     let (r#type, query) = (query[0], query[1]);
     let query = remove_whitespace(&query.replace(' ', ""));
-    let query = query.splitn(4, '{').skip(1).take(2).collect::<Vec<&str>>();
+    let count = query
+        .chars()
+        .fold(0, |a, b| if b == '{' { a + 1 } else { a });
+    let query = query
+        .splitn(count + 1, '{')
+        .skip(1)
+        .take(2)
+        .collect::<Vec<&str>>();
     (
         r#type.to_string(),
         query[0].to_string(),
