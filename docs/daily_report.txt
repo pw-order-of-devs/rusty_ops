@@ -204,3 +204,8 @@ Date: 2024-05-01
   5024e17 Daily update
   a0b96e0 clean up auth macro
   dc4d520 unprotected endpoints support - configurable public user registration
+Date: 2024-05-02
+  67d56ff Daily update
+  89989ba login endpoint
+  2be3bb3 auth tests
+  ba5f698 user model - no password exposition
