@@ -4,7 +4,7 @@ use serde_json::json;
 use commons::errors::RustyError;
 use commons::hashing::bcrypt::validate;
 use commons::hashing::sha::hmac512;
-use domain::auth::credentials::{get_token_expiry, get_token_username};
+use domain::auth::credentials::{get_token_claim_timestamp, get_token_username};
 use domain::auth::user::User;
 use persist::db_client::DbClient;
 
@@ -40,8 +40,9 @@ pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, Ru
                 .timestamp()
                 .try_into()
                 .unwrap_or_default();
-            let expiry = get_token_expiry(token);
-            if expiry < now {
+            let expiry = get_token_claim_timestamp(token, "exp");
+            let not_before = get_token_claim_timestamp(token, "nbf");
+            if expiry < now || not_before > now {
                 return Err(RustyError::JwtTokenExpiredError);
             }
             match claims {

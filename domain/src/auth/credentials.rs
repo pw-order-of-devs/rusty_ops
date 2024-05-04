@@ -66,9 +66,9 @@ pub fn get_token_username(token: &str) -> String {
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[must_use]
-pub fn get_token_expiry(token: &str) -> u64 {
+pub fn get_token_claim_timestamp(token: &str, claim: &str) -> u64 {
     get_token_claims(token)
-        .get("exp")
+        .get(claim)
         .unwrap_or(&Value::Number(Number::from(0)))
         .as_u64()
         .unwrap_or(0)
