@@ -209,3 +209,7 @@ Date: 2024-05-02
   89989ba login endpoint
   2be3bb3 auth tests
   ba5f698 user model - no password exposition
+Date: 2024-05-03
+  8612f54 Daily update
+  55e86fa user registration - validate uniqueness
+  67b933b jwt authentication
