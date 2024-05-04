@@ -21,10 +21,7 @@ impl AuthQuery {
             _ => "",
         };
 
-        let Some(user) = users::get_by_username(ctx.data::<DbClient>()?, username).await? else {
-            return Err(RustyError::UnauthenticatedError);
-        };
-        build_jwt_token(&user, 180)
+        build_jwt_token_wrapper(ctx, username).await
     }
 
     #[auth_macro::authenticate_bearer]
@@ -36,9 +33,16 @@ impl AuthQuery {
             _ => String::new(),
         };
 
-        let Some(user) = users::get_by_username(ctx.data::<DbClient>()?, &username).await? else {
-            return Err(RustyError::UnauthenticatedError);
-        };
-        build_jwt_token(&user, 180)
+        build_jwt_token_wrapper(ctx, &username).await
     }
+}
+
+async fn build_jwt_token_wrapper(
+    ctx: &Context<'_>,
+    username: &str,
+) -> async_graphql::Result<String, RustyError> {
+    let Some(user) = users::get_by_username(ctx.data::<DbClient>()?, username).await? else {
+        return Err(RustyError::UnauthenticatedError);
+    };
+    build_jwt_token(&user, 3600)
 }
