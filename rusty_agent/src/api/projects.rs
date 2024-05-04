@@ -1,6 +1,6 @@
 use commons::errors::RustyError;
 
-use crate::api::client::reqwest_post;
+use crate::api::client::reqwest_post_bearer;
 
 /// Function to retrieve a projects from a GraphQL endpoint by id.
 ///
@@ -22,7 +22,7 @@ pub async fn get_pipeline_repository(id: String) -> Result<String, RustyError> {
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     json_data["data"]["projects"]["getById"]["url"]
         .as_str()

@@ -6,6 +6,8 @@ use std::fmt::{Debug, Display, Formatter};
 pub enum RustyError {
     /// Authentication Missing Credential error
     CredentialMissingError,
+    /// Authentication Jwt Token Expired error
+    JwtTokenExpiredError,
     /// Authentication User Not Found error
     UnauthenticatedError,
     /// Wrong Credential Type error
@@ -52,6 +54,9 @@ impl Display for RustyError {
         match self {
             Self::CredentialMissingError => {
                 write!(f, "Auth error: Missing credential")
+            }
+            Self::JwtTokenExpiredError => {
+                write!(f, "Auth error: Jwt token expired")
             }
             Self::UnauthenticatedError => {
                 write!(f, "Auth error: Failed to authenticate user")

@@ -40,7 +40,7 @@ pub mod token;
 pub fn parse_auth_header(header: &str) -> Credential {
     let value = header.split(' ').collect::<Vec<&str>>();
     if value.len() != 2 {
-        log::warn!("invalid auth header: {header}");
+        log::warn!("malformed auth header");
         return Credential::None;
     }
     parse_credential(value[0], value[1])

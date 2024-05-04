@@ -68,7 +68,7 @@ async fn initialize_connection(
     let (mut write, mut read) = ws_stream.split();
     log::debug!("WebSocket handshake has been successfully completed");
 
-    let credential = crate::api::get_credential()?;
+    let credential = format!("Basic {}", crate::api::get_credential()?);
     let subscribe_message = json!({
         "type": "connection_init",
         "payload": { "auth": credential },

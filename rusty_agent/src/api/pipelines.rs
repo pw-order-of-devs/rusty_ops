@@ -1,7 +1,7 @@
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
 
-use crate::api::client::reqwest_post;
+use crate::api::client::reqwest_post_bearer;
 use crate::api::utils::parse_entries;
 
 /// Function to retrieve one unassigned pipeline from a GraphQL endpoint.
@@ -57,7 +57,7 @@ async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["get"]["entries"].clone();
     parse_entries::<Vec<Pipeline>>(json_data)?
@@ -89,7 +89,7 @@ pub async fn assign_pipeline(pipeline_id: &str, agent_id: &str) -> Result<String
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["assign"].clone();
     parse_entries(json_data)
@@ -116,7 +116,7 @@ pub async fn set_running(pipeline_id: &str, agent_id: &str) -> Result<String, Ru
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["setRunning"].clone();
     parse_entries(json_data)
@@ -148,7 +148,7 @@ pub async fn finalize(
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["finalize"].clone();
     parse_entries(json_data)

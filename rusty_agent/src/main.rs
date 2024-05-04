@@ -28,14 +28,7 @@ mod resolver;
 
 #[tokio::main]
 async fn main() {
-    commons::logger::init();
-
-    let uuid = uuid::Uuid::new_v4().to_string();
-    api::agents::register(&uuid)
-        .await
-        .expect("Error while registering the agent");
-    resolver::init(uuid.clone());
-    log::debug!("Initialized with id: `{uuid}`");
+    let uuid = init().await;
 
     // start the http server
     let app = Router::new().route("/health", routing::get(|| async { "ok" }));
@@ -55,6 +48,22 @@ async fn main() {
 
     let _ = api::agents::unregister(&uuid).await;
     log::info!("Server is shut down");
+}
+
+async fn init() -> String {
+    commons::logger::init();
+
+    let uuid = uuid::Uuid::new_v4().to_string();
+    let token = api::auth::authenticate()
+        .await
+        .expect("Failed to authenticate agent");
+    *api::JWT_TOKEN.lock().unwrap() = token;
+    api::agents::register(&uuid)
+        .await
+        .expect("Error while registering the agent");
+    resolver::init(&uuid);
+    log::debug!("Initialized with id: `{uuid}`");
+    uuid
 }
 
 async fn shutdown_signal() {

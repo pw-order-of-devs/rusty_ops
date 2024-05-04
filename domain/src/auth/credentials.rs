@@ -1,6 +1,6 @@
 use base64_url::base64;
 use base64_url::base64::Engine;
-use serde_json::{Map, Value};
+use serde_json::{Map, Number, Value};
 
 /// User Credentials
 #[derive(Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
@@ -41,23 +41,49 @@ impl std::fmt::Display for Credential {
 /// * `RustyError` - If there was an error during the creation of the item.
 #[must_use]
 pub fn get_token_username(token: &str) -> String {
+    get_token_claims(token)
+        .get("sub")
+        .unwrap_or(&Value::String(String::new()))
+        .as_str()
+        .unwrap_or("")
+        .to_string()
+}
+
+/// Gets the expiry time of a token.
+///
+/// # Arguments
+///
+/// * `token` - A string representing the token.
+///
+/// # Returns
+///
+/// The expiry time of the token in milliseconds. If the `token` is not in the expected format or
+/// the expiry time cannot be determined, it returns 0.
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+#[must_use]
+pub fn get_token_expiry(token: &str) -> u64 {
+    get_token_claims(token)
+        .get("exp")
+        .unwrap_or(&Value::Number(Number::from(0)))
+        .as_u64()
+        .unwrap_or(0)
+}
+
+fn get_token_claims(token: &str) -> Value {
     let claims = token.split('.').collect::<Vec<&str>>();
     if claims.len() == 3 {
         let claims = base64::prelude::BASE64_URL_SAFE_NO_PAD
             .decode(claims[1])
             .unwrap_or(vec![]);
         let claims = String::from_utf8(claims).unwrap_or_default();
-        let claims = serde_json::from_str::<Value>(&claims).unwrap_or(Value::Object(Map::new()));
-        claims
-            .as_object()
-            .unwrap_or(&Map::new())
-            .get("sub")
-            .unwrap_or(&Value::String(String::new()))
-            .as_str()
-            .unwrap_or("")
-            .to_string()
+        serde_json::from_str::<Value>(&claims).unwrap_or(Value::Object(Map::new()))
     } else {
-        String::new()
+        Value::Object(Map::new())
     }
 }
 
@@ -90,7 +116,7 @@ pub fn parse_credential(typ: &str, value: &str) -> Credential {
             };
             let cred = cred.split(':').collect::<Vec<&str>>();
             if cred.len() != 2 {
-                log::warn!("invalid auth header: {cred:?}");
+                log::warn!("malformed auth header");
                 return Credential::None;
             }
             Credential::Basic(cred[0].to_string(), cred[1].to_string())
@@ -98,7 +124,7 @@ pub fn parse_credential(typ: &str, value: &str) -> Credential {
         "Bearer" => {
             let parts = value.split('.').collect::<Vec<&str>>();
             if parts.len() != 3 {
-                log::warn!("invalid auth header: {value:?}");
+                log::warn!("malformed auth header");
                 return Credential::None;
             }
             if base64::prelude::BASE64_URL_SAFE_NO_PAD
@@ -108,7 +134,7 @@ pub fn parse_credential(typ: &str, value: &str) -> Credential {
                     .decode(parts[1])
                     .is_err()
             {
-                log::warn!("invalid auth header: {value:?}");
+                log::warn!("malformed auth header");
                 return Credential::None;
             };
             Credential::Bearer(value.to_string())

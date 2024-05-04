@@ -1,6 +1,6 @@
 use commons::errors::RustyError;
 
-use crate::api::client::reqwest_post;
+use crate::api::client::reqwest_post_bearer;
 
 /// Function to register an agent via GraphQL endpoint.
 ///
@@ -22,7 +22,7 @@ pub async fn register(uuid: &str) -> Result<String, RustyError> {
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     Ok(json_data["data"]["agents"]["register"].to_string())
 }
@@ -45,7 +45,7 @@ pub async fn unregister(uuid: &str) -> Result<u64, RustyError> {
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     Ok(json_data["data"]["agents"]["deleteById"]
         .as_u64()
@@ -70,7 +70,7 @@ pub async fn healthcheck(uuid: &str) -> Result<String, RustyError> {
         "variables": {}
     });
 
-    let data = reqwest_post(&payload).await?;
+    let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     Ok(json_data["data"]["agents"]["healthcheck"].to_string())
 }

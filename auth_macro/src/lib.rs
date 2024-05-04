@@ -86,7 +86,7 @@ fn expand_fn(supported: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
                         log::info!("authenticated user `{}` for endpoint `{}`: success", cred, endpoint);
                     },
                     Err(err) => {
-                        log::error!("authenticated user `{}` for endpoint `{}`: error", cred, endpoint);
+                        log::error!("authenticated user `{}` for endpoint `{}`: {}", cred, endpoint, err.to_string());
                         return Err(err)
                     },
                 };
