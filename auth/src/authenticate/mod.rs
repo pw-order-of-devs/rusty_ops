@@ -4,7 +4,7 @@ use serde_json::json;
 use commons::errors::RustyError;
 use commons::hashing::bcrypt::validate;
 use commons::hashing::sha::hmac512;
-use domain::auth::credentials::{get_token_claim_timestamp, get_token_username};
+use domain::auth::credentials::{get_token_claim_str, get_token_claim_u64};
 use domain::auth::user::User;
 use persist::db_client::DbClient;
 
@@ -29,7 +29,7 @@ pub(crate) async fn basic_auth(
 }
 
 pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, RustyError> {
-    let user = get_token_username(token);
+    let user = get_token_claim_str(token, "sub");
     match db
         .get_one::<User>("users", json!({ "username": user }))
         .await?
@@ -40,8 +40,8 @@ pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, Ru
                 .timestamp()
                 .try_into()
                 .unwrap_or_default();
-            let expiry = get_token_claim_timestamp(token, "exp");
-            let not_before = get_token_claim_timestamp(token, "nbf");
+            let expiry = get_token_claim_u64(token, "exp");
+            let not_before = get_token_claim_u64(token, "nbf");
             if expiry < now || not_before > now {
                 return Err(RustyError::JwtTokenExpiredError);
             }

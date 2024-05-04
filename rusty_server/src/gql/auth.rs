@@ -2,7 +2,7 @@ use async_graphql::{Context, Object};
 
 use auth::token::build_jwt_token;
 use commons::errors::RustyError;
-use domain::auth::credentials::{get_token_username, Credential};
+use domain::auth::credentials::{get_token_claim_str, Credential};
 use persist::db_client::DbClient;
 
 use crate::gql::get_public_gql_endpoints;
@@ -29,7 +29,7 @@ impl AuthQuery {
         log::debug!("handling `auth::renew` request");
         let cred = ctx.data::<Credential>()?;
         let username = match cred {
-            Credential::Bearer(token) => get_token_username(token),
+            Credential::Bearer(token) => get_token_claim_str(token, "sub"),
             _ => String::new(),
         };
 

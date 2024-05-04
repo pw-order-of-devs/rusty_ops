@@ -17,61 +17,85 @@ impl std::fmt::Display for Credential {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Basic(user, _) => write!(f, "{user}"),
-            Self::Bearer(token) => write!(f, "{}", get_token_username(token)),
+            Self::Bearer(token) => {
+                let username = if let ClaimValue::Str(value) = get_token_claim(token, "sub") {
+                    value
+                } else {
+                    String::new()
+                };
+                write!(f, "{username}")
+            }
             Self::None => write!(f, "empty credential"),
         }
     }
 }
 
-/// Extracts the username from a JWT token.
-///
-/// # Arguments
-///
-/// * `token` - A string slice representing the JWT token.
-///
-/// # Returns
-///
-/// A `String` containing the username extracted from the JWT token. If the token is invalid or
-/// the username cannot be extracted, an empty string is returned.
-///
-/// # Errors
-///
-/// This function can generate the following errors:
-///
-/// * `RustyError` - If there was an error during the creation of the item.
-#[must_use]
-pub fn get_token_username(token: &str) -> String {
-    get_token_claims(token)
-        .get("sub")
-        .unwrap_or(&Value::String(String::new()))
-        .as_str()
-        .unwrap_or("")
-        .to_string()
+#[derive(Debug)]
+enum ClaimValue {
+    Str(String),
+    Int(u64),
 }
 
-/// Gets the expiry time of a token.
+/// Get the claim value as string from the given token.
 ///
 /// # Arguments
 ///
-/// * `token` - A string representing the token.
+/// * `token` - A string slice representing the token.
+/// * `claim` - A string slice representing the claim to retrieve.
 ///
 /// # Returns
 ///
-/// The expiry time of the token in milliseconds. If the `token` is not in the expected format or
-/// the expiry time cannot be determined, it returns 0.
-///
-/// # Errors
-///
-/// This function can generate the following errors:
-///
-/// * `RustyError` - If there was an error during the creation of the item.
+/// A `String` containing the value of the claim, if present. If the claim is not found,
+/// an empty `String` is returned.
 #[must_use]
-pub fn get_token_claim_timestamp(token: &str, claim: &str) -> u64 {
-    get_token_claims(token)
-        .get(claim)
-        .unwrap_or(&Value::Number(Number::from(0)))
-        .as_u64()
-        .unwrap_or(0)
+pub fn get_token_claim_str(token: &str, claim: &str) -> String {
+    if let ClaimValue::Str(value) = get_token_claim(token, claim) {
+        value
+    } else {
+        String::new()
+    }
+}
+
+/// Get the claim value as u64 from the given token.
+///
+/// # Arguments
+///
+/// * `token` - A string slice representing the token.
+/// * `claim` - A string slice representing the claim name.
+///
+/// # Returns
+///
+/// An unsigned 64-bit integer representing the claim value. If the claim value is not found or
+/// cannot be converted to u64, a default value of 0 is returned.
+#[must_use]
+pub fn get_token_claim_u64(token: &str, claim: &str) -> u64 {
+    if let ClaimValue::Int(value) = get_token_claim(token, claim) {
+        value
+    } else {
+        0
+    }
+}
+
+fn get_token_claim(token: &str, claim: &str) -> ClaimValue {
+    let claim_value = get_token_claims(token);
+    let claim_value = claim_value.get(claim);
+    match claim {
+        "exp" | "nbf" | "iat" => {
+            let value = claim_value
+                .unwrap_or(&Value::Number(Number::from(0)))
+                .as_u64()
+                .unwrap_or(0);
+            ClaimValue::Int(value)
+        }
+        _ => {
+            let value = claim_value
+                .unwrap_or(&Value::String(String::new()))
+                .as_str()
+                .unwrap_or("")
+                .to_string();
+            ClaimValue::Str(value)
+        }
+    }
 }
 
 fn get_token_claims(token: &str) -> Value {

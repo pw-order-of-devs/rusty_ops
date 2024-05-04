@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use commons::env::var_or_default;
-use domain::auth::credentials::get_token_claim_timestamp;
+use domain::auth::credentials::get_token_claim_u64;
 
 use crate::api::{agents, auth, pipelines, JWT_TOKEN};
 use crate::resolver::execution::execute_pipeline;
@@ -106,7 +106,7 @@ fn renew_token_schedule() {
             .timestamp()
             .try_into()
             .unwrap_or_default();
-        let expiry = get_token_claim_timestamp(token, "exp") - now;
+        let expiry = get_token_claim_u64(token, "exp") - now;
         ((expiry as f64) * 0.9) as u64
     }
 
