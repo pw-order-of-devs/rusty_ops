@@ -12,7 +12,7 @@ pub struct AuthQuery;
 
 #[Object]
 impl AuthQuery {
-    #[auth_macro::authenticate_basic]
+    #[auth_macro::authenticate(basic, [])]
     async fn login(&self, ctx: &Context<'_>) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `auth::login` request");
         let cred = ctx.data::<Credential>()?;
@@ -24,7 +24,7 @@ impl AuthQuery {
         build_jwt_token_wrapper(ctx, username).await
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn renew(&self, ctx: &Context<'_>) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `auth::renew` request");
         let cred = ctx.data::<Credential>()?;

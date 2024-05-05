@@ -14,7 +14,7 @@ pub struct ProjectsQuery;
 
 #[Object]
 impl ProjectsQuery {
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -27,7 +27,7 @@ impl ProjectsQuery {
         Ok(entries)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -44,7 +44,7 @@ pub struct ProjectsMutation;
 
 #[Object]
 impl ProjectsMutation {
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -56,7 +56,7 @@ impl ProjectsMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -68,7 +68,7 @@ impl ProjectsMutation {
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `projects::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

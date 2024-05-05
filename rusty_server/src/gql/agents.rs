@@ -14,7 +14,7 @@ pub struct AgentsQuery;
 
 #[Object]
 impl AgentsQuery {
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -27,7 +27,7 @@ impl AgentsQuery {
         Ok(entries)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -44,7 +44,7 @@ pub struct AgentsMutation;
 
 #[Object]
 impl AgentsMutation {
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -56,7 +56,7 @@ impl AgentsMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn healthcheck(
         &self,
         ctx: &Context<'_>,
@@ -68,7 +68,7 @@ impl AgentsMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -80,7 +80,7 @@ impl AgentsMutation {
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `agents::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

@@ -14,7 +14,7 @@ pub struct UsersQuery;
 
 #[Object]
 impl UsersQuery {
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -27,7 +27,7 @@ impl UsersQuery {
         Ok(entries)
     }
 
-    #[auth_macro::authenticate_bearer]
+    #[auth_macro::authenticate(bearer, [])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
