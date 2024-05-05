@@ -42,12 +42,7 @@ fn extract_ctx(input: &ItemFn) -> PatIdent {
 }
 
 #[cfg(not(tarpaulin_include))]
-fn expand_fn(
-    auth_type: &str,
-    permissions: &str,
-    input: &ItemFn,
-    ctx: &PatIdent,
-) -> TokenStream {
+fn expand_fn(auth_type: &str, permissions: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
     let sig = input.clone().sig;
     let name = sig.clone().ident;
     let inputs = sig.clone().inputs;
