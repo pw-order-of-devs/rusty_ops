@@ -151,4 +151,17 @@ impl DbClient {
             Self::Redis(client) => client.change_stream(index),
         }
     }
+
+    /// Purges all data in the selected database(s).
+    ///
+    /// # Errors
+    ///
+    /// Returns a `RustyError` if any of the underlying database clients encounter an error during the purge operation.
+    pub async fn purge(&self) -> Result<(), RustyError> {
+        match self {
+            Self::MongoDb(client) => client.purge().await,
+            Self::PostgreSql(client) => client.purge().await,
+            Self::Redis(client) => client.purge().await,
+        }
+    }
 }

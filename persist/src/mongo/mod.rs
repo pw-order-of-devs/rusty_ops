@@ -196,6 +196,14 @@ impl Persistence for MongoDBClient {
             }
         })
     }
+
+    async fn purge(&self) -> Result<(), RustyError> {
+        self.client
+            .database(&self.database)
+            .drop(None)
+            .await
+            .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
+    }
 }
 
 fn parse_filter(filter: &Option<Value>) -> Result<Option<Document>, RustyError> {

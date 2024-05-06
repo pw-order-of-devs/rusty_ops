@@ -39,6 +39,23 @@ impl PostgreSQLClient {
             _ => String::new(),
         }
     }
+
+    /// Executes a SQL statement using the underlying database connection.
+    ///
+    /// # Arguments
+    ///
+    /// * `sql` - The SQL statement to be executed.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Ok(())` if the SQL statement was executed successfully.
+    /// Returns `Err(RustyError)` if there was an error executing the SQL statement.
+    pub async fn execute_sql(&self, sql: &str) -> Result<(), RustyError> {
+        let conn = self.client.get().await?;
+        conn.batch_execute(&sql).await?;
+
+        Ok(())
+    }
 }
 
 #[allow(clippy::manual_async_fn)]
@@ -190,6 +207,15 @@ impl Persistence for PostgreSQLClient {
         Box::pin(async_stream::stream! {
             yield None
         })
+    }
+
+    async fn purge(&self) -> Result<(), RustyError> {
+        let conn = self.client.get().await?;
+        let statement = format!("drop schema if exists {} cascade", self.schema);
+        conn.execute(&statement, &[])
+            .await
+            .map_err(|err| RustyError::PostgresSQLError(err.to_string()))
+            .map(|_| ())
     }
 }
 

@@ -226,4 +226,14 @@ impl Persistence for RedisClient {
             }
         })
     }
+
+    async fn purge(&self) -> Result<(), RustyError> {
+        let mut conn = self.client.get().await?;
+        let keys: Vec<String> = conn.keys("*").await?;
+        for key in &keys {
+            let _: () = conn.del(key).await?;
+        }
+
+        Ok(())
+    }
 }

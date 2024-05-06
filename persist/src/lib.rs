@@ -231,14 +231,17 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    ///
-    /// # Notes
-    ///
-    /// It should return a wrapper or generic result when more databases are supported
     fn change_stream<'a, T: RustyDomainItem + 'static>(
         &'a self,
         index: &'a str,
     ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>>;
+
+    /// Purges all data in the selected database(s).
+    ///
+    /// # Errors
+    ///
+    /// Returns a `RustyError` if any of the underlying database clients encounter an error during the purge operation.
+    fn purge(&self) -> impl Future<Output = Result<(), RustyError>> + Send;
 }
 
 /// Initializes the persistence layer based on the configured database type.
