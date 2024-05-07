@@ -50,9 +50,15 @@ impl PostgreSQLClient {
     ///
     /// Returns `Ok(())` if the SQL statement was executed successfully.
     /// Returns `Err(RustyError)` if there was an error executing the SQL statement.
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn execute_sql(&self, sql: &str) -> Result<(), RustyError> {
         let conn = self.client.get().await?;
-        conn.batch_execute(&sql).await?;
+        conn.batch_execute(sql).await?;
 
         Ok(())
     }

@@ -1,0 +1,26 @@
+[package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+name = "rusty_init"
+description = "rusty_ops - ci/cd system - init"
+
+[[bin]]
+name = "rusty_init"
+path = "src/main.rs"
+
+[dependencies]
+commons = { path = "../commons", features = ["errors", "logging"] }
+domain = { path = "../domain" }
+persist = { path = "../persist" }
+
+log.workspace = true
+rand.workspace = true
+tokio.workspace = true
+uuid.workspace = true

@@ -69,6 +69,7 @@ async fn create_user(db_client: &DbClient) {
                 id: "d81e7711-8eed-4cac-9191-d2ec48f36e13".to_string(),
                 username: "user".to_string(),
                 password: encode("pass").unwrap(),
+                roles: vec![],
             },
         )
         .await;
