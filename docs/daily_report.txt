@@ -226,3 +226,6 @@ Date: 2024-05-05
 Date: 2024-05-06
   5c72627 Daily update
   1c3182d persist - purge all data functionality
+Date: 2024-05-07
+  9ce513e Daily update
+  1e37325 init service implemented - initialization of database; extended model with user permissions/roles
