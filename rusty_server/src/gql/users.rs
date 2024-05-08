@@ -14,7 +14,7 @@ pub struct UsersQuery;
 
 #[Object]
 impl UsersQuery {
-    #[auth_macro::authenticate(bearer, [])]
+    #[auth_macro::authenticate(bearer, [USERS:READ])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -27,7 +27,7 @@ impl UsersQuery {
         Ok(entries)
     }
 
-    #[auth_macro::authenticate(bearer, [])]
+    #[auth_macro::authenticate(bearer, [USERS:READ])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -44,6 +44,7 @@ pub struct UsersMutation;
 
 #[Object]
 impl UsersMutation {
+    #[auth_macro::authenticate(bearer, [USERS:WRITE])]
     async fn register(
         &self,
         ctx: &Context<'_>,

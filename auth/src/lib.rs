@@ -23,6 +23,9 @@ use persist::db_client::DbClient;
 /// authenticate user
 pub mod authenticate;
 
+/// authorize user
+pub mod authorize;
+
 /// jwt token operations
 pub mod token;
 
@@ -59,4 +62,15 @@ pub async fn authenticate(db: &DbClient, credential: &Credential) -> Result<Stri
         Credential::Bearer(token) => authenticate::bearer_auth(db, token).await,
         Credential::None => Ok(String::new()),
     }
+}
+
+/// authenticate user for permission
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+pub async fn authorize(db: &DbClient, username: &str, resources: &str) -> Result<(), RustyError> {
+    authorize::authorize(db, username, resources).await
 }
