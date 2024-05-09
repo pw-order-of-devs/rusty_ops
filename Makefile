@@ -1,9 +1,8 @@
 prepare_env:
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y
 	rustup target add x86_64-unknown-linux-musl
-	rustup target add wasm32-unknown-unknown
 	cargo install cargo-machete
-	cargo install cargo-tarpaul
+	cargo install cargo-tarpaulin
 
 audit:
 	cargo audit
@@ -34,6 +33,3 @@ build_server:
 
 build_agent:
 	docker build -t rusty-agent -f rusty_agent/Dockerfile .
-
-build_web:
-	docker build -t rusty-web -f rusty_web/Dockerfile .

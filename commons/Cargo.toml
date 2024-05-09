@@ -17,7 +17,6 @@ path = "src/lib.rs"
 
 [features]
 errors = []
-wasm = ["reqwasm"]
 logging = ["log4rs"]
 persist = ["mongodb", "bb8-postgres", "bb8-redis"]
 ws = ["tokio-tungstenite"]
@@ -32,7 +31,6 @@ log4rs = { workspace = true, features = ["gzip", "all_components"], optional = t
 mongodb = { workspace = true, optional = true }
 bb8-postgres = { workspace = true, optional = true }
 bb8-redis = { workspace = true, optional = true }
-reqwasm = { workspace = true, optional = true }
 reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true

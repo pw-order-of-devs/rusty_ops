@@ -15,4 +15,3 @@ stages:
     script:
       - make build_server
       - make build_agent
-      - make build_web

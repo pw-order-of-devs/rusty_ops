@@ -28,10 +28,14 @@ Include instructions on how to set up your project here. Discuss any environment
 
 The project integrates several modules:
 
+* **init**: [link to doc]
 * **server**: [link to doc]
 * **agent**: [link to doc]
 * **web ui**: [link to doc]
+
+* **auth**: [link to doc]
 * **commons**: [link to doc]
+* **auth_macro**: [link to doc]
 * **domain**: [link to doc]
 * **persist**: [link to doc]
 

@@ -31,7 +31,7 @@ pub enum RustyError {
     PostgresSQLError(String),
     /// Redis operation related error
     RedisError(String),
-    /// Reqwest|Reqwasm operation related error
+    /// Reqwest operation related error
     RequestError(String),
     /// Serde operation related error
     SerializationError(String),
@@ -116,13 +116,6 @@ impl std::error::Error for RustyError {}
 impl From<async_graphql::Error> for RustyError {
     fn from(err: async_graphql::Error) -> Self {
         Self::AsyncGraphqlError(err.message)
-    }
-}
-
-#[cfg(feature = "wasm")]
-impl From<reqwasm::Error> for RustyError {
-    fn from(err: reqwasm::Error) -> Self {
-        Self::RequestError(err.to_string())
     }
 }
 

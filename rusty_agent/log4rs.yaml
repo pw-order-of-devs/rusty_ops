@@ -6,7 +6,7 @@ appenders:
   # Appender for the rolling file
   file:
     kind: rolling_file
-    path: logs/rusty_server.log
+    path: logs/rusty_agent.log
     encoder:
       pattern: "{d(%Y-%m-%d %H:%M:%S)} | {({l}):5.5} | {f}:{L} — {m}{n}"
     policy:
@@ -16,14 +16,14 @@ appenders:
         limit: 30mb
       roller:
         kind: fixed_window
-        pattern: logs/rusty_server_{}.log.gz
+        pattern: logs/rusty_agent_{}.log.gz
         count: 5
         base: 1
 
   # Appender for the rolling json file
   json-file:
     kind: rolling_file
-    path: logs/rusty_server.json.log
+    path: logs/rusty_agent.json.log
     encoder:
       kind: json
     policy:
@@ -33,7 +33,7 @@ appenders:
         limit: 30mb
       roller:
         kind: fixed_window
-        pattern: logs/rusty_server_{}.json.log.gz
+        pattern: logs/rusty_agent_{}.json.log.gz
         count: 5
         base: 1
 
