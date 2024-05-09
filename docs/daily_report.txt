@@ -229,3 +229,6 @@ Date: 2024-05-06
 Date: 2024-05-07
   9ce513e Daily update
   1e37325 init service implemented - initialization of database; extended model with user permissions/roles
+Date: 2024-05-08
+  caf5ce3 Daily update
+  5208248 authorize user - validate permission
