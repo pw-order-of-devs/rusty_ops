@@ -232,3 +232,7 @@ Date: 2024-05-07
 Date: 2024-05-08
   caf5ce3 Daily update
   5208248 authorize user - validate permission
+Date: 2024-05-09
+  9137066 Daily update
+  98b9921 adr - svelte(kit)
+  5df0ebc cleanup remove rusty_web rust/wasm version
