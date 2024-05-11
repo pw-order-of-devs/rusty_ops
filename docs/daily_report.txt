@@ -236,3 +236,6 @@ Date: 2024-05-09
   9137066 Daily update
   98b9921 adr - svelte(kit)
   5df0ebc cleanup remove rusty_web rust/wasm version
+Date: 2024-05-10
+  f0d45cb Daily update
+  13e6811 svelte app template - landing page
