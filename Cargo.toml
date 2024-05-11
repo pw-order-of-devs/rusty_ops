@@ -1,6 +1,7 @@
 [workspace]
 members = ["rusty_*", "auth*", "commons", "domain", "persist", "auth_macro"]
 default-members = ["rusty_*", "auth*", "commons", "domain", "persist"]
+exclude = ["rusty_web"]
 resolver = "2"
 
 [workspace.package]
@@ -17,7 +18,6 @@ readme = "README.md"
 [workspace.dependencies]
 async-graphql = "7.0"
 async-graphql-axum = "7.0"
-async-std = "1.12"
 async-stream = "0.3"
 async-trait = "0.1"
 axum = { version = "0.7", features = ["http2", "tokio"] }
@@ -27,14 +27,9 @@ bb8-postgres = "0.8"
 bb8-redis = "0.15"
 bcrypt = "0.15"
 chrono = "0.4"
-clokwerk= "0.4"
-dotenvy = "0.15"
 futures-util = "0.3"
 hmac = "0.12"
 jwt = "0.16"
-leptos = "0.6"
-leptos_meta = "0.6"
-leptos_router = "0.6"
 log = "0.4"
 log4rs = "1.3"
 once_cell = "1.19"

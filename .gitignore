@@ -5,6 +5,8 @@ Cargo.lock
 *.pdb
 /scripts
 /target
-rusty_web/dist/
 .idea
 **/.env
+rusty_web/.idea
+rusty_web/.svelte-kit
+rusty_web/node_modules
