@@ -1,8 +1,8 @@
 <script lang="ts">
+	import { page } from '$app/stores';
+
 	import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-
-	import { page } from '$app/stores';
 </script>
 
 <div class="container">

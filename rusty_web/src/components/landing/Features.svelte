@@ -45,9 +45,9 @@
 
 <style lang="scss">
 	.features {
-		margin-top: 2rem;
-		padding: 2rem;
-		background-color: #444444;
+		margin-top: 6rem;
+		padding: 3rem;
+		background-color: #444;
 		display: grid;
 		grid-template-columns: 1fr 1fr 1fr;
 		grid-template-rows: 1fr 1fr;

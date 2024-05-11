@@ -54,12 +54,14 @@
 		</div>
 	</div>
 	<br />
+	<br />
 	<div>Paweł Walus - Order of Devs | 2024</div>
+	<br />
 </div>
 
 <style lang="scss">
 	.footer {
-		margin-top: 1rem;
+		margin-top: 6rem;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;

@@ -3,8 +3,8 @@
 	import type { IconDefinition } from '@fortawesome/free-solid-svg-icons';
 
 	export let icon: IconDefinition;
-	export let title: String;
-	export let description: String;
+	export let title: string;
+	export let description: string;
 </script>
 
 <div class="feature">
