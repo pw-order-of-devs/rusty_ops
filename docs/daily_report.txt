@@ -239,3 +239,7 @@ Date: 2024-05-09
 Date: 2024-05-10
   f0d45cb Daily update
   13e6811 svelte app template - landing page
+Date: 2024-05-11
+  1186a4c Daily update
+  c3d95b6 cleanup remove unused dependencies
+  c7c9f8e svelte app - extended landing page, added authentication mechanism
