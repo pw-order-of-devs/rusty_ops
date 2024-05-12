@@ -1,10 +1,17 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 
+	import Button from 'src/components/shared/Button.svelte';
+
 	import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 
-	export let backButtonVisible: boolean;
+	export let data;
+	export let backButtonVisible: boolean = false;
+
+	$: {
+		backButtonVisible = data.backButtonVisible;
+	}
 </script>
 
 <div class="container">
@@ -12,15 +19,11 @@
 	<span class="kind">{$page.url.searchParams.get('kind')}</span>
 	<span class="message">{$page.url.searchParams.get('message')}</span>
 	{#if backButtonVisible}
-		<div class="button">
-			<a href="/">Back home</a>
-		</div>
+		<Button href="/" label="Back home" />
 	{/if}
 </div>
 
 <style lang="scss">
-	@import 'src/styles/button';
-
 	.container {
 		width: 100vw;
 		height: 100vh;
@@ -38,10 +41,7 @@
 		.message {
 			font-size: 1rem;
 			margin-top: 0.5rem;
-		}
-
-		.button {
-			margin-top: 1rem;
+			margin-bottom: 1rem;
 		}
 	}
 </style>

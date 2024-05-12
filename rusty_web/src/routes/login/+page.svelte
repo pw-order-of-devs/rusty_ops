@@ -3,12 +3,12 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 
+	import { mobileCheck } from '$lib/mobile-check';
+	import { toastError } from '$lib/toasts';
+	import Loader from 'src/components/shared/Loader.svelte';
+
 	import { faGears } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-
-	import Loader from 'src/components/shared/Loader.svelte';
-	import { mobileCheck } from 'src/lib/mobile-check';
-	import { toastError } from 'src/lib/toasts';
 
 	let loading = false;
 	export let form;

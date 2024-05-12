@@ -1,5 +1,7 @@
 <script>
-	import { repository, wiki } from 'src/lib/links';
+	import { repository, wiki } from '$lib/links';
+
+	import Button from 'src/components/shared/Button.svelte';
 </script>
 
 <div class="content">
@@ -13,18 +15,12 @@
 		<span>Explore more about the project:</span>
 	</div>
 	<div class="buttons">
-		<div class="button">
-			<a href={repository} target="_blank">Repository</a>
-		</div>
-		<div class="button">
-			<a href={wiki} target="_blank">Documentation</a>
-		</div>
+		<Button href={repository} label="Repository" />
+		<Button href={wiki} label="Documentation" />
 	</div>
 </div>
 
 <style lang="scss">
-	@import 'src/styles/button';
-
 	.content {
 		padding: 1rem;
 		display: flex;

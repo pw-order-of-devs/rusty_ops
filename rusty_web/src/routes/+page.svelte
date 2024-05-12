@@ -1,14 +1,14 @@
 <script lang="ts">
-	import Content from 'src/components/landing/Content.svelte';
+	import { mobileCheck } from '$lib/mobile-check';
 	import Features from 'src/components/landing/Features.svelte';
 	import Footer from 'src/components/landing/Footer.svelte';
-	import Nav from 'src/components/landing/Nav.svelte';
+	import Header from 'src/components/landing/Header.svelte';
+	import Welcome from 'src/components/landing/Welcome.svelte';
 
-	import { mobileCheck } from 'src/lib/mobile-check';
 	mobileCheck();
 </script>
 
-<Nav />
-<Content />
+<Header />
+<Welcome />
 <Features />
 <Footer />

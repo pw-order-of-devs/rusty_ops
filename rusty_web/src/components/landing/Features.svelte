@@ -1,4 +1,6 @@
 <script>
+	import Feature from 'src/components/landing/Feature.svelte';
+
 	import {
 		faCodeBranch,
 		faCodeFork,
@@ -7,7 +9,6 @@
 		faSliders,
 		faTools
 	} from '@fortawesome/free-solid-svg-icons';
-	import Feature from 'src/components/landing/Feature.svelte';
 </script>
 
 <div class="features">

@@ -1,13 +1,13 @@
+<script>
+	import Button from 'src/components/shared/Button.svelte';
+</script>
+
 <nav>
 	<div class="app-name">RustyOps</div>
-	<div class="button">
-		<a href="/login">Log in</a>
-	</div>
+	<Button href="/login" label="Log in" />
 </nav>
 
 <style lang="scss">
-	@import 'src/styles/button';
-
 	nav {
 		display: flex;
 		flex-direction: row;

@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { faFile } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-
 	import {
 		contributing,
 		discussions,
@@ -14,7 +11,10 @@
 		security,
 		structure,
 		wiki
-	} from 'src/lib/links';
+	} from '$lib/links';
+
+	import { faFile } from '@fortawesome/free-solid-svg-icons';
+	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 </script>
 
 <div class="footer">
