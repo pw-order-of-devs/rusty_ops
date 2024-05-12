@@ -1,7 +1,4 @@
 <script>
-	import { faGears } from '@fortawesome/free-solid-svg-icons';
-	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-
 	import { repository, wiki } from 'src/lib/links';
 </script>
 
@@ -11,8 +8,6 @@
 			<div class="welcome-text-1">Welcome to RustyOps</div>
 			<div class="welcome-text-2">CI/CD management for your projects</div>
 		</div>
-		<div style="width: 4rem"></div>
-		<FontAwesomeIcon icon={faGears} size="6x" />
 	</div>
 	<div class="more">
 		<span>Explore more about the project:</span>
@@ -40,14 +35,15 @@
 		.about {
 			margin-top: 8rem;
 			display: flex;
-			flex-direction: row;
+			flex-direction: column;
 			justify-content: center;
 			align-items: center;
+			gap: 2rem;
 
 			.welcome-text-1 {
 				font-size: 3rem;
 				display: flex;
-				justify-content: end;
+				justify-content: center;
 			}
 
 			.welcome-text-2 {

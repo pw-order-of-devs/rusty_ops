@@ -72,7 +72,7 @@
 			display: flex;
 			flex-direction: row;
 			justify-content: center;
-			gap: 8rem;
+			gap: 4rem;
 
 			.support,
 			.resources,

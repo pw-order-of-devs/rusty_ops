@@ -2,9 +2,9 @@ export const ssr = false;
 
 export const load = ({ url }) => {
 	return {
-		redirect: url.searchParams.get('redirectTo') ?? '/',
-	}
-}
+		redirect: url.searchParams.get('redirectTo') ?? '/'
+	};
+};
 
 export const actions = {
 	login: async ({ request, url }) => {

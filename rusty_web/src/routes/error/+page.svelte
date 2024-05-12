@@ -3,15 +3,19 @@
 
 	import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+
+	export let backButtonVisible: boolean;
 </script>
 
 <div class="container">
 	<FontAwesomeIcon icon={faTriangleExclamation} size="6x" />
 	<span class="kind">{$page.url.searchParams.get('kind')}</span>
 	<span class="message">{$page.url.searchParams.get('message')}</span>
-	<div class="button">
-		<a href="/">Back home</a>
-	</div>
+	{#if backButtonVisible}
+		<div class="button">
+			<a href="/">Back home</a>
+		</div>
+	{/if}
 </div>
 
 <style lang="scss">
@@ -27,13 +31,13 @@
 
 		.kind {
 			margin-top: 1rem;
-			font-size: 4rem;
+			font-size: 2rem;
 			font-weight: bold;
 		}
 
 		.message {
+			font-size: 1rem;
 			margin-top: 0.5rem;
-			font-size: 2rem;
 		}
 
 		.button {
