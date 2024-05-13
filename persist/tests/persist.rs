@@ -9,6 +9,7 @@ mod persist {
     #[case("test", "")]
     #[case("mongodb", "MongoDb")]
     #[case("mongo_db", "MongoDb")]
+    #[case("mongo", "MongoDb")]
     #[case("pg", "PostgreSql")]
     #[case("postgre", "PostgreSql")]
     #[case("postgresql", "PostgreSql")]

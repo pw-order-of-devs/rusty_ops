@@ -2,8 +2,6 @@ use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
 
-use commons::env::var_or_default;
-
 use crate::RustyDomainItem;
 
 /// A struct representing a job.
@@ -17,9 +15,19 @@ pub struct Agent {
 
 impl Agent {
     /// update agent's expiry time
-    pub fn update_expiry(&mut self) {
-        let agent_ttl = var_or_default("AGENT_TTL", 300);
+    pub fn update_expiry(&mut self, ttl: i64) {
+        let agent_ttl = ttl;
         self.expiry = chrono::Utc::now().timestamp() + agent_ttl;
+    }
+
+    /// Convert `RegisterAgent` into `Agent`.
+    #[must_use]
+    pub fn from(value: &RegisterAgent, ttl: i64) -> Self {
+        let agent_ttl = ttl;
+        Self {
+            id: value.clone().id,
+            expiry: chrono::Utc::now().timestamp() + agent_ttl,
+        }
     }
 }
 
@@ -30,16 +38,6 @@ pub struct RegisterAgent {
     #[validate(min_length = 36)]
     #[validate(max_length = 36)]
     pub id: String,
-}
-
-impl From<&RegisterAgent> for Agent {
-    fn from(value: &RegisterAgent) -> Self {
-        let agent_ttl = var_or_default("AGENT_TTL", 300);
-        Self {
-            id: value.clone().id,
-            expiry: chrono::Utc::now().timestamp() + agent_ttl,
-        }
-    }
 }
 
 impl RustyDomainItem for Agent {

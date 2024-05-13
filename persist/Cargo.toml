@@ -17,7 +17,7 @@ path = "src/lib.rs"
 
 [dependencies]
 commons = { path = "../commons", features = ["errors", "logging", "persist"] }
-domain = { path = "../domain", features = ["uuid_v4"] }
+domain = { path = "../domain" }
 
 async-stream.workspace = true
 async-trait.workspace = true

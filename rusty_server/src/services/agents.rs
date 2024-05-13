@@ -57,12 +57,15 @@ pub async fn create(db: &DbClient, agent: RegisterAgent) -> Result<String, Rusty
         )));
     }
 
-    shared::create(db, AGENTS_INDEX, agent, |r| Agent::from(&r)).await
+    shared::create(db, AGENTS_INDEX, agent, |r| {
+        Agent::from(&r, var_or_default("AGENT_TTL", 300))
+    })
+    .await
 }
 
 pub async fn healthcheck(db: &DbClient, id: &str) -> Result<String, RustyError> {
     if let Some(mut agent) = get_by_id(db, id).await? {
-        agent.update_expiry();
+        agent.update_expiry(var_or_default("AGENT_TTL", 300));
         db.update(AGENTS_INDEX, id, &agent).await
     } else {
         let message = "`agent::healthcheck` - agent not found".to_string();

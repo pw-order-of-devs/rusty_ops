@@ -23,7 +23,7 @@ impl DbType {
     /// if the `RUSTY_PERSISTENCE` variable is not set or if the value is not supported.
     ///
     /// # Returns
-    /// - `DbType::MongoDb` if the `RUSTY_PERSISTENCE` value is `mongodb` or `mongo_db`
+    /// - `DbType::MongoDb` if the `RUSTY_PERSISTENCE` value is `mongodb` or `mongo_db` or `mongo`
     /// - `DbType::PostgreSQL` if the `RUSTY_PERSISTENCE` value is `postgre` or `postgresql` or `pg`
     /// - `DbType::Redis` if the `RUSTY_PERSISTENCE` value is `redis`
     #[must_use]
@@ -33,7 +33,7 @@ impl DbType {
             .to_lowercase();
 
         match db_type.as_str() {
-            "mongodb" | "mongo_db" => Self::MongoDb,
+            "mongodb" | "mongo_db" | "mongo" => Self::MongoDb,
             "postgre" | "postgresql" | "pg" => Self::PostgreSQL,
             "redis" => Self::Redis,
             _ => panic!("Unsupported database: {db_type}"),

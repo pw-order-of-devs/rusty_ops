@@ -9,7 +9,7 @@ keywords.workspace = true
 license.workspace = true
 readme.workspace = true
 name = "auth_macro"
-description = "rusty_ops - auth macro decoration module"
+description = "rusty_ops - authentication macro decorator module"
 
 [lib]
 proc-macro = true

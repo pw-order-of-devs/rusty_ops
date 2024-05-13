@@ -2,7 +2,7 @@ use commons::env::var_or_default;
 use persist::db_client::DbClient;
 
 pub(crate) async fn purge_db(db: &DbClient) {
-    if var_or_default("PURGE_ALL", false) {
+    if var_or_default("WIPE_DATA", false) {
         log::info!("cleaning up database: start");
         match db.purge().await {
             Ok(()) => log::info!("cleaning up database: done"),

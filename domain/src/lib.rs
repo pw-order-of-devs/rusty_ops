@@ -62,16 +62,8 @@ pub trait RustyDomainItem:
     fn id(&self) -> String;
 
     /// Generate a unique identifier using UUID.
-    #[cfg(feature = "uuid_v4")]
     #[must_use]
     fn generate_id() -> String {
         uuid::Uuid::new_v4().to_string()
-    }
-
-    /// Generate a unique identifier using UUID.
-    #[cfg(not(feature = "uuid_v4"))]
-    #[must_use]
-    fn generate_id() -> String {
-        "dummy".to_string()
     }
 }

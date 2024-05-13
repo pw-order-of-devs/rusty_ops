@@ -31,4 +31,4 @@ serde.workspace = true
 serde_json.workspace = true
 tokio.workspace = true
 tokio-tungstenite = { workspace = true, features = ["native-tls"] }
-uuid = { workspace = true, features = ["v4"] }
+uuid.workspace = true

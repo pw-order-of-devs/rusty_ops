@@ -68,7 +68,7 @@ impl PersistenceBuilder for MongoDBClient {
         Self {
             client: Client::with_options(client_options)
                 .expect("error while building mongodb client"),
-            database: var("MONGODB_DATABASE").unwrap_or_else(|_| "test".to_string()),
+            database: var_or_default("MONGODB_DATABASE", "test".to_string()),
         }
     }
 }

@@ -28,16 +28,20 @@ Include instructions on how to set up your project here. Discuss any environment
 
 The project integrates several modules:
 
-* **init**: [link to doc]
-* **server**: [link to doc]
-* **agent**: [link to doc]
+### Services:
+* **init**: initialization service [[docs](docs/modules/init.md)]
+* **server**: backend server application [[docs](docs/modules/server.md)]
+* **agent**: runner service - pipelines execution [[docs](docs/modules/agent.md)]
 * **web ui**: [link to doc]
 
-* **auth**: [link to doc]
-* **commons**: [link to doc]
-* **auth_macro**: [link to doc]
-* **domain**: [link to doc]
-* **persist**: [link to doc]
+### Libraries:
+* **auth**: user authentication module [[docs](docs/modules/auth.md)]
+* **commons**: shared functionalities [[docs](docs/modules/commons.md)]
+* **domain**: `rusty_ops` domain models [[docs](docs/modules/domain.md)]
+* **persist**: database communication layer [[docs](docs/modules/persist.md)]
+
+### Macros:
+* **auth_macro**: decorator for securing functions [[docs](docs/modules/auth_macro.md)]
 
 ## Contributing
 

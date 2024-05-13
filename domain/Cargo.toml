@@ -15,9 +15,6 @@ description = "rusty_ops - domain module"
 name = "domain"
 path = "src/lib.rs"
 
-[features]
-uuid_v4 = ["uuid"]
-
 [dependencies]
 commons = { path = "../commons", features = ["errors"] }
 
@@ -29,7 +26,7 @@ serde.workspace = true
 serde_json.workspace = true
 serde_valid.workspace = true
 serde_yaml.workspace = true
-uuid = { workspace = true, features = ["v4"], optional = true }
+uuid.workspace = true
 url.workspace = true
 
 [dev-dependencies]
