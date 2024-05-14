@@ -1,8 +1,10 @@
+import { env } from '$env/dynamic/private';
+
 export const ssr = false;
 
 export const load = ({ url }) => {
 	return {
-		redirect: url.searchParams.get('redirectTo') ?? '/'
+		redirect: url.searchParams.get('redirectTo') ?? '/home'
 	};
 };
 
@@ -12,7 +14,7 @@ export const actions = {
 		const authHeader = credentials.get('login') + ':' + credentials.get('password');
 
 		try {
-			let response = await fetch('http://localhost:8000/graphql', {
+			let response = await fetch(env.API_URL ?? 'http://localhost:8000/graphql', {
 				method: 'POST',
 				headers: {
 					ContentType: 'application/json',

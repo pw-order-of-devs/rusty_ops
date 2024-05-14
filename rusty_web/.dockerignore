@@ -1,0 +1,12 @@
+# Ignore everything
+**
+
+# Allow
+!.npmrc
+!package.json
+!package-lock.json
+!svelte.config.js
+!tsconfig.json
+!vite.config.ts
+!src/
+!static/
