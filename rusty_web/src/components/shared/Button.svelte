@@ -3,12 +3,13 @@
 
 	export let action: MouseEventHandler<HTMLSpanElement> | null = null;
 	export let href: string | null = null;
+	export let target: string | null = "_self";
 	export let label: string;
 </script>
 
 {#if href}
 	<div class="button">
-		<a {href} target="_blank">{label}</a>
+		<a {href} target="{target}">{label}</a>
 	</div>
 {/if}
 {#if action}
