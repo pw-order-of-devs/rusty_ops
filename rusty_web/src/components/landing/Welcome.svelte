@@ -15,8 +15,8 @@
 		<span>Explore more about the project:</span>
 	</div>
 	<div class="buttons">
-		<Button href={repository} label="Repository" />
-		<Button href={wiki} label="Documentation" />
+		<Button href={repository} target="_blank" label="Repository" />
+		<Button href={wiki} target="_blank" label="Documentation" />
 	</div>
 </div>
 
