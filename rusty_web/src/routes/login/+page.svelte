@@ -22,6 +22,7 @@
 			form?.errors.forEach(function (err: string) {
 				toastError(err);
 			});
+			form = null
 		}
 	}
 
