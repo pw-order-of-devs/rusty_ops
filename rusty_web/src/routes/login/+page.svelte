@@ -4,7 +4,8 @@
 	import { onMount } from 'svelte';
 
 	import { mobileCheck } from '$lib/mobile-check';
-	import { toastError } from '$lib/toasts';
+	import { toastError, toastSuccess } from '$lib/toasts';
+	import { setTokenCookie } from '$lib/token';
 	import Loader from 'src/components/shared/Loader.svelte';
 
 	import { faGears } from '@fortawesome/free-solid-svg-icons';
@@ -16,13 +17,14 @@
 
 	$: {
 		if (form?.token) {
-			document.cookie = `rustyToken=${form.token}; path=/;`;
-			goto(data.redirect);
+			setTokenCookie(form.token);
+			toastSuccess('Welcome!');
+			goto(data.redirect, { replaceState: true, invalidateAll: true });
 		} else if (form?.errors) {
 			form?.errors.forEach(function (err: string) {
 				toastError(err);
 			});
-			form = null
+			form = null;
 		}
 	}
 
@@ -52,7 +54,7 @@
 			};
 		}}
 	>
-		<div class="title">Login - RustyOps</div>
+		<div class="title">Login</div>
 		<input
 			type="text"
 			placeholder="login"

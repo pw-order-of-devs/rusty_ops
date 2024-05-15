@@ -1,6 +1,6 @@
 import { toast } from '@zerodevx/svelte-toast';
 
-export const success = (message: string) =>
+export const toastSuccess = (message: string) =>
 	toast.push(message, {
 		theme: {
 			'--toastBackground': '#5cb85c',
@@ -9,7 +9,7 @@ export const success = (message: string) =>
 		}
 	});
 
-export const info = (message: string) =>
+export const toastInfo = (message: string) =>
 	toast.push(message, {
 		theme: {
 			'--toastBackground': '#5bc0de',
@@ -18,7 +18,7 @@ export const info = (message: string) =>
 		}
 	});
 
-export const warning = (message: string) =>
+export const toastWarning = (message: string) =>
 	toast.push(message, {
 		theme: {
 			'--toastBackground': '#f0ad4e',

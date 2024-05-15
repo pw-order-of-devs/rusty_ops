@@ -2,14 +2,19 @@
 	import { fade } from 'svelte/transition';
 
 	import Button from 'src/components/shared/Button.svelte';
+	import Header from 'src/components/shared/Header.svelte';
 
 	import { faCookieBite } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { SvelteToast } from '@zerodevx/svelte-toast';
 
 	export let data;
-	export let visited = false;
+	let authenticated = false;
+	let isLoginPage = false;
+	let visited = false;
 
+	$: authenticated = data.authenticated;
+	$: isLoginPage = data.isLoginPage;
 	$: visited = data.visited;
 
 	const acceptCookies = () => {
@@ -18,6 +23,8 @@
 		return true;
 	};
 </script>
+
+<Header {authenticated} {isLoginPage} />
 
 <SvelteToast />
 
