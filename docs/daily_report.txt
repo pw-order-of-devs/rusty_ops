@@ -250,3 +250,9 @@ Date: 2024-05-12
 Date: 2024-05-13
   1b6a963 Daily update
   d2a2553 cleanup; modules documentation
+Date: 2024-05-14
+  b0ffba4 Daily update
+  50fb55a ui - button update
+  5e2d787 ui - button update
+  31ec1af cleanup form after displaying errors
+  5058b9a dockerize svelte app
