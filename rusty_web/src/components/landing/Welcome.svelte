@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { repository, wiki } from '$lib/links';
 
 	import Button from 'src/components/shared/Button.svelte';
