@@ -259,3 +259,6 @@ Date: 2024-05-14
 Date: 2024-05-15
   432c3ab Daily update
   526501b layout - nav bar + logout
+Date: 2024-05-16
+  6246358 Daily update
+  669d4d7 ui - scripts in ts
