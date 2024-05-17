@@ -59,6 +59,8 @@
 </div>
 
 <style lang="scss">
+	@import 'src/styles/global';
+
 	.footer {
 		margin-top: 6rem;
 		display: flex;
@@ -89,6 +91,6 @@
 	}
 
 	a {
-		color: #e2e2e2;
+		color: $color-white-2;
 	}
 </style>

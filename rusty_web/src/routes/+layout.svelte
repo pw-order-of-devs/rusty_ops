@@ -41,14 +41,16 @@
 {/if}
 
 <style lang="scss">
+	@import 'src/styles/global';
+
 	.cookie-notification {
 		position: fixed;
 		bottom: 0;
 		left: 0;
 		right: 0;
 		padding: 2rem 8rem;
-		background-color: #1b1b1b;
-		box-shadow: 0 0 0 0.02rem #e2e2e2;
+		background-color: $color-black-1;
+		box-shadow: 0 0 0 0.02rem $color-white-2;
 		z-index: 9999;
 		display: flex;
 		flex-direction: row;

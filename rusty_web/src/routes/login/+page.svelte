@@ -74,9 +74,11 @@
 </div>
 
 <style lang="scss">
+	@import 'src/styles/global';
+
 	.container {
 		width: 100vw;
-		height: 100vh;
+		height: calc(100vh - 4rem);
 		display: grid;
 		grid-template-columns: 3fr 4fr;
 
@@ -88,7 +90,7 @@
 		}
 
 		.logo {
-			background-color: #2c2c2c;
+			background-color: $color-black-2;
 		}
 
 		.form {
@@ -108,24 +110,24 @@
 				margin-top: 1.5rem;
 				width: 20rem;
 				padding: 0.8rem;
-				background-color: #1b1b1b;
-				color: #e2e2e2;
+				background-color: $color-black-1;
+				color: $color-white-2;
 				font-size: 1rem;
-				border: 0.05rem #e2e2e2 solid;
+				border: 0.05rem $color-white-2 solid;
 				border-radius: 2rem;
 			}
 
 			button {
-				background-color: #444;
+				background-color: $color-black-4;
 				cursor: pointer;
 			}
 
 			button:hover {
-				background-color: #555;
+				background-color: $color-black-5;
 			}
 
 			button:active {
-				background-color: #666;
+				background-color: $color-black-6;
 			}
 		}
 	}

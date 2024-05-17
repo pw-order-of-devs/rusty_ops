@@ -13,46 +13,48 @@
 
 <a {href} on:click={action} {target} class:flat>
 	{#if icon}
-		<FontAwesomeIcon {icon} size="1x" />
+		<FontAwesomeIcon {icon} />
 	{/if}
 	{#if label}
 		{label}
 	{/if}
 </a>
 
-<style>
+<style lang="scss">
+	@import 'src/styles/global';
+
 	a {
 		display: flex;
 		justify-content: center;
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.5rem 1rem;
-		background-color: #e2e2e2;
+		background-color: $color-white-2;
 		border-radius: 0.2rem;
 		cursor: pointer;
-		color: #1b1b1b;
+		color: $color-black-1;
 		text-decoration: none;
 		font-size: 1.2rem;
-	}
 
-	a.flat {
-		background-color: transparent;
-		color: #e2e2e2;
-	}
+		&.flat {
+			background-color: transparent;
+			color: $color-white-2;
 
-	a:hover {
-		background-color: #c4c4c4;
-	}
+			&:hover {
+				background-color: $color-black-3;
+			}
 
-	a:active {
-		background-color: #a6a6a6;
-	}
+			&:active {
+				background-color: $color-black-5;
+			}
+		}
 
-	a.flat:hover {
-		background-color: #3d3d3d;
-	}
+		&:hover {
+			background-color: $color-white-4;
+		}
 
-	a.flat:active {
-		background-color: #5f5f5f;
+		&:active {
+			background-color: $color-white-6;
+		}
 	}
 </style>

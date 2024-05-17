@@ -31,19 +31,22 @@
 </nav>
 
 <style lang="scss">
+	@import 'src/styles/global';
+
 	nav {
+		height: 4rem;
+		padding: 0 2rem;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
 		align-items: center;
-		padding: 0.5rem 2rem;
 
 		.app-name {
-			font-size: 3rem;
+			font-size: 2.2rem;
 		}
 	}
 
 	.bottom-line {
-		box-shadow: 0 0 0 0.02rem #e2e2e2;
+		box-shadow: 0 -0.02rem 0 $color-white-2 inset;
 	}
 </style>

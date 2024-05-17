@@ -44,10 +44,12 @@
 </div>
 
 <style lang="scss">
+	@import 'src/styles/global';
+
 	.features {
 		margin-top: 6rem;
 		padding: 3rem;
-		background-color: #444;
+		background-color: $color-black-4;
 		display: grid;
 		grid-template-columns: 1fr 1fr 1fr;
 		grid-template-rows: 1fr 1fr;
