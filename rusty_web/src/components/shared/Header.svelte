@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-
 	import { toastInfo } from '$lib/toasts';
 	import { deleteTokenCookie } from '$lib/token';
 	import Button from 'src/components/shared/Button.svelte';
+	import { faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
 
 	export let authenticated = false;
 	$: authenticated = authenticated;
@@ -23,9 +23,9 @@
 	<div class="app-name">RustyOps</div>
 	{#if !isLoginPage}
 		{#if authenticated}
-			<Button action={logout} label="Log out" />
+			<Button action={logout} icon={faSignOut} label="Log out" flat />
 		{:else}
-			<Button href="/login" label="Log in" />
+			<Button href="/login" icon={faSignIn} label="Log in" flat />
 		{/if}
 	{/if}
 </nav>

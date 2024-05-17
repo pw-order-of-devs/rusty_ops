@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { fade } from 'svelte/transition';
-
 	import Button from 'src/components/shared/Button.svelte';
 	import Header from 'src/components/shared/Header.svelte';
-
 	import { faCookieBite } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { SvelteToast } from '@zerodevx/svelte-toast';

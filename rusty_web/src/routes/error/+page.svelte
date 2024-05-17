@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-
 	import Button from 'src/components/shared/Button.svelte';
-
 	import { faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 

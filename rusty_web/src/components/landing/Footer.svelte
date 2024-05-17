@@ -12,7 +12,6 @@
 		structure,
 		wiki
 	} from '$lib/links';
-
 	import { faFile } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 </script>

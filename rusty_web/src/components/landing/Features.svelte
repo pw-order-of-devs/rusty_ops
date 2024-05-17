@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Feature from 'src/components/landing/Feature.svelte';
-
 	import {
 		faCodeBranch,
 		faCodeFork,
