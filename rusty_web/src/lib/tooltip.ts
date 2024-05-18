@@ -5,14 +5,16 @@ export interface TooltipOpts {
 	placement: Placement;
 }
 
-export function tooltip(node: SingleTarget, props: TooltipOpts) {
-	let tip = tippy(node, props);
-	return {
-		update: (newParams: Pick<Props, 'content' | 'placement'>) => {
-			tip.setProps(newParams);
-		},
-		destroy: () => {
-			tip.destroy();
-		}
-	};
+export function tooltip(node: SingleTarget, props: TooltipOpts | null) {
+	if (props) {
+		let tip = tippy(node, props);
+		return {
+			update: (newParams: Pick<Props, 'content' | 'placement'>) => {
+				tip.setProps(newParams);
+			},
+			destroy: () => {
+				tip.destroy();
+			}
+		};
+	}
 }

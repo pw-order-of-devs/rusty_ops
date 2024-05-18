@@ -11,7 +11,7 @@
 	export let icon: IconProp | null = null;
 	export let label: string | null = null;
 	export let flat: boolean = false;
-	export let tooltipOpts: TooltipOpts;
+	export let tooltipOpts: TooltipOpts | null = null;
 </script>
 
 <a {href} on:click={action} {target} class:flat use:tooltip={tooltipOpts}>
