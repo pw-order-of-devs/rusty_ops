@@ -262,3 +262,7 @@ Date: 2024-05-15
 Date: 2024-05-16
   6246358 Daily update
   669d4d7 ui - scripts in ts
+Date: 2024-05-17
+  495b50e Daily update
+  f749e20 ui - styling of button component
+  bf3954f ui - styling updates; home page template; auth left nav
