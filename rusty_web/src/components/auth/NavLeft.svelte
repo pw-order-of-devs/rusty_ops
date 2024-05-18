@@ -10,11 +10,36 @@
 </script>
 
 <div class="nav-left">
-	<Button href="/home" icon={faHome} flat />
-	<Button href="/projects" icon={faClipboard} flat />
-	<Button href="/account" icon={faUser} flat />
-	<Button href="/settings/users" icon={faUsers} flat />
-	<Button href="/settings/agents" icon={faServer} flat />
+	<Button
+		href="/home"
+		icon={faHome}
+		tooltipOpts={{ content: 'Home page', placement: 'right' }}
+		flat
+	/>
+	<Button
+		href="/projects"
+		icon={faClipboard}
+		tooltipOpts={{ content: 'Projects management', placement: 'right' }}
+		flat
+	/>
+	<Button
+		href="/account"
+		icon={faUser}
+		tooltipOpts={{ content: 'User account', placement: 'right' }}
+		flat
+	/>
+	<Button
+		href="/settings/users"
+		icon={faUsers}
+		tooltipOpts={{ content: 'User management', placement: 'right' }}
+		flat
+	/>
+	<Button
+		href="/settings/agents"
+		icon={faServer}
+		tooltipOpts={{ content: 'Agents management', placement: 'right' }}
+		flat
+	/>
 </div>
 
 <style lang="scss">

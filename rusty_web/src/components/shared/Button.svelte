@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { type TooltipOpts, tooltip } from '$lib/tooltip';
 	import type { MouseEventHandler } from 'svelte/elements';
 	import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import type { Placement } from 'tippy.js';
 
 	export let action: MouseEventHandler<HTMLSpanElement> | null = null;
 	export let href: string | null = null;
@@ -9,9 +11,10 @@
 	export let icon: IconProp | null = null;
 	export let label: string | null = null;
 	export let flat: boolean = false;
+	export let tooltipOpts: TooltipOpts;
 </script>
 
-<a {href} on:click={action} {target} class:flat>
+<a {href} on:click={action} {target} class:flat use:tooltip={tooltipOpts}>
 	{#if icon}
 		<FontAwesomeIcon {icon} />
 	{/if}
