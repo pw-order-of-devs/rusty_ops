@@ -266,3 +266,7 @@ Date: 2024-05-17
   495b50e Daily update
   f749e20 ui - styling of button component
   bf3954f ui - styling updates; home page template; auth left nav
+Date: 2024-05-18
+  cb82a77 Daily update
+  d70c893 ui - tippy.js tooltips integration
+  20fdc41 ui - tippy.js tooltips integration - make tooltip optional
