@@ -26,7 +26,6 @@ pub async fn get_total_count<T: RustyDomainItem>(
         .get_all::<T>(index, filter, &None, false)
         .await
         .map_err(|err| {
-            log::error!("here");
             log::error!("`{index}::get`: {err}");
             err
         })?;
