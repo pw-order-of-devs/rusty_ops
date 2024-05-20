@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { toastInfo } from '$lib/toasts';
-	import { deleteTokenCookie } from '$lib/token';
+	import { toastInfo } from '$lib/ui/toasts';
+	import { deleteTokenCookie } from '$lib/utils/token';
 	import Button from 'src/components/shared/Button.svelte';
 	import { faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
 

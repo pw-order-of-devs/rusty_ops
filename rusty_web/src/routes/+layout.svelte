@@ -24,9 +24,9 @@
 
 <Header {authenticated} {isLoginPage} />
 
-<SvelteToast />
-
 <slot />
+
+<SvelteToast />
 
 {#if !visited}
 	<div class="cookie-notification" out:fade>

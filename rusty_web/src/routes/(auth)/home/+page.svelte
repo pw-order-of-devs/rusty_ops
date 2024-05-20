@@ -18,14 +18,17 @@
 
 <style lang="scss">
 	.home-page {
-		height: 100%;
+		height: calc(100vh - 6rem);
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		overflow: hidden;
+		gap: 1rem;
+		padding: 1rem;
 
 		.widgets {
 			display: flex;
 			flex-direction: column;
+			gap: 0.5rem;
 		}
 	}
 </style>

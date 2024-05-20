@@ -1,4 +1,4 @@
-import { env } from '$env/dynamic/private';
+import { basicAuthHeader, fetchPost } from '$lib/utils/api';
 
 export const ssr = false;
 
@@ -11,19 +11,14 @@ export const load = ({ url }) => {
 export const actions = {
 	login: async ({ request, url }) => {
 		const credentials = await request.formData();
-		const authHeader = credentials.get('login') + ':' + credentials.get('password');
 
 		try {
-			let response = await fetch(env.API_URL ?? 'http://localhost:8000/graphql', {
-				method: 'POST',
-				headers: {
-					ContentType: 'application/json',
-					Authorization: `Basic ${btoa(authHeader)}`
-				},
-				body: JSON.stringify({
+			let response = await fetchPost(
+				basicAuthHeader(credentials),
+				JSON.stringify({
 					query: `query { auth { login } }`
 				})
-			});
+			);
 
 			if (!response.ok) {
 				return {
@@ -43,7 +38,7 @@ export const actions = {
 						};
 					} else {
 						return {
-							errors: ['Failed to authenticate']
+							errors: ['Authentication Failed']
 						};
 					}
 				}

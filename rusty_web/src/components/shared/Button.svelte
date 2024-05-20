@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { type TooltipOpts, tooltip } from '$lib/tooltip';
+	import { type TooltipOpts, tooltip } from '$lib/ui/tooltip';
 	import type { MouseEventHandler } from 'svelte/elements';
 	import type { IconProp } from '@fortawesome/fontawesome-svg-core';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import type { Placement } from 'tippy.js';
 
 	export let action: MouseEventHandler<HTMLSpanElement> | null = null;
 	export let href: string | null = null;
