@@ -273,3 +273,6 @@ Date: 2024-05-18
 Date: 2024-05-19
   6c0c09f Daily update
   2703add remove leftover debug log
+Date: 2024-05-20
+  bd991b4 Daily update
+  7831d81 ui - projects page template
