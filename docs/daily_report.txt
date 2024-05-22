@@ -276,3 +276,6 @@ Date: 2024-05-19
 Date: 2024-05-20
   bd991b4 Daily update
   7831d81 ui - projects page template
+Date: 2024-05-21
+  c18f525 Daily update
+  e811a95 ui - auth cookie expiration fix; redirect to home page if authenticated
