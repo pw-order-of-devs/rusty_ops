@@ -13,6 +13,9 @@ pub struct Project {
     pub name: String,
     /// project url
     pub url: Option<String>,
+    /// project group id
+    #[serde(rename(deserialize = "groupId", deserialize = "group_id"))]
+    pub group_id: Option<String>,
 }
 
 /// A struct representing the registration of a project.
@@ -25,6 +28,11 @@ pub struct RegisterProject {
     /// project url
     #[validate(custom(validate_url))]
     pub url: String,
+    /// project group id
+    #[serde(rename(deserialize = "groupId", deserialize = "group_id"))]
+    #[validate(min_length = 36)]
+    #[validate(max_length = 36)]
+    pub group_id: Option<String>,
 }
 
 fn validate_url(url: &str) -> Result<(), validation::Error> {
@@ -41,6 +49,7 @@ impl RegisterProject {
         Self {
             name: name.to_string(),
             url: url.to_string(),
+            group_id: None,
         }
     }
 }
@@ -51,6 +60,7 @@ impl From<&RegisterProject> for Project {
             id: Self::generate_id(),
             name: value.clone().name,
             url: Some(value.clone().url),
+            group_id: value.clone().group_id,
         }
     }
 }
