@@ -62,6 +62,8 @@ async fn main() {
     assign_permission(&db, "PERMISSIONS", "WRITE", None, Some(&admins_role_id)).await;
     assign_permission(&db, "PIPELINES", "READ", None, Some(&admins_role_id)).await;
     assign_permission(&db, "PIPELINES", "WRITE", None, Some(&admins_role_id)).await;
+    assign_permission(&db, "PROJECT_GROUPS", "READ", None, Some(&admins_role_id)).await;
+    assign_permission(&db, "PROJECT_GROUPS", "WRITE", None, Some(&admins_role_id)).await;
     assign_permission(&db, "PROJECTS", "READ", None, Some(&admins_role_id)).await;
     assign_permission(&db, "PROJECTS", "WRITE", None, Some(&admins_role_id)).await;
     assign_permission(&db, "USERS", "READ", None, Some(&admins_role_id)).await;
@@ -71,11 +73,10 @@ async fn main() {
     assign_permission(&db, "AGENTS", "READ", None, Some(&agents_role_id)).await;
     assign_permission(&db, "AGENTS", "WRITE", None, Some(&agents_role_id)).await;
     assign_permission(&db, "JOBS", "READ", None, Some(&agents_role_id)).await;
-    assign_permission(&db, "JOBS", "WRITE", None, Some(&agents_role_id)).await;
     assign_permission(&db, "PIPELINES", "READ", None, Some(&agents_role_id)).await;
     assign_permission(&db, "PIPELINES", "WRITE", None, Some(&agents_role_id)).await;
+    assign_permission(&db, "PROJECT_GROUPS", "READ", None, Some(&agents_role_id)).await;
     assign_permission(&db, "PROJECTS", "READ", None, Some(&agents_role_id)).await;
-    assign_permission(&db, "PROJECTS", "WRITE", None, Some(&agents_role_id)).await;
 }
 
 async fn get_db_client() -> DbClient {

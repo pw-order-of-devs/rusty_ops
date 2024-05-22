@@ -11,6 +11,7 @@ mod agents;
 mod auth;
 mod jobs;
 mod pipelines;
+mod project_groups;
 mod projects;
 mod users;
 
@@ -61,6 +62,11 @@ impl Query {
         pipelines::PipelinesQuery
     }
 
+    // project groups interface
+    async fn project_groups(&self) -> project_groups::ProjectGroupsQuery {
+        project_groups::ProjectGroupsQuery
+    }
+
     // projects interface
     async fn projects(&self) -> projects::ProjectsQuery {
         projects::ProjectsQuery
@@ -89,6 +95,11 @@ impl Mutation {
     // pipelines interface
     async fn pipelines(&self) -> pipelines::PipelinesMutation {
         pipelines::PipelinesMutation
+    }
+
+    // project groups interface
+    async fn project_groups(&self) -> project_groups::ProjectGroupsMutation {
+        project_groups::ProjectGroupsMutation
     }
 
     // projects interface
