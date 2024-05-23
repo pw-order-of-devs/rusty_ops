@@ -156,7 +156,7 @@ impl From<bb8_postgres::tokio_postgres::Error> for RustyError {
 #[cfg(feature = "bb8-postgres")]
 impl From<bb8_redis::bb8::RunError<bb8_postgres::tokio_postgres::Error>> for RustyError {
     fn from(err: bb8_redis::bb8::RunError<bb8_postgres::tokio_postgres::Error>) -> Self {
-        Self::RedisError(err.to_string())
+        Self::PostgresSQLError(err.to_string())
     }
 }
 
