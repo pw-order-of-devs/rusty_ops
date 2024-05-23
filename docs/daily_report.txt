@@ -279,3 +279,7 @@ Date: 2024-05-20
 Date: 2024-05-21
   c18f525 Daily update
   e811a95 ui - auth cookie expiration fix; redirect to home page if authenticated
+Date: 2024-05-22
+  6eb6c20 Daily update
+  995ff55 group id field in project
+  7e1c67d project group interface
