@@ -30,4 +30,4 @@ uuid.workspace = true
 [dev-dependencies]
 rstest.workspace = true
 testcontainers.workspace = true
-testcontainers-modules = { workspace = true, features = ["mongo"] }
+testcontainers-modules = { workspace = true, features = ["mongo", "redis"] }
