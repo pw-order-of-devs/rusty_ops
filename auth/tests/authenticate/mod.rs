@@ -94,13 +94,13 @@ async fn no_credential_test<I: Image + Default>(
 }
 
 async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
-    let connection_string = &format!(
+    let connection = &format!(
         "{db_type}://localhost:{}",
         db.get_host_port_ipv4(port).await
     );
     match db_type {
-        "redis" => DbClient::Redis(RedisClient::from_string(connection_string).await),
-        "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection_string).await),
+        "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection).await),
+        "redis" => DbClient::Redis(RedisClient::from_string(connection).await),
         _ => panic!("not supported db type"),
     }
 }
