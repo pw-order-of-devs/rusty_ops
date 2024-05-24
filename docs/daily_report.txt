@@ -283,3 +283,9 @@ Date: 2024-05-22
   6eb6c20 Daily update
   995ff55 group id field in project
   7e1c67d project group interface
+Date: 2024-05-23
+  85fc9b2 Daily update
+  98992dc unit tests update for auth
+  491e564 unit tests update for auth
+  6cf127b unit tests update for auth
+  6c43a1a error cleanup
