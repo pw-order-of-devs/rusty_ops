@@ -44,6 +44,7 @@ async fn main() {
     // create base roles
     let admins_role_id = create_role(&db, "ADMINS", "System Administrators", &[&admin_id]).await;
     let agents_role_id = create_role(&db, "AGENTS", "Agent System User", &[&agent_id]).await;
+    let users_role_id = create_role(&db, "USERS", "Standard User", &[]).await;
 
     // create system resources
     create_resource(&db, "AGENTS", &["READ", "WRITE"]).await;
@@ -77,6 +78,12 @@ async fn main() {
     assign_permission(&db, "PIPELINES", "WRITE", None, Some(&agents_role_id)).await;
     assign_permission(&db, "PROJECT_GROUPS", "READ", None, Some(&agents_role_id)).await;
     assign_permission(&db, "PROJECTS", "READ", None, Some(&agents_role_id)).await;
+
+    // assign permissions to user role
+    assign_permission(&db, "JOBS", "READ", None, Some(&users_role_id)).await;
+    assign_permission(&db, "PIPELINES", "READ", None, Some(&users_role_id)).await;
+    assign_permission(&db, "PROJECT_GROUPS", "READ", None, Some(&users_role_id)).await;
+    assign_permission(&db, "PROJECTS", "READ", None, Some(&users_role_id)).await;
 }
 
 async fn get_db_client() -> DbClient {
