@@ -11,17 +11,15 @@ pub(crate) async fn purge_db(db: &DbClient) {
     }
 }
 
-pub(crate) async fn create(db: &DbClient) {
+pub(crate) async fn execute_sql(db: &DbClient, version: &str) {
     if let DbClient::PostgreSql(client) = db {
-        log::info!("[postgresql] creating database schema: start");
-        let init_script_path = var_or_default(
-            "POSTGRESQL_INIT_SCRIPT_PATH",
-            "/app/pg/init.sql".to_string(),
-        );
-        let sql = std::fs::read_to_string(&init_script_path)
+        let script_path = var_or_default("POSTGRESQL_SCRIPTS_PATH", "/app/pg/sql".to_string());
+        let script_path = format!("{script_path}/v{version}.sql");
+        log::info!("[postgresql] executing `{script_path}` script: start");
+        let sql = std::fs::read_to_string(&script_path)
             .expect("[postgresql] error while opening init script");
         match client.execute_sql(&sql).await {
-            Ok(()) => log::info!("[postgresql] creating database schema: done"),
+            Ok(()) => log::info!("[postgresql] executing `{script_path}` script: done"),
             Err(err) => panic!("[postgresql] error while initializing database schema: {err}"),
         };
     }

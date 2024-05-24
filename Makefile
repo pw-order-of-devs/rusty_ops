@@ -33,3 +33,6 @@ build_server:
 
 build_agent:
 	docker build -t rusty-agent -f rusty_agent/Dockerfile .
+
+build_init:
+	docker build -t rusty-init -f rusty_init/Dockerfile .

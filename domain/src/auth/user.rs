@@ -26,7 +26,7 @@ pub struct User {
     pub roles: Vec<String>,
 }
 
-/// A struct representing the registration of an user.
+/// A struct representing the registration of a user.
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize, Validate)]
 pub struct RegisterUser {
     /// username
@@ -37,6 +37,17 @@ pub struct RegisterUser {
     /// password
     #[validate(min_length = 1)]
     #[validate(max_length = 512)]
+    pub password: String,
+}
+
+/// A model struct representing the registration of a user.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct CreateUserModel {
+    /// user id
+    pub id: String,
+    /// username
+    pub username: String,
+    /// password
     pub password: String,
 }
 
@@ -65,14 +76,19 @@ impl RegisterUser {
     }
 }
 
-impl From<&RegisterUser> for User {
+impl From<&RegisterUser> for CreateUserModel {
     fn from(value: &RegisterUser) -> Self {
         Self {
             id: Self::generate_id(),
             username: value.clone().username,
             password: value.clone().password,
-            roles: vec![],
         }
+    }
+}
+
+impl RustyDomainItem for CreateUserModel {
+    fn id(&self) -> String {
+        self.clone().id
     }
 }
 

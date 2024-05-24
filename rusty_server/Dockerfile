@@ -1,4 +1,4 @@
-FROM rust:1.77-alpine as build-stage
+FROM rust:1.78-alpine as build-stage
 
 RUN apk add --no-cache build-base openssl libressl-dev musl-dev
 
@@ -8,6 +8,8 @@ WORKDIR /usr/app/src
 
 COPY Cargo.toml .
 COPY Cargo.lock .
+COPY auth/ auth/
+COPY auth_macro/ auth_macro/
 COPY commons/ commons/
 COPY domain/ domain/
 COPY persist/ persist/

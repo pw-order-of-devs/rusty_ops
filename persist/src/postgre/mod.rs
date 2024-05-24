@@ -246,8 +246,15 @@ fn parse_value(key: &str, value: &Value, is_where: bool) -> String {
         Value::Bool(v) => format!("{key}{v}"),
         Value::Number(v) => format!("{key}{v}"),
         Value::String(v) => format!("{key}'{v}'"),
+        Value::Array(v) => format!(
+            "{key}ARRAY[{}]::varchar(36)[]",
+            v.iter()
+                .map(|i| parse_value("", i, false))
+                .collect::<Vec<String>>()
+                .join(", ")
+        ),
         Value::Null => format!("{key}null"),
-        _ => String::new(),
+        Value::Object(_) => String::new(),
     }
 }
 

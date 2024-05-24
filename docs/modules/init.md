@@ -17,6 +17,11 @@ Future features:
 
 The application is configured via environment variables:
 
+- POSTGRESQL_SCRIPTS_PATH:
+  - location of PostgreSQL init scripts
+  - optional
+  - default: `/app/pg/sql`
+
 - WIPE_DATA:
   - if set to true, all content of database is deleted before initialization
   - optional
