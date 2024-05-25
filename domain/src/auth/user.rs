@@ -40,17 +40,6 @@ pub struct RegisterUser {
     pub password: String,
 }
 
-/// A model struct representing the registration of a user.
-#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
-pub struct CreateUserModel {
-    /// user id
-    pub id: String,
-    /// username
-    pub username: String,
-    /// password
-    pub password: String,
-}
-
 fn validate_username(username: &str) -> Result<(), validation::Error> {
     let allowed = ['!', '@', '#', '$', '%', '^', '&', '_', '-'];
     if username
@@ -76,19 +65,14 @@ impl RegisterUser {
     }
 }
 
-impl From<&RegisterUser> for CreateUserModel {
+impl From<&RegisterUser> for User {
     fn from(value: &RegisterUser) -> Self {
         Self {
             id: Self::generate_id(),
             username: value.clone().username,
             password: value.clone().password,
+            roles: vec![],
         }
-    }
-}
-
-impl RustyDomainItem for CreateUserModel {
-    fn id(&self) -> String {
-        self.clone().id
     }
 }
 

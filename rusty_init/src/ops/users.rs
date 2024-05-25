@@ -2,7 +2,7 @@ use rand::Rng;
 
 use commons::env::var_or_default;
 use commons::hashing::bcrypt;
-use domain::auth::user::{CreateUserModel, RegisterUser};
+use domain::auth::user::{RegisterUser, User};
 use persist::db_client::DbClient;
 
 const USERS_INDEX: &str = "users";
@@ -23,7 +23,7 @@ pub(crate) async fn create_user(db: &DbClient, user_type: &str) -> String {
         username: username.clone(),
         password: password_encoded,
     };
-    let user = CreateUserModel::from(&user);
+    let user = User::from(&user);
     match db.create(USERS_INDEX, &user).await {
         Ok(id) => {
             log::info!("creating `{user_type}` user: done\n\nusername: {username}\npassword: {password}\nyou should consider changing it!\n");

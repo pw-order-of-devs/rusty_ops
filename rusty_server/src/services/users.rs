@@ -1,7 +1,7 @@
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
-use domain::auth::user::{CreateUserModel, PagedUsers, RegisterUser, User, UserModel};
+use domain::auth::user::{PagedUsers, RegisterUser, User, UserModel};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
@@ -50,7 +50,7 @@ pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyEr
         .await?
         .is_empty()
     {
-        let user_id = shared::create(db, USERS_INDEX, user, |r| CreateUserModel::from(&r)).await?;
+        let user_id = shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await?;
         match roles::assign(db, &user_id, None, Some("USERS")).await {
             Ok(_) => log::info!("added user {user_id} to group `USERS`"),
             Err(err) => log::warn!("error while adding user `{user_id}` to group `USERS`: {err}"),
