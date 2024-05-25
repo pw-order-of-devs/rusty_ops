@@ -289,3 +289,7 @@ Date: 2024-05-23
   491e564 unit tests update for auth
   6cf127b unit tests update for auth
   6c43a1a error cleanup
+Date: 2024-05-24
+  d461b5e Daily update
+  848c76e assign newly created users to default USERS group
+  0d12c89 init update - split into versions; postgres scripts
