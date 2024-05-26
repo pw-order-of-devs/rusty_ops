@@ -9,7 +9,7 @@ export const load = ({ url }) => {
 };
 
 export const actions = {
-	login: async ({ request, url }) => {
+	login: async ({ request }) => {
 		const credentials = await request.formData();
 
 		try {
