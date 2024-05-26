@@ -1,4 +1,8 @@
-<div class="card">
+<script>
+	export let classes = '';
+</script>
+
+<div class={`card ${classes}`}>
 	<slot />
 </div>
 
