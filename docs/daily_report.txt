@@ -293,3 +293,6 @@ Date: 2024-05-24
   d461b5e Daily update
   848c76e assign newly created users to default USERS group
   0d12c89 init update - split into versions; postgres scripts
+Date: 2024-05-25
+  2a55e04 Daily update
+  ca6c05d user cleanup
