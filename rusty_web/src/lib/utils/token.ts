@@ -5,7 +5,6 @@ export const deleteTokenCookie = () => {
 };
 
 export const setTokenCookie = (token: string) => {
-	console.log(`rustyToken=${token};expires='${parseTokenExpiry(token)}';secure=true;path=/`)
 	document.cookie = `rustyToken=${token};expires='${parseTokenExpiry(token)}';secure=true;path=/`;
 };
 
