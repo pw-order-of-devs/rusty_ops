@@ -296,3 +296,8 @@ Date: 2024-05-24
 Date: 2024-05-25
   2a55e04 Daily update
   ca6c05d user cleanup
+Date: 2024-05-26
+  6643e60 Daily update
+  54b3a0f ui - group interface
+  f2c1331 ui - remove unnecessary log
+  7ed5867 ui - update projects view with groups
