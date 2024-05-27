@@ -1,9 +1,11 @@
 <script lang="ts">
 	import NavLeft from 'src/components/auth/NavLeft.svelte';
+
+	export let data;
 </script>
 
 <div class="page">
-	<NavLeft />
+	<NavLeft current={data.currentPage} />
 
 	<div class="content">
 		<slot />

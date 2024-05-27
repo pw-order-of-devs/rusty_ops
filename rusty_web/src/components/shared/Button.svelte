@@ -11,11 +11,12 @@
 	export let label: string | null = null;
 	export let flat: boolean = false;
 	export let tooltipOpts: TooltipOpts | null = null;
+	export let classes = '';
 </script>
 
-<a {href} on:click={action} {target} class:flat use:tooltip={tooltipOpts}>
+<a {href} class="button {classes}" on:click={action} {target} class:flat use:tooltip={tooltipOpts}>
 	{#if icon}
-		<FontAwesomeIcon {icon} />
+		<FontAwesomeIcon class="fa" {icon} />
 	{/if}
 	{#if label}
 		{label}
