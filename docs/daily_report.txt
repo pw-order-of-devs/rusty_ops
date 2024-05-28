@@ -301,3 +301,6 @@ Date: 2024-05-26
   54b3a0f ui - group interface
   f2c1331 ui - remove unnecessary log
   7ed5867 ui - update projects view with groups
+Date: 2024-05-27
+  821852f ui - mark current tab
+  76ae7fa Daily update
