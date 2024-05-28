@@ -78,6 +78,26 @@ async fn basic_auth_no_user_test<I: Image + Default>(
 #[case(Mongo, "mongodb", 27017)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
+async fn bearer_auth_invalid_token_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    <I as Image>::Args: Default,
+{
+    let db = RunnableImage::from(image).start().await;
+    let db_client = db_connect(&db, db_type, port).await;
+    let credential = Credential::Bearer("blah".to_string());
+    let authenticated = auth::authenticate(&db_client, &credential).await;
+    let _ = db.stop().await;
+    assert!(authenticated.is_err());
+    assert_eq!(authenticated, Err(RustyError::UnauthenticatedError));
+}
+
+#[rstest]
+#[case(Mongo, "mongodb", 27017)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
 async fn no_credential_test<I: Image + Default>(
     #[case] image: I,
     #[case] db_type: &str,
