@@ -47,7 +47,10 @@ pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, Ru
             }
             match claims {
                 Ok(_) => Ok(user.username),
-                Err(_) => Err(RustyError::UnauthenticatedError),
+                Err(err) => {
+                    log::error!("authentication error: {err}");
+                    Err(RustyError::UnauthenticatedError)
+                }
             }
         }
         None => Err(RustyError::UnauthenticatedError),

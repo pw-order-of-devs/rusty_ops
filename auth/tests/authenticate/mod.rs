@@ -1,4 +1,6 @@
+use auth::token::build_jwt_token;
 use rstest::rstest;
+use serde_json::json;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{ContainerAsync, Image, RunnableImage};
 use testcontainers_modules::{mongo::Mongo, redis::Redis};
@@ -78,6 +80,95 @@ async fn basic_auth_no_user_test<I: Image + Default>(
 #[case(Mongo, "mongodb", 27017)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
+async fn bearer_auth_positive_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    <I as Image>::Args: Default,
+{
+    let db = RunnableImage::from(image).start().await;
+    let db_client = db_connect(&db, db_type, port).await;
+    let user_id = create_user(&db_client).await.unwrap();
+    let user = db_client
+        .get_one::<User>("users", json!({ "id": user_id }))
+        .await
+        .unwrap()
+        .unwrap();
+    let token = build_jwt_token(&user, 300);
+    assert!(token.is_ok());
+    let credential = Credential::Bearer(token.unwrap());
+    let authenticated = auth::authenticate(&db_client, &credential).await;
+    let _ = db.stop().await;
+    assert!(authenticated.is_ok());
+    assert_eq!("user", authenticated.unwrap());
+}
+
+const JWT_TOKEN_EXPIRED: &str = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSdXN0eU9wcyIsInN1YiI6InVzZXIiLCJhdWQiOiJ1c2VyIiwiZXhwIjoxNjE3MDEwNDg4LCJuYmYiOjE2MTcwMTA0ODgsImlhdCI6MTYxNzAxMDQ4OCwianRpIjoiYTQyZDYyN2YtYTEwMC00OWViLTg0MDYtMWZkMWMzMmI2MDMxIn0.a7EK570ag-KZDSiX-KVAvkcOxwsIVUnU5ho9UrmuOe1TEQC5xgC2EY7LkXyKqOqWgzqE-qMyFS6bq3M6Je3oHQ";
+
+#[rstest]
+#[case(Mongo, "mongodb", 27017)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
+async fn bearer_auth_expired_token_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    <I as Image>::Args: Default,
+{
+    let db = RunnableImage::from(image).start().await;
+    let db_client = db_connect(&db, db_type, port).await;
+    let user_id = create_user(&db_client).await.unwrap();
+    let _ = db_client
+        .get_one::<User>("users", json!({ "id": user_id }))
+        .await;
+    let credential = Credential::Bearer(JWT_TOKEN_EXPIRED.to_string());
+    let authenticated = auth::authenticate(&db_client, &credential).await;
+    let _ = db.stop().await;
+    assert!(authenticated.is_err());
+    assert_eq!(authenticated, Err(RustyError::JwtTokenExpiredError));
+}
+
+#[rstest]
+#[case(Mongo, "mongodb", 27017)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
+async fn bearer_auth_invalid_signature_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    <I as Image>::Args: Default,
+{
+    let db = RunnableImage::from(image).start().await;
+    let db_client = db_connect(&db, db_type, port).await;
+    let user_id = create_user(&db_client).await.unwrap();
+    let user = db_client
+        .get_one::<User>("users", json!({ "id": user_id }))
+        .await
+        .unwrap()
+        .unwrap();
+    let token = build_jwt_token(&user, 300);
+    assert!(token.is_ok());
+    let token = token
+        .unwrap()
+        .split('.')
+        .take(2)
+        .collect::<Vec<&str>>()
+        .join(".")
+        + ".err";
+    let credential = Credential::Bearer(token);
+    let authenticated = auth::authenticate(&db_client, &credential).await;
+    let _ = db.stop().await;
+    assert!(authenticated.is_err());
+    assert_eq!(authenticated, Err(RustyError::UnauthenticatedError));
+}
+
+#[rstest]
+#[case(Mongo, "mongodb", 27017)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
 async fn bearer_auth_invalid_token_test<I: Image + Default>(
     #[case] image: I,
     #[case] db_type: &str,
@@ -125,8 +216,8 @@ async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -
     }
 }
 
-async fn create_user(db_client: &DbClient) {
-    let _ = db_client
+async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
+    db_client
         .create(
             "users",
             &User {
@@ -136,5 +227,5 @@ async fn create_user(db_client: &DbClient) {
                 roles: vec![],
             },
         )
-        .await;
+        .await
 }
