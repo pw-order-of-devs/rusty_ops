@@ -304,3 +304,6 @@ Date: 2024-05-26
 Date: 2024-05-27
   821852f ui - mark current tab
   76ae7fa Daily update
+Date: 2024-05-28
+  fd6cfd1 Daily update
+  12b969f extend tests - negative bearer auth
