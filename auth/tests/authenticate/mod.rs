@@ -1,10 +1,10 @@
-use auth::token::build_jwt_token;
 use rstest::rstest;
 use serde_json::json;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{ContainerAsync, Image, RunnableImage};
 use testcontainers_modules::{mongo::Mongo, redis::Redis};
 
+use auth::token::build_jwt_token;
 use commons::errors::RustyError;
 use commons::hashing::bcrypt::encode;
 use domain::auth::credentials::Credential;

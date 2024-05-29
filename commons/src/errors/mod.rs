@@ -234,6 +234,12 @@ impl From<tokio::task::JoinError> for RustyError {
     }
 }
 
+impl From<jwt::Error> for RustyError {
+    fn from(err: jwt::Error) -> Self {
+        Self::JwtError(err.to_string())
+    }
+}
+
 #[cfg(feature = "ws")]
 impl From<tokio_tungstenite::tungstenite::Error> for RustyError {
     fn from(err: tokio_tungstenite::tungstenite::Error) -> Self {

@@ -25,10 +25,8 @@ use domain::auth::user::User;
 pub fn build_jwt_token(user: &User, expiry: u64) -> Result<String, RustyError> {
     let header = build_header();
     let claims = build_claims(&user.username, expiry);
-    match Token::new(header, claims).sign_with_key(&hmac512(&user.password)?) {
-        Ok(token) => Ok(token.as_str().to_string()),
-        Err(err) => Err(RustyError::JwtError(err.to_string())),
-    }
+    let token = Token::new(header, claims).sign_with_key(&hmac512(&user.password)?)?;
+    Ok(token.as_str().to_string())
 }
 
 fn build_header() -> Header {
