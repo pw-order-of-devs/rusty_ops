@@ -87,7 +87,7 @@ impl From<&RegisterPipeline> for Pipeline {
 }
 
 impl RustyDomainItem for Pipeline {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

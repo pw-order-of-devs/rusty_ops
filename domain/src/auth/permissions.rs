@@ -17,7 +17,7 @@ pub struct Permission {
 }
 
 impl RustyDomainItem for Permission {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         format!(
             "{}:{}:{}:{}",
             self.clone().user_id.unwrap_or_default(),

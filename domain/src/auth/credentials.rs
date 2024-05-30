@@ -18,11 +18,7 @@ impl std::fmt::Display for Credential {
         match self {
             Self::Basic(user, _) => write!(f, "{user}"),
             Self::Bearer(token) => {
-                let username = if let ClaimValue::Str(value) = get_token_claim(token, "sub") {
-                    value
-                } else {
-                    String::new()
-                };
+                let username = get_token_claim_str(token, "sub");
                 write!(f, "{username}")
             }
             Self::None => write!(f, "empty credential"),

@@ -13,7 +13,7 @@ pub struct Resource {
 }
 
 impl RustyDomainItem for Resource {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().name
     }
 }

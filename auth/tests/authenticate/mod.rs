@@ -1,18 +1,15 @@
 use rstest::rstest;
 use serde_json::json;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{ContainerAsync, Image, RunnableImage};
+use testcontainers::{Image, RunnableImage};
 use testcontainers_modules::{mongo::Mongo, redis::Redis};
 
 use auth::token::build_jwt_token;
 use commons::errors::RustyError;
-use commons::hashing::bcrypt::encode;
 use domain::auth::credentials::Credential;
 use domain::auth::user::User;
-use persist::db_client::DbClient;
-use persist::mongo::MongoDBClient;
-use persist::redis::RedisClient;
-use persist::PersistenceBuilder;
+
+use crate::utils::{create_user, db_connect, USERS_INDEX, USER_ID, USER_NAME};
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
@@ -28,7 +25,7 @@ async fn basic_auth_positive_test<I: Image + Default>(
     let db = RunnableImage::from(image).start().await;
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
-    let credential = Credential::Basic("user".to_string(), "pass".to_string());
+    let credential = Credential::Basic(USER_NAME.to_string(), "pass".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
     let _ = db.stop().await;
     assert!(authenticated.is_ok());
@@ -49,7 +46,7 @@ async fn basic_auth_wrong_credential_test<I: Image + Default>(
     let db = RunnableImage::from(image).start().await;
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
-    let credential = Credential::Basic("user".to_string(), "pass_err".to_string());
+    let credential = Credential::Basic(USER_NAME.to_string(), "pass_err".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
     let _ = db.stop().await;
     assert!(authenticated.is_err());
@@ -69,7 +66,7 @@ async fn basic_auth_no_user_test<I: Image + Default>(
 {
     let db = RunnableImage::from(image).start().await;
     let db_client = db_connect(&db, db_type, port).await;
-    let credential = Credential::Basic("user".to_string(), "pass".to_string());
+    let credential = Credential::Basic(USER_NAME.to_string(), "pass".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
     let _ = db.stop().await;
     assert!(authenticated.is_err());
@@ -89,9 +86,9 @@ async fn bearer_auth_positive_test<I: Image + Default>(
 {
     let db = RunnableImage::from(image).start().await;
     let db_client = db_connect(&db, db_type, port).await;
-    let user_id = create_user(&db_client).await.unwrap();
+    let _ = create_user(&db_client).await.unwrap();
     let user = db_client
-        .get_one::<User>("users", json!({ "id": user_id }))
+        .get_one::<User>(USERS_INDEX, json!({ "id": USER_ID }))
         .await
         .unwrap()
         .unwrap();
@@ -101,7 +98,7 @@ async fn bearer_auth_positive_test<I: Image + Default>(
     let authenticated = auth::authenticate(&db_client, &credential).await;
     let _ = db.stop().await;
     assert!(authenticated.is_ok());
-    assert_eq!("user", authenticated.unwrap());
+    assert_eq!(USER_NAME, authenticated.unwrap());
 }
 
 const JWT_TOKEN_EXPIRED: &str = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSdXN0eU9wcyIsInN1YiI6InVzZXIiLCJhdWQiOiJ1c2VyIiwiZXhwIjoxNjE3MDEwNDg4LCJuYmYiOjE2MTcwMTA0ODgsImlhdCI6MTYxNzAxMDQ4OCwianRpIjoiYTQyZDYyN2YtYTEwMC00OWViLTg0MDYtMWZkMWMzMmI2MDMxIn0.a7EK570ag-KZDSiX-KVAvkcOxwsIVUnU5ho9UrmuOe1TEQC5xgC2EY7LkXyKqOqWgzqE-qMyFS6bq3M6Je3oHQ";
@@ -119,9 +116,9 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
 {
     let db = RunnableImage::from(image).start().await;
     let db_client = db_connect(&db, db_type, port).await;
-    let user_id = create_user(&db_client).await.unwrap();
+    let _ = create_user(&db_client).await.unwrap();
     let _ = db_client
-        .get_one::<User>("users", json!({ "id": user_id }))
+        .get_one::<User>(USERS_INDEX, json!({ "id": USER_ID }))
         .await;
     let credential = Credential::Bearer(JWT_TOKEN_EXPIRED.to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
@@ -143,9 +140,9 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
 {
     let db = RunnableImage::from(image).start().await;
     let db_client = db_connect(&db, db_type, port).await;
-    let user_id = create_user(&db_client).await.unwrap();
+    let _ = create_user(&db_client).await.unwrap();
     let user = db_client
-        .get_one::<User>("users", json!({ "id": user_id }))
+        .get_one::<User>(USERS_INDEX, json!({ "id": USER_ID }))
         .await
         .unwrap()
         .unwrap();
@@ -202,30 +199,4 @@ async fn no_credential_test<I: Image + Default>(
     let authenticated = auth::authenticate(&db_client, &credential).await;
     let _ = db.stop().await;
     assert!(authenticated.is_ok());
-}
-
-async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
-    let connection = &format!(
-        "{db_type}://localhost:{}",
-        db.get_host_port_ipv4(port).await
-    );
-    match db_type {
-        "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection).await),
-        "redis" => DbClient::Redis(RedisClient::from_string(connection).await),
-        _ => panic!("not supported db type"),
-    }
-}
-
-async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
-    db_client
-        .create(
-            "users",
-            &User {
-                id: "d81e7711-8eed-4cac-9191-d2ec48f36e13".to_string(),
-                username: "user".to_string(),
-                password: encode("pass").unwrap(),
-                roles: vec![],
-            },
-        )
-        .await
 }

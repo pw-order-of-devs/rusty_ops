@@ -6,6 +6,12 @@ use domain::auth::credentials::Credential;
 #[cfg(test)]
 mod authenticate;
 
+#[cfg(test)]
+mod authorize;
+
+#[cfg(not(tarpaulin_include))]
+mod utils;
+
 #[rstest]
 #[case("", Credential::None)]
 #[case("error", Credential::None)]

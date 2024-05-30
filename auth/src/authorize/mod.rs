@@ -35,7 +35,7 @@ async fn get_user_id(db: &DbClient, username: &str) -> Result<String, RustyError
         .await?
     {
         Some(user) => Ok(user.id),
-        None => Err(RustyError::UnauthenticatedError),
+        None => Err(RustyError::RequestError("User was not found".to_string())),
     }
 }
 

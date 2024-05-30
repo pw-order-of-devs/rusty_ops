@@ -158,7 +158,7 @@ impl Persistence for PostgreSQLClient {
         let values = parse_filter(&Some(serde_json::to_value(item)?), false).join(", ");
         let statement = format!("insert into {}.{} values ({})", self.schema, index, values);
         let _ = conn.execute(&statement, &[]).await?;
-        Ok(item.id())
+        Ok(item.get_id())
     }
 
     async fn update<T: RustyDomainItem>(

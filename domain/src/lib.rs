@@ -59,7 +59,7 @@ pub trait RustyDomainItem:
     + OutputType
 {
     /// Returns the identifier of an object.
-    fn id(&self) -> String;
+    fn get_id(&self) -> String;
 
     /// Generate a unique identifier using UUID.
     #[must_use]

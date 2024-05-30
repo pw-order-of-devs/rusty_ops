@@ -77,13 +77,13 @@ impl From<&RegisterUser> for User {
 }
 
 impl RustyDomainItem for UserModel {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }
 
 impl RustyDomainItem for User {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

@@ -46,7 +46,7 @@ impl From<&RegisterGroup> for Group {
 }
 
 impl RustyDomainItem for Group {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

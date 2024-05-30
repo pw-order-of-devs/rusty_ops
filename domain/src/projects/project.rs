@@ -66,7 +66,7 @@ impl From<&RegisterProject> for Project {
 }
 
 impl RustyDomainItem for Project {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

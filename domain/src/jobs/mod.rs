@@ -80,7 +80,7 @@ impl From<&RegisterJob> for Job {
 }
 
 impl RustyDomainItem for Job {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

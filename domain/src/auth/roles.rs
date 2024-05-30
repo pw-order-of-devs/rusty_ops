@@ -17,7 +17,7 @@ pub struct Role {
 }
 
 impl RustyDomainItem for Role {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

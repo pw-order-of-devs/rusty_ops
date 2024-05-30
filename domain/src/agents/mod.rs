@@ -41,7 +41,7 @@ pub struct RegisterAgent {
 }
 
 impl RustyDomainItem for Agent {
-    fn id(&self) -> String {
+    fn get_id(&self) -> String {
         self.clone().id
     }
 }

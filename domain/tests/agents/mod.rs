@@ -1,4 +1,5 @@
 use domain::agents::{Agent, RegisterAgent};
+use domain::RustyDomainItem;
 
 #[test]
 fn from_register_agent_test() {
@@ -7,7 +8,7 @@ fn from_register_agent_test() {
     let before = chrono::Utc::now().timestamp();
     let agent = Agent::from(&input, 300);
     let after = chrono::Utc::now().timestamp();
-    assert_eq!(id, agent.id);
+    assert_eq!(id, agent.get_id());
     assert!(before < agent.expiry && agent.expiry > after);
 }
 
@@ -19,6 +20,6 @@ fn update_expiry_test() {
     let before = chrono::Utc::now().timestamp();
     agent.update_expiry(300);
     let after = chrono::Utc::now().timestamp();
-    assert_eq!(id, agent.id);
+    assert_eq!(id, agent.get_id());
     assert!(before < agent.expiry && agent.expiry > after);
 }

@@ -93,7 +93,7 @@ impl PipelineTemplate {
         } else {
             Err(RustyError::SerializationError(format!(
                 "Pipeline template: [{}]",
-                errors.join("; ")
+                errors.join("; "),
             )))
         }
     }

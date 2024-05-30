@@ -119,7 +119,7 @@ impl Persistence for MongoDBClient {
             .insert_one(item, None)
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
-            .map(|_| item.id())
+            .map(|_| item.get_id())
     }
 
     async fn update<T: RustyDomainItem>(
@@ -139,7 +139,7 @@ impl Persistence for MongoDBClient {
                 )
                 .await
                 .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
-                .map(|_| item.id())
+                .map(|_| item.get_id())
         } else {
             Err(RustyError::MongoDBError(format!(
                 "Item not found: `{index}`.`{id}`"

@@ -156,7 +156,7 @@ impl Persistence for RedisClient {
         index: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        let id = item.id();
+        let id = item.get_id();
         let mut conn = self.client.get().await?;
         let item = serde_json::to_string(item)?;
         conn.set(format!("{index}_{id}"), &item).await?;
@@ -191,7 +191,7 @@ impl Persistence for RedisClient {
         let mut conn = self.client.get().await?;
         let item: Option<T> = self.get_one(index, filter).await?;
         if let Some(item) = item {
-            conn.del(format!("{index}_{}", item.id())).await?;
+            conn.del(format!("{index}_{}", item.get_id())).await?;
             Ok(1)
         } else {
             Ok(0)
