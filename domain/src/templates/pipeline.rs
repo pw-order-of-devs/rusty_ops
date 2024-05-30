@@ -91,10 +91,9 @@ impl PipelineTemplate {
         if errors.is_empty() {
             Ok(result)
         } else {
-            Err(RustyError::SerializationError(format!(
-                "Pipeline template: [{}]",
-                errors.join("; "),
-            )))
+            Err(RustyError::SerializationError(
+                format!("Pipeline template: {errors:?}").replace('\"', ""),
+            ))
         }
     }
 
