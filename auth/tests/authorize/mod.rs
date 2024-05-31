@@ -2,7 +2,7 @@ use commons::errors::RustyError;
 use rstest::rstest;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{Image, RunnableImage};
-use testcontainers_modules::{mongo::Mongo, redis::Redis};
+use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use crate::utils::{
     create_permission_role, create_permission_user, create_role, create_user, db_connect,
@@ -11,6 +11,7 @@ use crate::utils::{
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn authorize_no_user_test<I: Image + Default>(
@@ -33,6 +34,7 @@ async fn authorize_no_user_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn authorize_no_permissions_test<I: Image + Default>(
@@ -53,6 +55,7 @@ async fn authorize_no_permissions_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn authorize_user_positive_test<I: Image + Default>(
@@ -73,6 +76,7 @@ async fn authorize_user_positive_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn authorize_role_positive_test<I: Image + Default>(
