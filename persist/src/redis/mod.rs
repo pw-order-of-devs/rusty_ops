@@ -13,6 +13,7 @@ use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
 use crate::redis::pubsub::RedisPubSubConnectionManager;
+use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
 mod pubsub;
@@ -91,32 +92,9 @@ impl Persistence for RedisClient {
             values.push(serde_json::from_str(&value)?);
         }
 
-        let filter = filter.clone().unwrap_or(Value::Null);
-        let mut filtered = values
-            .into_iter()
-            .filter(|item| {
-                filter.as_object().map_or(true, |filter| {
-                    filter.keys().all(|key| item.get(key) == filter.get(key))
-                })
-            })
-            .collect::<Vec<Value>>();
-
+        let mut filtered = filter_results(filter, &values);
         let options = options.clone().unwrap_or_default();
-        let sort_field = &options.sort_field.unwrap_or_else(|| "id".to_string());
-        filtered.sort_by(
-            |a, b| match (a[sort_field].clone(), b[sort_field].clone()) {
-                (Value::String(a), Value::String(b)) => a.cmp(&b),
-                (Value::Number(a), Value::Number(b)) => a
-                    .as_f64()
-                    .partial_cmp(&b.as_f64())
-                    .unwrap_or_else(|| panic!("Failed comparing by {sort_field}")),
-                (Value::Bool(a), Value::Bool(b)) => a.cmp(&b),
-                _ => Ordering::Equal,
-            },
-        );
-        if options.sort_mode.unwrap_or_default() == SortOptions::Descending {
-            filtered.reverse();
-        }
+        sort_results(&options, &mut filtered);
 
         let filtered = filtered
             .into_iter()
@@ -171,7 +149,9 @@ impl Persistence for RedisClient {
         item: &T,
     ) -> Result<String, RustyError> {
         let mut conn = self.client.get().await?;
-        let found: Option<T> = self.get_one(index, json!({ "id": id })).await?;
+        let found: Option<T> = self
+            .get_one(index, json!({ "id": { "equals": id } }))
+            .await?;
         if found.is_some() {
             conn.set(format!("{index}_{id}"), serde_json::to_string(item)?)
                 .await?;
@@ -235,5 +215,26 @@ impl Persistence for RedisClient {
         }
 
         Ok(())
+    }
+}
+
+fn sort_results(options: &SearchOptions, filtered: &mut [Value]) {
+    let sort_field = &options
+        .clone()
+        .sort_field
+        .unwrap_or_else(|| "id".to_string());
+    filtered.sort_by(
+        |a, b| match (a[sort_field].clone(), b[sort_field].clone()) {
+            (Value::String(a), Value::String(b)) => a.cmp(&b),
+            (Value::Number(a), Value::Number(b)) => a
+                .as_f64()
+                .partial_cmp(&b.as_f64())
+                .unwrap_or_else(|| panic!("Failed comparing by {sort_field}")),
+            (Value::Bool(a), Value::Bool(b)) => a.cmp(&b),
+            _ => Ordering::Equal,
+        },
+    );
+    if options.sort_mode.unwrap_or_default() == SortOptions::Descending {
+        filtered.reverse();
     }
 }

@@ -44,6 +44,9 @@ pub mod postgre;
 /// # `Redis` Module
 pub mod redis;
 
+/// # `Commons` Module - shared functions
+pub mod shared;
+
 /// Defines the `PersistenceBuilder` trait, which is used to construct persistent objects asynchronously.
 ///
 /// The trait provides a method `build()` that returns a future, which eventually produces the constructed object.

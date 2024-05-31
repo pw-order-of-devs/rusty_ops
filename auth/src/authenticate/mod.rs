@@ -14,7 +14,7 @@ pub(crate) async fn basic_auth(
     password: &str,
 ) -> Result<String, RustyError> {
     match db
-        .get_one::<User>("users", json!({ "username": user }))
+        .get_one::<User>("users", json!({ "username": { "equals": user } }))
         .await?
     {
         Some(user) => {
@@ -31,7 +31,7 @@ pub(crate) async fn basic_auth(
 pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, RustyError> {
     let user = get_token_claim_str(token, "sub");
     match db
-        .get_one::<User>("users", json!({ "username": user }))
+        .get_one::<User>("users", json!({ "username": { "equals": user } }))
         .await?
     {
         Some(user) => {

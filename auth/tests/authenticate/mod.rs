@@ -88,7 +88,7 @@ async fn bearer_auth_positive_test<I: Image + Default>(
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let user = db_client
-        .get_one::<User>(USERS_INDEX, json!({ "id": USER_ID }))
+        .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
         .await
         .unwrap()
         .unwrap();
@@ -118,7 +118,7 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let _ = db_client
-        .get_one::<User>(USERS_INDEX, json!({ "id": USER_ID }))
+        .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
         .await;
     let credential = Credential::Bearer(JWT_TOKEN_EXPIRED.to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
@@ -142,7 +142,7 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let user = db_client
-        .get_one::<User>(USERS_INDEX, json!({ "id": USER_ID }))
+        .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
         .await
         .unwrap()
         .unwrap();

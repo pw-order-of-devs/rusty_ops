@@ -38,7 +38,6 @@ pub async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
                 id: USER_ID.to_string(),
                 username: USER_NAME.to_string(),
                 password: encode("pass").unwrap(),
-                roles: vec![],
             },
         )
         .await

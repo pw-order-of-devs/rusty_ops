@@ -10,6 +10,7 @@ use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
+use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
 /// Represents a `PostgreSQL` client.
@@ -102,24 +103,24 @@ impl Persistence for PostgreSQLClient {
     ) -> Result<Vec<T>, RustyError> {
         let conn = self.client.get().await?;
 
-        let values = parse_filter(filter, true);
-        let where_clause = if values.is_empty() {
-            String::new()
-        } else {
-            format!(" where {}", values.join(" and "))
-        };
-        let options = parse_options(options, paged);
-
         let statement = format!(
-            "select * from {}.{}{}{}",
-            self.schema, index, where_clause, options
+            "select * from {}.{}{}",
+            self.schema,
+            index,
+            parse_options(options, paged)
         );
-        let rows = conn.query(&statement, &[]).await?;
-        let mut entries = vec![];
-        for row in rows {
-            entries.push(serde_json::from_value(parse_row(&row))?);
-        }
-        Ok(entries)
+        let rows = conn
+            .query(&statement, &[])
+            .await?
+            .iter()
+            .map(parse_row)
+            .collect::<Vec<Value>>();
+
+        let result = filter_results(filter, &rows)
+            .into_iter()
+            .map(|value| serde_json::from_value(value))
+            .collect::<Result<Vec<T>, _>>()?;
+        Ok(result)
     }
 
     async fn get_one<T: RustyDomainItem>(
@@ -127,23 +128,9 @@ impl Persistence for PostgreSQLClient {
         index: &str,
         filter: Value,
     ) -> Result<Option<T>, RustyError> {
-        let conn = self.client.get().await?;
-        if filter.as_object().unwrap_or(&Map::new()).is_empty() {
-            log::debug!("Expecting a filter - skipping");
-            return Ok(None);
-        }
-
-        let values = parse_filter(&Some(filter), true);
-        let where_clause = if values.is_empty() {
-            String::new()
-        } else {
-            format!(" where {}", values.join(" and "))
-        };
-        let statement = format!("select * from {}.{}{}", self.schema, index, where_clause);
-        let rows = conn.query(&statement, &[]).await?;
-        if let Some(row) = rows.first() {
-            let value = serde_json::from_value(parse_row(row))?;
-            Ok(Some(value))
+        let values: Vec<T> = self.get_all(index, &Some(filter), &None, false).await?;
+        if values.len() == 1 {
+            Ok(Some(values[0].clone()))
         } else {
             Ok(None)
         }
@@ -268,6 +255,12 @@ fn parse_row(row: &Row) -> Value {
                 .get::<&str, Option<String>>(&column_name)
                 .map_or_else(|| Value::Null, Value::String),
             &Type::INT4 => Value::Number(row.get::<&str, i32>(&column_name).into()),
+            &Type::VARCHAR_ARRAY | &Type::TEXT_ARRAY => row
+                .get::<&str, Option<Vec<String>>>(&column_name)
+                .map_or_else(
+                    || Value::Null,
+                    |value_vec| Value::Array(value_vec.into_iter().map(Value::String).collect()),
+                ),
             &_ => Value::Null,
         };
         value.insert(column_name.clone(), entry);
@@ -276,6 +269,10 @@ fn parse_row(row: &Row) -> Value {
 }
 
 fn parse_options(options: &Option<SearchOptions>, paged: bool) -> String {
+    if options.is_none() {
+        return String::new();
+    }
+
     let options = options.clone().unwrap_or_default();
     let sort_field = options.sort_field.unwrap_or_else(|| "id".to_string());
     let sort_mode = match options.sort_mode.unwrap_or_default() {

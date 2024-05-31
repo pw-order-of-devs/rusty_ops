@@ -12,10 +12,10 @@ pub(crate) async fn authorize(
     resource: &str,
 ) -> Result<(), RustyError> {
     let user_id = get_user_id(db, username).await?;
-    let mut permissions = get_permissions(db, &json!({ "user_id": user_id })).await?;
+    let mut permissions = get_permissions(db, &json!({ "user_id": { "equals": user_id } })).await?;
     let roles = get_user_roles_id(db, &user_id).await?;
     for role_id in roles {
-        let p = get_permissions(db, &json!({ "role_id": role_id })).await?;
+        let p = get_permissions(db, &json!({ "role_id": { "equals": role_id } })).await?;
         permissions.extend_from_slice(&p);
     }
     if permissions
@@ -31,7 +31,7 @@ pub(crate) async fn authorize(
 
 async fn get_user_id(db: &DbClient, username: &str) -> Result<String, RustyError> {
     match db
-        .get_one::<User>("users", json!({ "username": username }))
+        .get_one::<User>("users", json!({ "username": { "equals": username } }))
         .await?
     {
         Some(user) => Ok(user.id),

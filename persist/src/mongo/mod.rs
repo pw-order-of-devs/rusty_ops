@@ -2,17 +2,18 @@ use std::pin::Pin;
 use std::time::Duration;
 
 use futures_util::StreamExt;
-use mongodb::bson::{doc, to_bson, to_document, Bson, Document};
+use mongodb::bson::{doc, to_document, Document};
 use mongodb::change_stream::event::OperationType;
 use mongodb::options::{Credential, FindOptions};
 use mongodb::{options::ClientOptions, Client};
-use serde_json::{json, Map, Value};
+use serde_json::{json, Value};
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
+use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
 /// Represents a `MongoDB` client.
@@ -84,14 +85,19 @@ impl Persistence for MongoDBClient {
         let mut cursor = self
             .client
             .database(&self.database)
-            .collection::<T>(index)
-            .find(parse_filter(filter)?, parse_options(options, paged))
+            .collection::<Value>(index)
+            .find(None, parse_options(options, paged))
             .await?;
 
-        let mut result: Vec<T> = Vec::new();
+        let mut result: Vec<Value> = Vec::new();
         while let Some(doc) = cursor.next().await {
             result.push(doc?);
         }
+
+        let result = filter_results(filter, &result)
+            .into_iter()
+            .map(|value| serde_json::from_value(value))
+            .collect::<Result<Vec<T>, _>>()?;
         Ok(result)
     }
 
@@ -100,12 +106,12 @@ impl Persistence for MongoDBClient {
         index: &str,
         filter: Value,
     ) -> Result<Option<T>, RustyError> {
-        self.client
-            .database(&self.database)
-            .collection::<T>(index)
-            .find_one(to_document(&filter)?, None)
-            .await?
-            .map_or_else(|| Ok(None), |doc| Ok(Some(doc)))
+        let values: Vec<T> = self.get_all(index, &Some(filter), &None, false).await?;
+        if values.len() == 1 {
+            Ok(Some(values[0].clone()))
+        } else {
+            Ok(None)
+        }
     }
 
     async fn create<T: RustyDomainItem>(
@@ -128,7 +134,10 @@ impl Persistence for MongoDBClient {
         id: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        if let Some(original) = self.get_one::<T>(index, json!({ "id": id })).await? {
+        if let Some(original) = self
+            .get_one::<T>(index, json!({ "id": { "equals": id } }))
+            .await?
+        {
             self.client
                 .database(&self.database)
                 .collection::<T>(index)
@@ -204,16 +213,6 @@ impl Persistence for MongoDBClient {
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
     }
-}
-
-fn parse_filter(filter: &Option<Value>) -> Result<Option<Document>, RustyError> {
-    filter.as_ref().map_or_else(
-        || Ok(None),
-        |value| match to_bson(&value.as_object().unwrap_or(&Map::new()).clone())? {
-            Bson::Document(doc) => Ok(Some(doc)),
-            _ => Ok(None),
-        },
-    )
 }
 
 fn parse_options(options: &Option<SearchOptions>, paged: bool) -> Option<FindOptions> {

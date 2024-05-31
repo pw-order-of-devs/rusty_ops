@@ -13,7 +13,7 @@ use crate::api::utils::parse_entries;
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
 pub async fn get_unassigned_pipeline() -> Result<Pipeline, RustyError> {
-    get_pipeline("{ status: Defined }").await
+    get_pipeline(r#"{ status: { equals: "defined" } }"#).await
 }
 
 /// Function to retrieve last assigned pipeline for agent from a GraphQL endpoint.
@@ -25,7 +25,10 @@ pub async fn get_unassigned_pipeline() -> Result<Pipeline, RustyError> {
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
 pub async fn get_last_assigned_pipeline(uuid: &str) -> Result<Pipeline, RustyError> {
-    get_pipeline(&format!(r#"{{ status: Assigned, agent_id: "{uuid}" }}"#)).await
+    get_pipeline(&format!(
+        r#"{{ status: {{ equals: "assigned" }}, agent_id: {{ equals: "{uuid}" }} }}"#
+    ))
+    .await
 }
 
 async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {

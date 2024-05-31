@@ -40,15 +40,24 @@ pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<UserModel>, Rus
 }
 
 pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<User>, RustyError> {
-    shared::get_one(db, USERS_INDEX, &json!({ "username": username })).await
+    shared::get_one(
+        db,
+        USERS_INDEX,
+        &json!({ "username": { "equals": username } }),
+    )
+    .await
 }
 
 // mutate
 
 pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyError> {
-    if get_all(db, &Some(json!({ "username": user.username })), &None)
-        .await?
-        .is_empty()
+    if get_all(
+        db,
+        &Some(json!({ "username": { "equals": user.username } })),
+        &None,
+    )
+    .await?
+    .is_empty()
     {
         let user_id = shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await?;
         match roles::assign(db, &user_id, None, Some("USERS")).await {

@@ -22,8 +22,6 @@ pub struct User {
     pub username: String,
     /// password
     pub password: String,
-    /// user's role ids
-    pub roles: Vec<String>,
 }
 
 /// A struct representing the registration of a user.
@@ -71,7 +69,6 @@ impl From<&RegisterUser> for User {
             id: Self::generate_id(),
             username: value.clone().username,
             password: value.clone().password,
-            roles: vec![],
         }
     }
 }

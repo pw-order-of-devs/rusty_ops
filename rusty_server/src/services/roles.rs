@@ -24,8 +24,8 @@ pub async fn assign(
 ) -> Result<String, RustyError> {
     if users::get_by_id(db, user_id).await?.is_some() {
         let doc = match (role_id, role_name) {
-            (Some(id), None) => json!({ "id": id }),
-            (None, Some(name)) => json!({ "name": name }),
+            (Some(id), None) => json!({ "id": { "equals": id } }),
+            (None, Some(name)) => json!({ "name": { "equals": name } }),
             (_, _) => {
                 let message =
                     "`roles::assign` - one of `role_id` or `role_name` must be filled".to_string();

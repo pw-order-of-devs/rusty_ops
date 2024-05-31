@@ -52,10 +52,12 @@ pub async fn get_by_id<T: RustyDomainItem>(
     index: &str,
     id: &str,
 ) -> Result<Option<T>, RustyError> {
-    db.get_one(index, json!({ "id": id })).await.map_err(|err| {
-        log::error!("`{index}::get`: {err}");
-        err
-    })
+    db.get_one(index, json!({ "id": { "equals": id } }))
+        .await
+        .map_err(|err| {
+            log::error!("`{index}::get`: {err}");
+            err
+        })
 }
 
 pub async fn get_one<T: RustyDomainItem>(
@@ -100,7 +102,7 @@ pub async fn delete_by_id<T: RustyDomainItem>(
     index: &str,
     id: &str,
 ) -> Result<u64, RustyError> {
-    db.delete_one::<T>(index, json!({ "id": id }))
+    db.delete_one::<T>(index, json!({ "id": { "equals": id } }))
         .await
         .map_err(|err| {
             log::error!("`{index}::deleteById`: {err}");

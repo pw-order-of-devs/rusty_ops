@@ -47,9 +47,13 @@ pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String,
     if jobs::get_by_id(db, &pipeline.job_id).await?.is_none() {
         Err(RustyError::ValidationError("job not found".to_string()))
     } else {
-        let pipelines_count = get_all(db, &Some(json!({ "job_id": pipeline.job_id })), &None)
-            .await?
-            .len() as u64;
+        let pipelines_count = get_all(
+            db,
+            &Some(json!({ "job_id": { "equals": pipeline.job_id } })),
+            &None,
+        )
+        .await?
+        .len() as u64;
 
         let register = pipeline.clone();
         let mut pipeline = Pipeline::from(&pipeline);
@@ -70,7 +74,8 @@ pub async fn assign(
             pipe.agent_id = Some(agent_id.to_string());
 
             let limit = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
-            let condition = json!({ "status": "ASSIGNED", "agent_id": agent_id });
+            let condition =
+                json!({ "status": { "equals": "ASSIGNED" }, "agent_id": { "equals": agent_id } });
             if get_all(db, &Some(condition), &None).await?.len() < limit {
                 db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
             } else {
