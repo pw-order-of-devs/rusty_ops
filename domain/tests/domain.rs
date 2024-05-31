@@ -5,6 +5,9 @@ mod agents;
 mod auth;
 
 #[cfg(test)]
+mod commons;
+
+#[cfg(test)]
 mod jobs;
 
 #[cfg(test)]

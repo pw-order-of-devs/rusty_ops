@@ -2,7 +2,7 @@ use rstest::rstest;
 use serde_json::json;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{Image, RunnableImage};
-use testcontainers_modules::{mongo::Mongo, redis::Redis};
+use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use auth::token::build_jwt_token;
 use commons::errors::RustyError;
@@ -13,6 +13,7 @@ use crate::utils::{create_user, db_connect, USERS_INDEX, USER_ID, USER_NAME};
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn basic_auth_positive_test<I: Image + Default>(
@@ -34,6 +35,7 @@ async fn basic_auth_positive_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn basic_auth_wrong_credential_test<I: Image + Default>(
@@ -55,6 +57,7 @@ async fn basic_auth_wrong_credential_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn basic_auth_no_user_test<I: Image + Default>(
@@ -75,6 +78,7 @@ async fn basic_auth_no_user_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn bearer_auth_positive_test<I: Image + Default>(
@@ -105,6 +109,7 @@ const JWT_TOKEN_EXPIRED: &str = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOi
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn bearer_auth_expired_token_test<I: Image + Default>(
@@ -129,6 +134,7 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn bearer_auth_invalid_signature_test<I: Image + Default>(
@@ -164,6 +170,7 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn bearer_auth_invalid_token_test<I: Image + Default>(
@@ -184,6 +191,7 @@ async fn bearer_auth_invalid_token_test<I: Image + Default>(
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
 async fn no_credential_test<I: Image + Default>(

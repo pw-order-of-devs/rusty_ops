@@ -7,6 +7,7 @@ use domain::auth::roles::Role;
 use domain::auth::user::User;
 use persist::db_client::DbClient;
 use persist::mongo::MongoDBClient;
+use persist::postgre::PostgreSQLClient;
 use persist::redis::RedisClient;
 use persist::PersistenceBuilder;
 
@@ -19,14 +20,38 @@ pub const ROLE_ID: &str = "86ee6a82-cbec-4008-837f-d777ead0477b";
 pub const ROLES_INDEX: &str = "roles";
 
 pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
+    let auth = if db_type == "postgres" {
+        "postgres:postgres@"
+    } else {
+        ""
+    };
     let connection = &format!(
-        "{db_type}://localhost:{}",
+        "{db_type}://{}localhost:{}",
+        auth,
         db.get_host_port_ipv4(port).await
     );
     match db_type {
         "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection).await),
+        "postgres" => {
+            std::env::set_var("POSTGRESQL_SCHEMA", "rusty");
+            let client = PostgreSQLClient::from_string(connection).await;
+            initialize_pg_db(&client).await;
+            DbClient::PostgreSql(client)
+        }
         "redis" => DbClient::Redis(RedisClient::from_string(connection).await),
         _ => panic!("not supported db type"),
+    }
+}
+
+async fn initialize_pg_db(client: &PostgreSQLClient) {
+    let base_path = "../rusty_init/sql";
+    for entry in std::fs::read_dir(base_path).expect("invalid pg scripts path") {
+        let entry = entry.expect("invalid pg scripts directory entry");
+        let name = entry.file_name();
+        let name = name.to_string_lossy();
+        let script =
+            std::fs::read_to_string(&format!("{base_path}/{name}")).expect("invalid sql script");
+        let _ = client.execute_sql(&script).await;
     }
 }
 
