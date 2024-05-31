@@ -35,23 +35,11 @@ pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u1
         "postgres" => {
             std::env::set_var("POSTGRESQL_SCHEMA", "rusty");
             let client = PostgreSQLClient::from_string(connection).await;
-            initialize_pg_db(&client).await;
+            let _ = client.execute_sql_dir("../rusty_init/sql").await;
             DbClient::PostgreSql(client)
         }
         "redis" => DbClient::Redis(RedisClient::from_string(connection).await),
         _ => panic!("not supported db type"),
-    }
-}
-
-async fn initialize_pg_db(client: &PostgreSQLClient) {
-    let base_path = "../rusty_init/sql";
-    for entry in std::fs::read_dir(base_path).expect("invalid pg scripts path") {
-        let entry = entry.expect("invalid pg scripts directory entry");
-        let name = entry.file_name();
-        let name = name.to_string_lossy();
-        let script =
-            std::fs::read_to_string(&format!("{base_path}/{name}")).expect("invalid sql script");
-        let _ = client.execute_sql(&script).await;
     }
 }
 

@@ -63,6 +63,32 @@ impl PostgreSQLClient {
 
         Ok(())
     }
+
+    /// Execute SQL queries from a given directory.
+    ///
+    /// # Arguments
+    ///
+    /// * `dir` - A string representing the directory path containing the SQL queries.
+    ///
+    /// # Returns
+    ///
+    /// * `Result<(), RustyError>` - A Result indicating success or failure. If successful, it returns `Ok(())`. Otherwise, it returns an `Err` containing a `RustyError` indicating the cause of the failure.
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    pub async fn execute_sql_dir(&self, base_path: &str) -> Result<(), RustyError> {
+        for entry in std::fs::read_dir(base_path)? {
+            let name = entry?.file_name();
+            let name = name.to_string_lossy();
+            let script = std::fs::read_to_string(&format!("{base_path}/{name}"))?;
+            self.execute_sql(&script).await?;
+        }
+
+        Ok(())
+    }
 }
 
 #[allow(clippy::manual_async_fn)]
