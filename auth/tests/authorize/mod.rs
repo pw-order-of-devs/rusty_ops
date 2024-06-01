@@ -21,7 +21,10 @@ async fn authorize_no_user_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let authorized = auth::authorize(&db_client, "dummy", "dummy:dummy").await;
     let _ = db.stop().await;
@@ -44,7 +47,10 @@ async fn authorize_no_permissions_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let authorized = auth::authorize(&db_client, USER_NAME, "dummy:dummy").await;
@@ -65,7 +71,10 @@ async fn authorize_user_positive_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let _ = create_permission_user(&db_client).await.unwrap();
@@ -86,7 +95,10 @@ async fn authorize_role_positive_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let _ = create_role(&db_client).await.unwrap();

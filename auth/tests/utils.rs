@@ -28,7 +28,9 @@ pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u1
     let connection = &format!(
         "{db_type}://{}localhost:{}",
         auth,
-        db.get_host_port_ipv4(port).await
+        db.get_host_port_ipv4(port)
+            .await
+            .expect("failed to obtain container port")
     );
     match db_type {
         "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection).await),

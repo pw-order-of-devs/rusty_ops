@@ -169,6 +169,15 @@ impl Persistence for RedisClient {
         filter: Value,
     ) -> Result<u64, RustyError> {
         let mut conn = self.client.get().await?;
+        let filter = if let Value::Object(map) = filter {
+            let (first_key, first_value) = map
+                .into_iter()
+                .next()
+                .unwrap_or((String::new(), Value::Null));
+            json!({ first_key: { "equals": first_value } })
+        } else {
+            Value::Null
+        };
         let item: Option<T> = self.get_one(index, filter).await?;
         if let Some(item) = item {
             conn.del(format!("{index}_{}", item.get_id())).await?;

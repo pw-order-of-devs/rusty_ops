@@ -23,7 +23,10 @@ async fn basic_auth_positive_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
     let credential = Credential::Basic(USER_NAME.to_string(), "pass".to_string());
@@ -45,7 +48,10 @@ async fn basic_auth_wrong_credential_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
     let credential = Credential::Basic(USER_NAME.to_string(), "pass_err".to_string());
@@ -67,7 +73,10 @@ async fn basic_auth_no_user_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let credential = Credential::Basic(USER_NAME.to_string(), "pass".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
@@ -88,7 +97,10 @@ async fn bearer_auth_positive_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let user = db_client
@@ -119,7 +131,10 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let _ = db_client
@@ -144,7 +159,10 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let user = db_client
@@ -180,7 +198,10 @@ async fn bearer_auth_invalid_token_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let credential = Credential::Bearer("blah".to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
@@ -201,7 +222,10 @@ async fn no_credential_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    let db = RunnableImage::from(image).start().await;
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let credential = Credential::None;
     let authenticated = auth::authenticate(&db_client, &credential).await;

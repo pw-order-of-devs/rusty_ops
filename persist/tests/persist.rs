@@ -1,4 +1,7 @@
 #[cfg(test)]
+mod db_client;
+
+#[cfg(test)]
 mod persist {
     use rstest::rstest;
 
