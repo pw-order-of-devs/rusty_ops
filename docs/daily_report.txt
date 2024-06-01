@@ -315,3 +315,10 @@ Date: 2024-05-30
   0454d88 Daily update
   345f121 extend tests - domain
   7972b8b cleanup
+Date: 2024-05-31
+  41c48a3 Daily update
+  f58b4e7 turn off postgres logs
+  76e4c77 improved filters for `get_all` requests
+  84aec5d auth tests for postgres
+  d31f8d9 auth tests for postgres
+  dc6caaf auth tests for postgres - cleanup
