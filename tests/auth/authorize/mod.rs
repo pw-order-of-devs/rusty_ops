@@ -5,10 +5,8 @@ use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use commons::errors::RustyError;
 
-use crate::auth::utils::{
-    create_permission_role, create_permission_user, create_role, create_user, db_connect,
-    PERMISSION, USER_NAME,
-};
+use crate::auth::utils::{create_permission_role, create_permission_user, create_role, PERMISSION};
+use crate::utils::{create_user, db_connect, USER_NAME};
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]

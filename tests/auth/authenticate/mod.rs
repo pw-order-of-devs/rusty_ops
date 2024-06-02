@@ -9,7 +9,7 @@ use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::auth::user::User;
 
-use crate::auth::utils::{create_user, db_connect, USERS_INDEX, USER_ID, USER_NAME};
+use crate::utils::{create_user, db_connect, USERS_INDEX, USER_ID, USER_NAME};
 
 #[rstest]
 #[case(Mongo, "mongodb", 27017)]

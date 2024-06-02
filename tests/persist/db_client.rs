@@ -5,7 +5,7 @@ use rstest::rstest;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{ContainerAsync, Image, RunnableImage};
+use testcontainers::{Image, RunnableImage};
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use commons::errors::RustyError;
@@ -13,10 +13,8 @@ use domain::commons::search::SearchOptions;
 use domain::projects::Project;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
-use persist::mongo::MongoDBClient;
-use persist::postgre::PostgreSQLClient;
-use persist::redis::RedisClient;
-use persist::PersistenceBuilder;
+
+use crate::utils::db_connect;
 
 const PROJECTS_INDEX: &str = "projects";
 
@@ -262,36 +260,11 @@ async fn compare_filter_test(#[case] filter: Value, #[case] found: usize) {
         .expect("initializing test container failed");
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = create_test_entry(&db_client, "name_1", 1).await;
-    let result = db_client.get_all::<TestEntry>("entries", &Some(filter), &None, false).await;
+    let result = db_client
+        .get_all::<TestEntry>("entries", &Some(filter), &None, false)
+        .await;
     assert!(result.is_ok());
     assert_eq!(found, result.unwrap().len());
-}
-
-
-async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
-    let auth = if db_type == "postgres" {
-        "postgres:postgres@"
-    } else {
-        ""
-    };
-    let connection = &format!(
-        "{db_type}://{}localhost:{}",
-        auth,
-        db.get_host_port_ipv4(port)
-            .await
-            .expect("failed to obtain container port")
-    );
-    match db_type {
-        "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection).await),
-        "postgres" => {
-            std::env::set_var("POSTGRESQL_SCHEMA", "rusty");
-            let client = PostgreSQLClient::from_string(connection).await;
-            let _ = client.execute_sql_dir("../rusty_init/sql").await;
-            DbClient::PostgreSql(client)
-        }
-        "redis" => DbClient::Redis(RedisClient::from_string(connection).await),
-        _ => panic!("not supported db type"),
-    }
 }
 
 async fn create_project(db_client: &DbClient, name: &str) -> Result<String, RustyError> {
@@ -321,7 +294,11 @@ impl RustyDomainItem for TestEntry {
     }
 }
 
-async fn create_test_entry(db_client: &DbClient, name: &str, number: u64) -> Result<String, RustyError> {
+async fn create_test_entry(
+    db_client: &DbClient,
+    name: &str,
+    number: u64,
+) -> Result<String, RustyError> {
     db_client
         .create(
             "entries",

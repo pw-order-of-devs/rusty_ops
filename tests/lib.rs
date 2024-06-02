@@ -9,3 +9,5 @@ mod domain;
 
 #[cfg(test)]
 mod persist;
+
+pub(crate) mod utils;
