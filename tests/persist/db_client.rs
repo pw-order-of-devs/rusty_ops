@@ -321,7 +321,7 @@ impl RustyDomainItem for TestEntry {
     }
 }
 
-async fn create_test_entry(db_client: &DbClient, name: &str, number: u64, collection: &[u64]) -> Result<String, RustyError> {
+async fn create_test_entry(db_client: &DbClient, name: &str, number: u64) -> Result<String, RustyError> {
     db_client
         .create(
             "entries",
