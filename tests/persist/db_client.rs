@@ -1,6 +1,9 @@
-use rstest::rstest;
-use serde_json::json;
 use std::str::FromStr;
+
+use async_graphql::SimpleObject;
+use rstest::rstest;
+use serde::{Deserialize, Serialize};
+use serde_json::{json, Value};
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{ContainerAsync, Image, RunnableImage};
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
@@ -8,6 +11,7 @@ use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
 use domain::projects::Project;
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 use persist::mongo::MongoDBClient;
 use persist::postgre::PostgreSQLClient;
@@ -219,6 +223,51 @@ where
     assert!(result.is_ok());
 }
 
+fn format_timestamp(diff: i64) -> String {
+    (chrono::Utc::now() + chrono::Duration::seconds(diff)).to_rfc3339()
+}
+
+#[rstest]
+#[case(json!({ "name": { "equals": "name_1" } }), 1)]
+#[case(json!({ "name": { "equals": 0 } }), 0)]
+#[case(json!({ "name": { "notEquals": "0" } }), 1)]
+#[case(json!({ "name": { "startsWith": "name" } }), 1)]
+#[case(json!({ "name": { "endsWith": "_1" } }), 1)]
+#[case(json!({ "name": { "contains": "1" } }), 1)]
+#[case(json!({ "name": { "greaterOrEquals": "name_0" } }), 1)]
+#[case(json!({ "name": { "greaterThan": "name_0" } }), 1)]
+#[case(json!({ "name": { "lessOrEquals": "name_2" } }), 1)]
+#[case(json!({ "name": { "lessThan": "name_2" } }), 1)]
+#[case(json!({ "name": { "oneOf": ["name_1", "name_2"] } }), 1)]
+#[case(json!({ "date": { "before": format_timestamp(10) } }), 1)]
+#[case(json!({ "date": { "notBefore": format_timestamp(-10) } }), 1)]
+#[case(json!({ "date": { "after": format_timestamp(-10) } }), 1)]
+#[case(json!({ "date": { "notAfter": format_timestamp(10) } }), 1)]
+#[case(json!({ "number": { "equals": "str" } }), 0)]
+#[case(json!({ "number": { "equals": 0 } }), 0)]
+#[case(json!({ "number": { "equals": 1 } }), 1)]
+#[case(json!({ "number": { "notEquals": 0 } }), 1)]
+#[case(json!({ "number": { "greaterOrEquals": 0 } }), 1)]
+#[case(json!({ "number": { "greaterThan": 0 } }), 1)]
+#[case(json!({ "number": { "lessOrEquals": 2 } }), 1)]
+#[case(json!({ "number": { "lessThan": 2 } }), 1)]
+#[case(json!({ "number": { "oneOf": [0, 6, 7] } }), 0)]
+#[case(json!({ "number": { "oneOf": [0, 1] } }), 1)]
+#[case(json!({ "number": { "oneOf": 0 } }), 0)]
+#[tokio::test]
+async fn compare_filter_test(#[case] filter: Value, #[case] found: usize) {
+    let db = RunnableImage::from(Redis)
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, "redis", 6379).await;
+    let _ = create_test_entry(&db_client, "name_1", 1, &[1, 2, 3]).await;
+    let result = db_client.get_all::<TestEntry>("entries", &Some(filter), &None, false).await;
+    assert!(result.is_ok());
+    assert_eq!(found, result.unwrap().len());
+}
+
+
 async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
     let auth = if db_type == "postgres" {
         "postgres:postgres@"
@@ -254,6 +303,32 @@ async fn create_project(db_client: &DbClient, name: &str) -> Result<String, Rust
                 name: name.to_string(),
                 url: Some(format!("url://{name}.ext")),
                 group_id: None,
+            },
+        )
+        .await
+}
+
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+struct TestEntry {
+    name: String,
+    date: String,
+    number: u64,
+}
+
+impl RustyDomainItem for TestEntry {
+    fn get_id(&self) -> String {
+        self.name.clone()
+    }
+}
+
+async fn create_test_entry(db_client: &DbClient, name: &str, number: u64, collection: &[u64]) -> Result<String, RustyError> {
+    db_client
+        .create(
+            "entries",
+            &TestEntry {
+                name: name.to_string(),
+                date: chrono::Utc::now().to_rfc3339(),
+                number,
             },
         )
         .await

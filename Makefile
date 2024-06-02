@@ -20,7 +20,7 @@ test:
 	 cargo test --workspace -- --test-threads=1
 
 coverage:
-	cargo tarpaulin -- --test-threads=1
+	cargo tarpaulin --all -o html -- --test-threads=1
 
 precommit:
 	git pull

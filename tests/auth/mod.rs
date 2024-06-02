@@ -10,7 +10,7 @@ mod authenticate;
 mod authorize;
 
 #[cfg(not(tarpaulin_include))]
-mod utils;
+pub mod utils;
 
 #[rstest]
 #[case("", Credential::None)]

@@ -1,10 +1,11 @@
-use commons::errors::RustyError;
 use rstest::rstest;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::{Image, RunnableImage};
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
-use crate::utils::{
+use commons::errors::RustyError;
+
+use crate::auth::utils::{
     create_permission_role, create_permission_user, create_role, create_user, db_connect,
     PERMISSION, USER_NAME,
 };

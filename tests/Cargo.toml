@@ -8,20 +8,28 @@ repository.workspace = true
 keywords.workspace = true
 license.workspace = true
 readme.workspace = true
-name = "auth"
-description = "rusty_ops - auth module"
+name = "tests"
+description = "rusty_ops - tests module"
 
 [lib]
-name = "auth"
-path = "src/lib.rs"
+name = "tests"
+path = "lib.rs"
 
-[dependencies]
+[dev-dependencies]
+auth = { path = "../auth" }
+auth_macro = { path = "../auth_macro" }
 commons = { path = "../commons", features = ["errors", "logging", "persist"] }
 domain = { path = "../domain" }
 persist = { path = "../persist" }
 
+async-graphql.workspace = true
+base64-url.workspace = true
 chrono.workspace = true
-jwt.workspace = true
-log.workspace = true
+rstest.workspace = true
+serde.workspace = true
 serde_json.workspace = true
+serde_valid.workspace = true
+testcontainers.workspace = true
+testcontainers-modules = { workspace = true, features = ["mongo", "postgres", "redis"] }
+tokio.workspace = true
 uuid.workspace = true
