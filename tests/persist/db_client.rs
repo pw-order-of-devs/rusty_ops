@@ -261,7 +261,7 @@ async fn compare_filter_test(#[case] filter: Value, #[case] found: usize) {
         .await
         .expect("initializing test container failed");
     let db_client = db_connect(&db, "redis", 6379).await;
-    let _ = create_test_entry(&db_client, "name_1", 1, &[1, 2, 3]).await;
+    let _ = create_test_entry(&db_client, "name_1", 1).await;
     let result = db_client.get_all::<TestEntry>("entries", &Some(filter), &None, false).await;
     assert!(result.is_ok());
     assert_eq!(found, result.unwrap().len());
