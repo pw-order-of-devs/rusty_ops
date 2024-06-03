@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use async_graphql::futures_util::StreamExt;
 use async_graphql::SimpleObject;
 use rstest::rstest;
 use serde::{Deserialize, Serialize};
@@ -43,6 +44,7 @@ async fn get_all_test<I: Image + Default>(
     let results = db_client
         .get_all::<Project>(PROJECTS_INDEX, &None, &None, false)
         .await;
+    let _ = db.stop().await;
     assert!(results.is_ok());
     let results = results.unwrap();
     assert_eq!(4, results.len());
@@ -83,6 +85,7 @@ async fn get_all_paged_test<I: Image + Default>(
             true,
         )
         .await;
+    let _ = db.stop().await;
     assert!(results.is_ok());
     let results = results.unwrap();
     assert_eq!(2, results.len());
@@ -103,6 +106,7 @@ where
         .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let result = create_project(&db_client, "project_1").await;
+    let _ = db.stop().await;
     assert!(result.is_ok());
     let result = result.unwrap();
     assert!(uuid::Uuid::from_str(&result).is_ok());
@@ -139,6 +143,7 @@ where
             },
         )
         .await;
+    let _ = db.stop().await;
     assert!(updated.is_ok());
     let updated = updated.unwrap();
     assert!(uuid::Uuid::from_str(&updated).is_ok());
@@ -169,6 +174,7 @@ async fn delete_one_test<I: Image + Default>(
     let deleted = db_client
         .delete_one::<Project>(PROJECTS_INDEX, json!({ "id": result }))
         .await;
+    let _ = db.stop().await;
     assert!(deleted.is_ok());
     let deleted = deleted.unwrap();
     assert_eq!(1, deleted);
@@ -197,6 +203,7 @@ async fn delete_all_test<I: Image + Default>(
     let _ = create_project(&db_client, "project_4").await;
 
     let deleted = db_client.delete_all(PROJECTS_INDEX).await;
+    let _ = db.stop().await;
     assert!(deleted.is_ok());
     let deleted = deleted.unwrap();
     assert_eq!(4, deleted);
@@ -218,7 +225,32 @@ where
     let db_client = db_connect(&db, db_type, port).await;
 
     let result = db_client.purge().await;
+    let _ = db.stop().await;
     assert!(result.is_ok());
+}
+
+#[rstest]
+#[case(Mongo, "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
+async fn change_stream_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    <I as Image>::Args: Default,
+{
+    let db = RunnableImage::from(image)
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, db_type, port).await;
+    let _ = create_test_entry(&db_client, "test", 0).await;
+
+    let result = db_client.change_stream::<TestEntry>("entries").next().await;
+    let _ = db.stop().await;
+    assert!(result.is_some());
 }
 
 fn format_timestamp(diff: i64) -> String {
@@ -263,6 +295,7 @@ async fn compare_filter_test(#[case] filter: Value, #[case] found: usize) {
     let result = db_client
         .get_all::<TestEntry>("entries", &Some(filter), &None, false)
         .await;
+    let _ = db.stop().await;
     assert!(result.is_ok());
     assert_eq!(found, result.unwrap().len());
 }

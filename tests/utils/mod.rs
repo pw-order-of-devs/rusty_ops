@@ -9,10 +9,10 @@ use persist::postgre::PostgreSQLClient;
 use persist::redis::RedisClient;
 use persist::PersistenceBuilder;
 
-pub const USER_ID: &str = "d81e7711-8eed-4cac-9191-d2ec48f36e13";
-pub const USER_NAME: &str = "user";
-pub const USER_PASS: &str = "pass";
-pub const USERS_INDEX: &str = "users";
+pub(crate) const USER_ID: &str = "d81e7711-8eed-4cac-9191-d2ec48f36e13";
+pub(crate) const USER_NAME: &str = "user";
+pub(crate) const USER_PASS: &str = "pass";
+pub(crate) const USERS_INDEX: &str = "users";
 
 pub(crate) async fn db_connect(
     db: &ContainerAsync<impl Image>,

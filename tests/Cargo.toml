@@ -15,7 +15,7 @@ description = "rusty_ops - tests module"
 name = "tests"
 path = "lib.rs"
 
-[dev-dependencies]
+[dependencies]
 auth = { path = "../auth" }
 auth_macro = { path = "../auth_macro" }
 commons = { path = "../commons", features = ["errors", "logging", "persist"] }

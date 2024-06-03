@@ -201,11 +201,18 @@ impl Persistence for RedisClient {
         index: &'a str,
     ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
         Box::pin(async_stream::stream! {
-            let mut conn = self.pubsub.dedicated_connection().await
-                .expect("Error while obtaining redis connection");
-            conn.subscribe(index)
-                .await
-                .unwrap_or_else(|_| panic!("Error while obtaining change stream for `{index}`"));
+            let conn = self.pubsub.dedicated_connection().await;
+            if conn.is_err() {
+                log::error!("Error while obtaining redis connection");
+                yield None;
+            }
+
+            let mut conn = conn.unwrap();
+            if conn.subscribe(index).await.is_err() {
+                log::error!("Error while obtaining change stream for `{index}`");
+                yield None;
+            }
+
             while let Some(msg) = conn.on_message().next().await {
                 if let Ok(payload) = msg.get_payload::<String>() {
                     if let Ok(item) = serde_json::from_str::<T>(&payload) {
