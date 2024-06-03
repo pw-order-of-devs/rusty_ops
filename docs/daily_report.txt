@@ -325,3 +325,9 @@ Date: 2024-05-31
 Date: 2024-06-01
   2477003 Daily update
   c0da1f9 persist tests
+Date: 2024-06-02
+  56ecf67 Daily update
+  515c08c tests moved to dedicated module
+  a58e2c0 cleanup
+  4e6f3fc cleanup
+  52c5b5c cleanup
