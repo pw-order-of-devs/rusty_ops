@@ -1,8 +1,8 @@
+use testcontainers::{ContainerAsync, Image};
+
 use commons::errors::RustyError;
 use commons::hashing::bcrypt::encode;
 use domain::auth::user::User;
-use testcontainers::{ContainerAsync, Image};
-
 use persist::db_client::DbClient;
 use persist::mongo::MongoDBClient;
 use persist::postgre::PostgreSQLClient;
