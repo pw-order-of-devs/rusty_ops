@@ -25,6 +25,7 @@ persist = { path = "../persist" }
 async-graphql.workspace = true
 base64-url.workspace = true
 chrono.workspace = true
+log.workspace = true
 rstest.workspace = true
 serde.workspace = true
 serde_json.workspace = true
@@ -33,3 +34,6 @@ testcontainers.workspace = true
 testcontainers-modules = { workspace = true, features = ["mongo", "postgres", "redis"] }
 tokio.workspace = true
 uuid.workspace = true
+
+[package.metadata.cargo-machete]
+ignored = ["log"]
