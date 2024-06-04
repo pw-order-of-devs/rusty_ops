@@ -13,4 +13,5 @@ mod domain;
 #[cfg(test)]
 mod persist;
 
+#[cfg(test)]
 pub(crate) mod utils;

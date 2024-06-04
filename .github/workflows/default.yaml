@@ -15,7 +15,7 @@ jobs:
           toolchain: stable
           cache: true
       - name: build
-        run: cargo build --release --all-features
+        run: make release
 
   lint:
     needs: build
@@ -29,7 +29,7 @@ jobs:
       - name: lint
         run: |
           rustup component add clippy
-          cargo clippy --all-targets --all-features -- -D warnings
+          make link
 
   quality:
     needs: build
@@ -42,8 +42,16 @@ jobs:
           cache: true
       - name: tests
         run: |
-          cargo check
-          cargo test --all-features --no-fail-fast -- --test-threads=1
+          rustup component add llvm-tools-preview
+          cargo install grcov
+          make coverage
+        env:
+          RUSTFLAGS: "-Cinstrument-coverage"
+          LLVM_PROFILE_FILE: "rusty_ops-%p-%m.profraw"
+      - name: codecov export
+        uses: codecov/codecov-action@v4
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   audit:
     runs-on: ubuntu-latest
