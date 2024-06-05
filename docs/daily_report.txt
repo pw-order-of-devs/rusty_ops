@@ -335,3 +335,8 @@ Date: 2024-06-03
   2da44a6 Daily update
   ff4cc74 cleanup imports
   544184b persist - change stream tests template
+Date: 2024-06-04
+  5582f70 Daily update
+  7070e8d auth_macro happy test cases
+  1f2fb20 code coverage update
+  7d9feb1 fix lint pipeline stage
