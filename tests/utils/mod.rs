@@ -14,11 +14,7 @@ pub const USER_NAME: &str = "user";
 pub const USER_PASS: &str = "pass";
 pub const USERS_INDEX: &str = "users";
 
-pub async fn db_connect(
-    db: &ContainerAsync<impl Image>,
-    db_type: &str,
-    port: u16,
-) -> DbClient {
+pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
     let auth = if db_type == "postgres" {
         "postgres:postgres@"
     } else {
