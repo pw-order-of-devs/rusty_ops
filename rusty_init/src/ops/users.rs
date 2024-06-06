@@ -7,7 +7,7 @@ use persist::db_client::DbClient;
 
 const USERS_INDEX: &str = "users";
 
-pub(crate) async fn create_user(db: &DbClient, user_type: &str) -> String {
+pub async fn create_user(db: &DbClient, user_type: &str) -> String {
     log::info!("creating `{user_type}` user: start");
     let username = var_or_default(
         &format!("{}_USERNAME", user_type.to_uppercase()),

@@ -3,12 +3,7 @@ use persist::db_client::DbClient;
 
 const ROLES_INDEX: &str = "roles";
 
-pub(crate) async fn create_role(
-    db: &DbClient,
-    name: &str,
-    description: &str,
-    users: &[&str],
-) -> String {
+pub async fn create_role(db: &DbClient, name: &str, description: &str, users: &[&str]) -> String {
     log::info!("creating `{name}` role: start");
     let role = Role {
         id: uuid::Uuid::new_v4().to_string(),

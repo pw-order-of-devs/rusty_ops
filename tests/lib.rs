@@ -11,6 +11,9 @@ mod commons;
 mod domain;
 
 #[cfg(test)]
+mod init;
+
+#[cfg(test)]
 mod persist;
 
 #[cfg(test)]

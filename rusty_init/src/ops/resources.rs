@@ -3,7 +3,7 @@ use persist::db_client::DbClient;
 
 const RESOURCES_INDEX: &str = "resources";
 
-pub(crate) async fn create_resource(db: &DbClient, name: &str, rights: &[&str]) {
+pub async fn create_resource(db: &DbClient, name: &str, rights: &[&str]) {
     log::info!("creating `{name}` resource: start");
     let resource = Resource {
         name: name.to_string(),

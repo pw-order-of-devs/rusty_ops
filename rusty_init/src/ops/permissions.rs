@@ -3,7 +3,7 @@ use persist::db_client::DbClient;
 
 const PERMISSIONS_INDEX: &str = "permissions";
 
-pub(crate) async fn assign_permission(
+pub async fn assign_permission(
     db: &DbClient,
     resource: &str,
     right: &str,

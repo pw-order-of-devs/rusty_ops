@@ -1,7 +1,7 @@
 use commons::env::var_or_default;
 use persist::db_client::DbClient;
 
-pub(crate) async fn purge_db(db: &DbClient) {
+pub async fn purge_db(db: &DbClient) {
     if var_or_default("WIPE_DATA", false) {
         log::info!("cleaning up database: start");
         match db.purge().await {
@@ -11,7 +11,7 @@ pub(crate) async fn purge_db(db: &DbClient) {
     }
 }
 
-pub(crate) async fn execute_sql(db: &DbClient, version: &str) {
+pub async fn execute_sql(db: &DbClient, version: &str) {
     if let DbClient::PostgreSql(client) = db {
         let script_path = var_or_default("POSTGRESQL_SCRIPTS_PATH", "/app/pg/sql".to_string());
         let script_path = format!("{script_path}/v{version}.sql");

@@ -5,7 +5,7 @@ use crate::ops::schema::{execute_sql, purge_db};
 use crate::ops::users::create_user;
 use persist::db_client::DbClient;
 
-pub(crate) async fn execute(db: &DbClient) {
+pub async fn execute(db: &DbClient) {
     log::info!("=========================");
     log::info!("version v1.0.0 - starting");
     log::info!("=========================");
