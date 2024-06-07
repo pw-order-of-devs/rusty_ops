@@ -7,9 +7,9 @@ use crate::api::{agents, auth, pipelines, JWT_TOKEN};
 use crate::resolver::execution::execute_pipeline;
 use crate::resolver::subscription::pipeline_created_subscription;
 
-mod assignment;
-mod execution;
-mod subscription;
+pub mod assignment;
+pub mod execution;
+pub mod subscription;
 
 /// initialization of schedulers handling pipelines
 pub fn init(uuid: &str) {

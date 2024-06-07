@@ -11,7 +11,7 @@ use commons::errors::RustyError;
 
 use crate::resolver::assignment::assign_pipeline;
 
-pub(crate) async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError> {
+pub async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError> {
     // Initialize subscription read channel
     let mut read = initialize_connection(uuid).await?;
 

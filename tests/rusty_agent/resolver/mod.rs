@@ -1,9 +1,13 @@
 use mockito::{Mock, ServerGuard};
-use rusty_agent::api::JWT_TOKEN;
 use tokio::time::{timeout, Duration};
 
-use crate::rusty_agent::api::mockito_start_server;
+use rusty_agent::api::JWT_TOKEN;
 use rusty_agent::resolver;
+
+use crate::rusty_agent::api::mockito_start_server;
+
+mod assignment;
+mod execution;
 
 #[tokio::test]
 async fn resolver_init_test() {

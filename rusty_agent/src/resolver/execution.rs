@@ -1,6 +1,7 @@
-use futures_util::future::try_join_all;
 use std::collections::HashMap;
 use std::time::Instant;
+
+use futures_util::future::try_join_all;
 use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
 use tokio::process::Command;
 use tokio::spawn;
@@ -13,7 +14,7 @@ use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
 use crate::api::projects::get_pipeline_repository;
 
-pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
+pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
     let (project_id, mut template) = get_pipeline_template(&pipeline.job_id).await?;
     let repo_url = get_pipeline_repository(&project_id).await?;
