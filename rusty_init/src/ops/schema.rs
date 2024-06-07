@@ -17,7 +17,7 @@ pub async fn execute_sql(db: &DbClient, version: &str) {
         let script_path = format!("{script_path}/v{version}.sql");
         log::info!("[postgresql] executing `{script_path}` script: start");
         let sql = std::fs::read_to_string(&script_path)
-            .expect("[postgresql] error while opening init script");
+            .expect("[postgresql] error while opening rusty_init script");
         match client.execute_sql(&sql).await {
             Ok(()) => log::info!("[postgresql] executing `{script_path}` script: done"),
             Err(err) => panic!("[postgresql] error while initializing database schema: {err}"),

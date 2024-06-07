@@ -11,10 +11,13 @@ mod commons;
 mod domain;
 
 #[cfg(test)]
-mod init;
+mod persist;
 
 #[cfg(test)]
-mod persist;
+mod rusty_agent;
+
+#[cfg(test)]
+mod rusty_init;
 
 #[cfg(test)]
 pub(crate) mod utils;

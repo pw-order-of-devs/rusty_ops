@@ -26,9 +26,9 @@ pub mod projects;
 /// Utilities for Server API operations.
 pub mod utils;
 
-pub(crate) static JWT_TOKEN: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new()));
+pub static JWT_TOKEN: Lazy<Mutex<String>> = Lazy::new(|| Mutex::new(String::new()));
 
-pub(crate) fn get_credential() -> Result<String, RustyError> {
+pub fn get_credential() -> Result<String, RustyError> {
     let user = var::<String>("AGENT_USER")?;
     let pass = var::<String>("AGENT_PASSWORD")?;
     Ok(base64::prelude::BASE64_STANDARD.encode(format!("{user}:{pass}")))

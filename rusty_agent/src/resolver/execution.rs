@@ -16,7 +16,7 @@ use crate::api::projects::get_pipeline_repository;
 pub(crate) async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
     let (project_id, mut template) = get_pipeline_template(&pipeline.job_id).await?;
-    let repo_url = get_pipeline_repository(project_id).await?;
+    let repo_url = get_pipeline_repository(&project_id).await?;
     // if image: run in docker
 
     let working_directory = format!("/tmp/rusty/{}", uuid::Uuid::new_v4());

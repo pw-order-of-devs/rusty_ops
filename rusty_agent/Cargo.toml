@@ -15,6 +15,10 @@ description = "rusty_ops - ci/cd system - agent"
 name = "rusty_agent"
 path = "src/main.rs"
 
+[lib]
+name = "rusty_agent"
+path = "src/lib.rs"
+
 [dependencies]
 commons = { path = "../commons", features = ["errors", "logging", "ws"] }
 domain = { path = "../domain" }

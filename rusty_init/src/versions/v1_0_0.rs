@@ -1,9 +1,10 @@
+use persist::db_client::DbClient;
+
 use crate::ops::permissions::assign_permission;
 use crate::ops::resources::create_resource;
 use crate::ops::roles::create_role;
 use crate::ops::schema::{execute_sql, purge_db};
 use crate::ops::users::create_user;
-use persist::db_client::DbClient;
 
 pub async fn execute(db: &DbClient) {
     log::info!("=========================");

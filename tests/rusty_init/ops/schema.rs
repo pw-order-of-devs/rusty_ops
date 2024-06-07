@@ -39,7 +39,7 @@ async fn execute_sql_test<I: Image + Default>(
 ) where
     <I as Image>::Args: Default,
 {
-    std::env::set_var("POSTGRESQL_SCRIPTS_PATH", "init/sql");
+    std::env::set_var("POSTGRESQL_SCRIPTS_PATH", "rusty_init/sql");
     let db = RunnableImage::from(image)
         .start()
         .await

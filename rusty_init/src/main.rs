@@ -17,9 +17,7 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use persist::db_client::DbClient;
-
-mod ops;
-mod versions;
+use rusty_init::versions;
 
 #[tokio::main]
 async fn main() {

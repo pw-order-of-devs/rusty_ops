@@ -21,12 +21,14 @@ auth_macro = { path = "../auth_macro" }
 commons = { path = "../commons", features = ["errors", "logging", "persist"] }
 domain = { path = "../domain" }
 persist = { path = "../persist" }
+rusty_agent = { path = "../rusty_agent" }
 rusty_init = { path = "../rusty_init" }
 
 async-graphql.workspace = true
 base64-url.workspace = true
 chrono.workspace = true
 log.workspace = true
+mockito.workspace = true
 rstest.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -10,7 +10,7 @@ use crate::api::client::reqwest_post_bearer;
 ///
 /// * `RustyError` - If there was an error during the creation of the item.
 #[allow(clippy::future_not_send)]
-pub async fn get_pipeline_repository(id: String) -> Result<String, RustyError> {
+pub async fn get_pipeline_repository(id: &str) -> Result<String, RustyError> {
     let payload = serde_json::json!({
         "query": format!(r#"query {{
             projects {{

@@ -20,11 +20,7 @@ use axum::{routing, Router};
 use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
-
-mod api;
-
-/// scheduler for resolving pipelines
-mod resolver;
+use rusty_agent::{api, resolver};
 
 #[tokio::main]
 async fn main() {
