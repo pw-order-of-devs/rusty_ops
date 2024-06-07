@@ -1,3 +1,4 @@
+use mockito::ServerGuard;
 use testcontainers::{ContainerAsync, Image};
 
 use commons::errors::RustyError;
@@ -13,6 +14,16 @@ pub const USER_ID: &str = "d81e7711-8eed-4cac-9191-d2ec48f36e13";
 pub const USER_NAME: &str = "user";
 pub const USER_PASS: &str = "pass";
 pub const USERS_INDEX: &str = "users";
+
+pub async fn mockito_start_server() -> ServerGuard {
+    let server = mockito::Server::new_async().await;
+    let host_port = server.host_with_port();
+    let host_port = host_port.split(":").collect::<Vec<&str>>();
+    std::env::set_var("SERVER_PROTOCOL", "http");
+    std::env::set_var("SERVER_HOST", host_port[0]);
+    std::env::set_var("SERVER_PORT", host_port[1]);
+    server
+}
 
 pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u16) -> DbClient {
     let auth = if db_type == "postgres" {

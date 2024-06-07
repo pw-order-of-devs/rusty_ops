@@ -20,12 +20,7 @@ use axum::{routing, Router};
 use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
-
-mod gql;
-mod middleware;
-mod schedulers;
-mod server_ext;
-mod services;
+use rusty_server::{gql, middleware, schedulers, server_ext};
 
 #[tokio::main]
 async fn main() {

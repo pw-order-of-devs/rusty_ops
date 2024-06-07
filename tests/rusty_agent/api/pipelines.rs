@@ -1,7 +1,7 @@
 use domain::pipelines::PipelineStatus;
 use mockito::{Mock, ServerGuard};
 
-use crate::rusty_agent::api::mockito_start_server;
+use crate::utils::mockito_start_server;
 
 #[tokio::test]
 async fn get_unassigned_pipeline_test() {

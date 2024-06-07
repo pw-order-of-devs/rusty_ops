@@ -1,1 +1,1 @@
-pub(crate) mod cors;
+pub mod cors;

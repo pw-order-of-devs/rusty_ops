@@ -15,6 +15,10 @@ description = "rusty_ops - ci/cd system - server"
 name = "rusty_server"
 path = "src/main.rs"
 
+[lib]
+name = "rusty_server"
+path = "src/lib.rs"
+
 [dependencies]
 auth = { path = "../auth" }
 auth_macro = { path = "../auth_macro" }

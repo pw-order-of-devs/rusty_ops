@@ -20,4 +20,7 @@ mod rusty_agent;
 mod rusty_init;
 
 #[cfg(test)]
+mod rusty_server;
+
+#[cfg(test)]
 pub(crate) mod utils;

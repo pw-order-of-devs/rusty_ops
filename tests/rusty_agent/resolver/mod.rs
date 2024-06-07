@@ -4,7 +4,7 @@ use tokio::time::{timeout, Duration};
 use rusty_agent::api::JWT_TOKEN;
 use rusty_agent::resolver;
 
-use crate::rusty_agent::api::mockito_start_server;
+use crate::utils::mockito_start_server;
 
 mod assignment;
 mod execution;
@@ -49,15 +49,6 @@ async fn renew_token_schedule_invalid_token_test() {
     assert!(result.is_err());
 }
 
-async fn mock_server_request(server: &mut ServerGuard) -> Mock {
-    server
-        .mock("POST", "/graphql")
-        .with_status(200)
-        .with_header("content-type", "application/json")
-        .with_body(format!(r#"{{"data": {{"auth": {{"renew": "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJSdXN0eU9wcyIsInN1YiI6InVzZXIiLCJhdWQiOiJ1c2VyIiwiZXhwIjoxNjE3MDEwNDg4LCJuYmYiOjE2MTcwMTA0ODgsImlhdCI6MTYxNzAxMDQ4OCwianRpIjoiYTQyZDYyN2YtYTEwMC00OWViLTg0MDYtMWZkMWMzMmI2MDMxIn0."}}}}}}"#))
-        .create()
-}
-
 #[tokio::test]
 async fn renew_token_schedule_valid_token_test() {
     let mut server = mockito_start_server().await;
@@ -68,4 +59,13 @@ async fn renew_token_schedule_valid_token_test() {
     let result = timeout(Duration::from_secs(5), handle).await;
     assert!(result.is_err());
     mock.assert();
+}
+
+async fn mock_server_request(server: &mut ServerGuard) -> Mock {
+    server
+        .mock("POST", "/graphql")
+        .with_status(200)
+        .with_header("content-type", "application/json")
+        .with_body(format!(r#"{{"data": {{"auth": {{"renew": "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJSdXN0eU9wcyIsInN1YiI6InVzZXIiLCJhdWQiOiJ1c2VyIiwiZXhwIjoxNjE3MDEwNDg4LCJuYmYiOjE2MTcwMTA0ODgsImlhdCI6MTYxNzAxMDQ4OCwianRpIjoiYTQyZDYyN2YtYTEwMC00OWViLTg0MDYtMWZkMWMzMmI2MDMxIn0."}}}}}}"#))
+        .create()
 }

@@ -3,7 +3,7 @@ use mockito::{Mock, ServerGuard};
 use domain::pipelines::{Pipeline, RegisterPipeline};
 use rusty_agent::resolver::execution;
 
-use crate::rusty_agent::api::mockito_start_server;
+use crate::utils::mockito_start_server;
 
 #[tokio::test]
 async fn execute_pipeline_test() {
