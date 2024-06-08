@@ -346,3 +346,8 @@ Date: 2024-06-06
   de2e40d Daily update
   79f4dd2 rusty_init tests
   86a099f cleanup
+Date: 2024-06-07
+  fd6168a agent tests - api, partial resolver
+  b2ed903 Daily update
+  f316387 agent tests - resolver
+  e2ec206 server tests - services ..
