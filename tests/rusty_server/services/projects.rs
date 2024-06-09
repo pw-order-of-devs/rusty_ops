@@ -2,9 +2,8 @@ use testcontainers::runners::AsyncRunner;
 use testcontainers::RunnableImage;
 use testcontainers_modules::redis::Redis;
 
-use domain::jobs::{Job, RegisterJob};
-use domain::projects::Project;
-use rusty_server::services::jobs as service;
+use domain::projects::{Project, RegisterProject};
+use rusty_server::services::projects as service;
 
 use crate::utils::db_connect;
 
@@ -17,13 +16,12 @@ async fn get_all_paged_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "jobs",
-            &Job {
+            "projects",
+            &Project {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                description: None,
-                template: "".to_string(),
-                project_id: "uuid".to_string(),
+                url: None,
+                group_id: None,
             },
         )
         .await;
@@ -43,13 +41,12 @@ async fn get_by_id_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "jobs",
-            &Job {
+            "projects",
+            &Project {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                description: None,
-                template: "".to_string(),
-                project_id: "uuid".to_string(),
+                url: None,
+                group_id: None,
             },
         )
         .await;
@@ -68,26 +65,13 @@ async fn create_test() {
         .await
         .expect("initializing test container failed");
     let db_client = db_connect(&db, "redis", 6379).await;
-    let _ = db_client
-        .create(
-            "projects",
-            &Project {
-                id: "07fa1b63-1b4b-46a2-8a30-d80440bf6bc3".to_string(),
-                name: "sample".to_string(),
-                url: None,
-                group_id: None,
-            },
-        )
-        .await;
 
     let result = service::create(
         &db_client,
-        RegisterJob {
+        RegisterProject {
             name: "sample".to_string(),
-            description: None,
-            template: "c3RhZ2VzOgogICB0ZXN0OgogICAgICBzY3JpcHQ6CiAgICAgICAgLSBlY2hvICJoZWxsbyI"
-                .to_string(),
-            project_id: "07fa1b63-1b4b-46a2-8a30-d80440bf6bc3".to_string(),
+            url: "http://dummy.ext".to_string(),
+            group_id: None,
         },
     )
     .await;
@@ -96,7 +80,7 @@ async fn create_test() {
 }
 
 #[tokio::test]
-async fn create_no_project_test() {
+async fn create_no_group_test() {
     let db = RunnableImage::from(Redis)
         .start()
         .await
@@ -105,12 +89,10 @@ async fn create_no_project_test() {
 
     let result = service::create(
         &db_client,
-        RegisterJob {
+        RegisterProject {
             name: "sample".to_string(),
-            description: None,
-            template: "c3RhZ2VzOgogICB0ZXN0OgogICAgICBzY3JpcHQ6CiAgICAgICAgLSBlY2hvICJoZWxsbyI"
-                .to_string(),
-            project_id: "07fa1b63-1b4b-46a2-8a30-d80440bf6bc3".to_string(),
+            url: "http://dummy.ext".to_string(),
+            group_id: Some("uuid".to_string()),
         },
     )
     .await;
@@ -127,13 +109,12 @@ async fn delete_by_id_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "jobs",
-            &Job {
+            "projects",
+            &Project {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                description: None,
-                template: "".to_string(),
-                project_id: "uuid".to_string(),
+                url: None,
+                group_id: None,
             },
         )
         .await;
@@ -153,13 +134,12 @@ async fn delete_all_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "jobs",
-            &Job {
+            "projects",
+            &Project {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                description: None,
-                template: "".to_string(),
-                project_id: "uuid".to_string(),
+                url: None,
+                group_id: None,
             },
         )
         .await;

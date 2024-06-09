@@ -1,9 +1,10 @@
+use domain::auth::roles::Role;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::RunnableImage;
 use testcontainers_modules::redis::Redis;
 
-use domain::agents::{Agent, RegisterAgent};
-use rusty_server::services::agents as service;
+use domain::auth::user::{RegisterUser, User};
+use rusty_server::services::users as service;
 
 use crate::utils::db_connect;
 
@@ -16,10 +17,11 @@ async fn get_all_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "agents",
-            &Agent {
+            "users",
+            &User {
                 id: "uuid".to_string(),
-                expiry: 0,
+                username: "user".to_string(),
+                password: "pass".to_string(),
             },
         )
         .await;
@@ -39,10 +41,11 @@ async fn get_all_paged_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "agents",
-            &Agent {
+            "users",
+            &User {
                 id: "uuid".to_string(),
-                expiry: 0,
+                username: "user".to_string(),
+                password: "pass".to_string(),
             },
         )
         .await;
@@ -62,10 +65,11 @@ async fn get_by_id_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "agents",
-            &Agent {
+            "users",
+            &User {
                 id: "uuid".to_string(),
-                expiry: 0,
+                username: "user".to_string(),
+                password: "pass".to_string(),
             },
         )
         .await;
@@ -78,6 +82,31 @@ async fn get_by_id_test() {
 }
 
 #[tokio::test]
+async fn get_by_username_test() {
+    let db = RunnableImage::from(Redis)
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, "redis", 6379).await;
+    let _ = db_client
+        .create(
+            "users",
+            &User {
+                id: "uuid".to_string(),
+                username: "user".to_string(),
+                password: "pass".to_string(),
+            },
+        )
+        .await;
+
+    let result = service::get_by_username(&db_client, "user").await;
+    let _ = db.stop().await;
+    assert!(result.is_ok());
+    assert!(result.clone().unwrap().is_some());
+    assert_eq!("user", result.unwrap().unwrap().username);
+}
+
+#[tokio::test]
 async fn create_test() {
     let db = RunnableImage::from(Redis)
         .start()
@@ -87,8 +116,9 @@ async fn create_test() {
 
     let result = service::create(
         &db_client,
-        RegisterAgent {
-            id: "eb083ba6-0a61-4e01-a9a3-8471b8df2ee2".to_string(),
+        RegisterUser {
+            username: "user".to_string(),
+            password: "pass".to_string(),
         },
     )
     .await;
@@ -97,28 +127,7 @@ async fn create_test() {
 }
 
 #[tokio::test]
-async fn create_limit_exceeded_test() {
-    std::env::set_var("AGENTS_REGISTERED_MAX", "0");
-    let db = RunnableImage::from(Redis)
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-
-    let result = service::create(
-        &db_client,
-        RegisterAgent {
-            id: "eb083ba6-0a61-4e01-a9a3-8471b8df2ee2".to_string(),
-        },
-    )
-    .await;
-    let _ = db.stop().await;
-    std::env::set_var("AGENTS_REGISTERED_MAX", "24");
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn create_agent_exists_test() {
+async fn create_with_role_test() {
     let db = RunnableImage::from(Redis)
         .start()
         .await
@@ -126,101 +135,54 @@ async fn create_agent_exists_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
-            "agents",
-            &Agent {
-                id: "eb083ba6-0a61-4e01-a9a3-8471b8df2ee2".to_string(),
-                expiry: 300,
+            "roles",
+            &Role {
+                id: "uuid".to_string(),
+                name: "USERS".to_string(),
+                description: None,
+                users: vec![],
             },
         )
         .await;
 
     let result = service::create(
         &db_client,
-        RegisterAgent {
-            id: "eb083ba6-0a61-4e01-a9a3-8471b8df2ee2".to_string(),
+        RegisterUser {
+            username: "user".to_string(),
+            password: "pass".to_string(),
+        },
+    )
+    .await;
+    let _ = db.stop().await;
+    assert!(result.is_ok());
+}
+
+#[tokio::test]
+async fn create_already_exists_test() {
+    let db = RunnableImage::from(Redis)
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, "redis", 6379).await;
+    let _ = db_client
+        .create(
+            "users",
+            &User {
+                id: "uuid".to_string(),
+                username: "user".to_string(),
+                password: "pass".to_string(),
+            },
+        )
+        .await;
+
+    let result = service::create(
+        &db_client,
+        RegisterUser {
+            username: "user".to_string(),
+            password: "pass".to_string(),
         },
     )
     .await;
     let _ = db.stop().await;
     assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn healthcheck_test() {
-    let db = RunnableImage::from(Redis)
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-    let _ = db_client
-        .create(
-            "agents",
-            &Agent {
-                id: "uuid".to_string(),
-                expiry: 0,
-            },
-        )
-        .await;
-
-    let result = service::healthcheck(&db_client, "uuid").await;
-    let _ = db.stop().await;
-    assert!(result.is_ok());
-}
-
-#[tokio::test]
-async fn healthcheck_no_agent_test() {
-    let db = RunnableImage::from(Redis)
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-
-    let result = service::healthcheck(&db_client, "uuid").await;
-    let _ = db.stop().await;
-    assert!(result.is_err());
-}
-
-#[tokio::test]
-async fn delete_by_id_test() {
-    let db = RunnableImage::from(Redis)
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-    let id = db_client
-        .create(
-            "agents",
-            &Agent {
-                id: "uuid".to_string(),
-                expiry: 0,
-            },
-        )
-        .await;
-    let result = service::delete_by_id(&db_client, &id.unwrap()).await;
-    let _ = db.stop().await;
-    assert!(result.is_ok());
-    assert_eq!(1, result.unwrap());
-}
-
-#[tokio::test]
-async fn delete_all_test() {
-    let db = RunnableImage::from(Redis)
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-    let _ = db_client
-        .create(
-            "agents",
-            &Agent {
-                id: "uuid".to_string(),
-                expiry: 0,
-            },
-        )
-        .await;
-
-    let result = service::delete_all(&db_client).await;
-    let _ = db.stop().await;
-    assert!(result.is_ok());
-    assert_eq!(1, result.unwrap());
 }
