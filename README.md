@@ -2,6 +2,7 @@
 
 ![Language][language]
 ![Build Status][build-status]
+[![codecov](https://codecov.io/gh/pw-order-of-devs/rusty_ops/graph/badge.svg?token=UX8BOW5HOJ)](https://codecov.io/gh/pw-order-of-devs/rusty_ops)
 [![MIT License][license-shield]][license-url]\
 [![Contributors][contributors-shield]][contributors-url]
 [![Issues][issues-shield]][issues-url]
