@@ -356,3 +356,6 @@ Date: 2024-06-08
 Date: 2024-06-09
   3ce896e Daily update
   fcdd202 server tests
+Date: 2024-06-10
+  1041dcf Daily update
+  249e57b add codecov badge
