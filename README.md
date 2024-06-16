@@ -2,7 +2,7 @@
 
 ![Language][language]
 ![Build Status][build-status]
-[![codecov](https://codecov.io/gh/pw-order-of-devs/rusty_ops/graph/badge.svg?token=UX8BOW5HOJ)](https://codecov.io/gh/pw-order-of-devs/rusty_ops)
+[![codecov][codecov-shield]][codecov-url]
 [![MIT License][license-shield]][license-url]\
 [![Contributors][contributors-shield]][contributors-url]
 [![Issues][issues-shield]][issues-url]
@@ -81,6 +81,8 @@ This project is licensed under MIT license. See [LICENSE][license-url] for more 
 <!-- links -->
 [language]: https://img.shields.io/badge/language-Rust-orange?style=flat-square
 [build-status]: https://img.shields.io/github/actions/workflow/status/pw-order-of-devs/rusty_ops/default.yaml?branch=master&style=flat-square
+[codecov-shield]: https://codecov.io/gh/pw-order-of-devs/rusty_ops/graph/badge.svg?token=UX8BOW5HOJ
+[codecov-url]: https://codecov.io/gh/pw-order-of-devs/rusty_ops
 [contributors-shield]: https://img.shields.io/github/contributors/pw-order-of-devs/rusty_ops?style=flat-square
 [contributors-url]: https://github.com/pw-order-of-devs/rusty_ops/graphs/contributors
 [forks-shield]: https://img.shields.io/github/forks/pw-order-of-devs/rusty_ops?style=flat-square
