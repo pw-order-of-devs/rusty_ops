@@ -30,7 +30,6 @@ mod tests {
     use domain::auth::user::User;
     use serde_json::json;
     use testcontainers::runners::AsyncRunner;
-    use testcontainers::RunnableImage;
     use testcontainers_modules::redis::Redis;
 
     use super::*;
@@ -38,7 +37,7 @@ mod tests {
 
     #[tokio::test]
     async fn auth_macro_basic_test() {
-        let db = RunnableImage::from(Redis)
+        let db = Redis
             .start()
             .await
             .expect("initializing test container failed");
@@ -60,7 +59,7 @@ mod tests {
 
     #[tokio::test]
     async fn auth_macro_bearer_test() {
-        let db = RunnableImage::from(Redis)
+        let db = Redis
             .start()
             .await
             .expect("initializing test container failed");

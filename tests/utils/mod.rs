@@ -2,7 +2,7 @@ use mockito::ServerGuard;
 use testcontainers::{ContainerAsync, Image};
 
 use commons::errors::RustyError;
-use commons::hashing::bcrypt::encode;
+use commons::hashing::bcrypt;
 use domain::auth::user::User;
 use persist::db_client::DbClient;
 use persist::mongo::MongoDBClient;
@@ -58,7 +58,7 @@ pub async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
             &User {
                 id: USER_ID.to_string(),
                 username: USER_NAME.to_string(),
-                password: encode(USER_PASS).unwrap(),
+                password: bcrypt::encode(USER_PASS).unwrap(),
             },
         )
         .await

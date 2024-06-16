@@ -1,7 +1,7 @@
 use rstest::rstest;
 use serde_json::json;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{Image, RunnableImage};
+use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use auth::token::build_jwt_token;
@@ -21,9 +21,9 @@ async fn basic_auth_positive_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -46,9 +46,9 @@ async fn basic_auth_wrong_credential_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -71,9 +71,9 @@ async fn basic_auth_no_user_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -95,9 +95,9 @@ async fn bearer_auth_positive_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -129,9 +129,9 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -157,9 +157,9 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -196,9 +196,9 @@ async fn bearer_auth_invalid_token_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -220,9 +220,9 @@ async fn no_credential_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");

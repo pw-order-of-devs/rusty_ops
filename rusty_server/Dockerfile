@@ -1,4 +1,4 @@
-FROM rust:1.78-alpine as build-stage
+FROM rust:1.79-alpine as build-stage
 
 RUN apk add --no-cache build-base openssl libressl-dev musl-dev
 

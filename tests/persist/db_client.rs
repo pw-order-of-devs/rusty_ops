@@ -6,7 +6,7 @@ use rstest::rstest;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{Image, RunnableImage};
+use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use commons::errors::RustyError;
@@ -29,9 +29,9 @@ async fn get_all_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -60,9 +60,9 @@ async fn get_all_paged_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -98,9 +98,9 @@ async fn get_all_paged_test<I: Image + Default>(
 #[tokio::test]
 async fn create_test<I: Image + Default>(#[case] image: I, #[case] db_type: &str, #[case] port: u16)
 where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -119,9 +119,9 @@ where
 #[tokio::test]
 async fn update_test<I: Image + Default>(#[case] image: I, #[case] db_type: &str, #[case] port: u16)
 where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -159,9 +159,9 @@ async fn delete_one_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -190,9 +190,9 @@ async fn delete_all_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -216,9 +216,9 @@ async fn delete_all_test<I: Image + Default>(
 #[tokio::test]
 async fn purge_test<I: Image + Default>(#[case] image: I, #[case] db_type: &str, #[case] port: u16)
 where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -239,9 +239,9 @@ async fn change_stream_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -286,7 +286,7 @@ fn format_timestamp(diff: i64) -> String {
 #[case(json!({ "number": { "oneOf": 0 } }), 0)]
 #[tokio::test]
 async fn compare_filter_test(#[case] filter: Value, #[case] found: usize) {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");

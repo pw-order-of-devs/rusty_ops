@@ -1,7 +1,6 @@
 use domain::agents::Agent;
 use domain::jobs::Job;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::RunnableImage;
 use testcontainers_modules::redis::Redis;
 
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
@@ -11,7 +10,7 @@ use crate::utils::db_connect;
 
 #[tokio::test]
 async fn get_all_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -40,7 +39,7 @@ async fn get_all_test() {
 
 #[tokio::test]
 async fn get_all_paged_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -69,7 +68,7 @@ async fn get_all_paged_test() {
 
 #[tokio::test]
 async fn get_by_id_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -99,7 +98,7 @@ async fn get_by_id_test() {
 
 #[tokio::test]
 async fn create_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -130,7 +129,7 @@ async fn create_test() {
 
 #[tokio::test]
 async fn create_no_job_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -149,7 +148,7 @@ async fn create_no_job_test() {
 
 #[tokio::test]
 async fn assign_no_pipeline_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -162,7 +161,7 @@ async fn assign_no_pipeline_test() {
 
 #[tokio::test]
 async fn assign_pipeline_already_assigned_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -191,7 +190,7 @@ async fn assign_pipeline_already_assigned_test() {
 #[tokio::test]
 async fn assign_pipeline_limit_exceeded_test() {
     std::env::set_var("AGENT_MAX_ASSIGNED_JOBS", "0");
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -221,7 +220,7 @@ async fn assign_pipeline_limit_exceeded_test() {
 #[tokio::test]
 async fn assign_pipeline_positive_test() {
     std::env::set_var("AGENT_MAX_ASSIGNED_JOBS", "1");
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -249,7 +248,7 @@ async fn assign_pipeline_positive_test() {
 
 #[tokio::test]
 async fn reset_no_pipeline_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -262,7 +261,7 @@ async fn reset_no_pipeline_test() {
 
 #[tokio::test]
 async fn reset_pipeline_wrong_status_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -290,7 +289,7 @@ async fn reset_pipeline_wrong_status_test() {
 
 #[tokio::test]
 async fn reset_positive_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -327,7 +326,7 @@ async fn reset_positive_test() {
 
 #[tokio::test]
 async fn set_running_no_pipeline_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -340,7 +339,7 @@ async fn set_running_no_pipeline_test() {
 
 #[tokio::test]
 async fn set_running_wrong_status_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -368,7 +367,7 @@ async fn set_running_wrong_status_test() {
 
 #[tokio::test]
 async fn set_running_positive_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -396,7 +395,7 @@ async fn set_running_positive_test() {
 
 #[tokio::test]
 async fn finalize_no_pipeline_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -410,7 +409,7 @@ async fn finalize_no_pipeline_test() {
 #[tokio::test]
 async fn finalize_wrong_status_test() {
     std::env::set_var("AGENT_MAX_ASSIGNED_JOBS", "1");
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -439,7 +438,7 @@ async fn finalize_wrong_status_test() {
 #[tokio::test]
 async fn finalize_positive_test() {
     std::env::set_var("AGENT_MAX_ASSIGNED_JOBS", "1");
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -467,7 +466,7 @@ async fn finalize_positive_test() {
 
 #[tokio::test]
 async fn delete_by_id_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -496,7 +495,7 @@ async fn delete_by_id_test() {
 
 #[tokio::test]
 async fn delete_all_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -525,7 +524,7 @@ async fn delete_all_test() {
 
 #[tokio::test]
 async fn inserted_stream_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");

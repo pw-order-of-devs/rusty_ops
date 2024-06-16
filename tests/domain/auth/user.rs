@@ -7,12 +7,11 @@ use domain::RustyDomainItem;
 #[test]
 fn from_register_user_test() {
     let username = "test_01";
-    let password = "password";
-    let input = RegisterUser::new(username, password);
+    let input = RegisterUser::new(username, "password");
     let user = User::from(&input);
     assert_eq!(36, user.get_id().len());
     assert_eq!(username.to_string(), user.username);
-    assert_eq!(password.to_string(), user.password);
+    assert_eq!(60, user.password.len());
 }
 
 #[rstest]

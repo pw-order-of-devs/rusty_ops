@@ -1,7 +1,6 @@
 use domain::auth::roles::Role;
 use domain::auth::user::User;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::RunnableImage;
 use testcontainers_modules::redis::Redis;
 
 use rusty_server::services::roles as service;
@@ -10,7 +9,7 @@ use crate::utils::db_connect;
 
 #[tokio::test]
 async fn assign_by_id_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -44,7 +43,7 @@ async fn assign_by_id_test() {
 
 #[tokio::test]
 async fn assign_by_name_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -78,7 +77,7 @@ async fn assign_by_name_test() {
 
 #[tokio::test]
 async fn assign_no_user_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -91,7 +90,7 @@ async fn assign_no_user_test() {
 
 #[tokio::test]
 async fn assign_no_role_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");

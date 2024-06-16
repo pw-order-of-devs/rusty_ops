@@ -1,6 +1,6 @@
 use rstest::rstest;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{Image, RunnableImage};
+use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use commons::errors::RustyError;
@@ -18,9 +18,9 @@ async fn authorize_no_user_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -44,9 +44,9 @@ async fn authorize_no_permissions_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -68,9 +68,9 @@ async fn authorize_user_positive_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
@@ -92,9 +92,9 @@ async fn authorize_role_positive_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");

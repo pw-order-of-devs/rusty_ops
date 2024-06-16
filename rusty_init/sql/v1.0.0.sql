@@ -22,8 +22,9 @@ create table if not exists rusty.resources (
 create table if not exists rusty.permissions (
     user_id varchar(36),
     role_id varchar(36),
-    resource varchar(36) not null,
-    "right" varchar(36) not null
+    resource varchar(256) not null,
+    "right" varchar(256) not null,
+    item varchar(36)
 );
 
 create table if not exists rusty.agents (

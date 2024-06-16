@@ -1,6 +1,6 @@
 use rstest::rstest;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{Image, RunnableImage};
+use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use rusty_init::ops::permissions;
@@ -18,15 +18,16 @@ async fn assign_permission_user_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
-    let _ = permissions::assign_permission(&db_client, "DUMMY", "DOIT", Some(USER_ID), None).await;
+    let _ = permissions::assign_permission(&db_client, "DUMMY", "DOIT", "ALL", Some(USER_ID), None)
+        .await;
 }
 
 #[rstest]
@@ -39,14 +40,16 @@ async fn assign_permission_role_test<I: Image + Default>(
     #[case] db_type: &str,
     #[case] port: u16,
 ) where
-    <I as Image>::Args: Default,
+    I: Image,
 {
-    let db = RunnableImage::from(image)
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
     let role_id = create_role(&db_client, "role_1", "", &[USER_ID]).await;
-    let _ = permissions::assign_permission(&db_client, "DUMMY", "DOIT", None, Some(&role_id)).await;
+    let _ =
+        permissions::assign_permission(&db_client, "DUMMY", "DOIT", "ALL", None, Some(&role_id))
+            .await;
 }

@@ -2,7 +2,6 @@ use domain::agents::Agent;
 use domain::pipelines::{Pipeline, PipelineStatus};
 use std::time::Duration;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::RunnableImage;
 use testcontainers_modules::redis::Redis;
 use tokio::time::timeout;
 
@@ -12,7 +11,7 @@ use crate::utils::db_connect;
 
 #[tokio::test]
 async fn schedulers_init_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -22,7 +21,7 @@ async fn schedulers_init_test() {
 
 #[tokio::test]
 async fn scheduler_agent_ttl_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -46,7 +45,7 @@ async fn scheduler_agent_ttl_test() {
 
 #[tokio::test]
 async fn scheduler_pipelines_cleanup_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");

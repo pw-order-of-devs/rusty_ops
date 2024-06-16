@@ -1,6 +1,6 @@
 use rstest::rstest;
 use testcontainers::runners::AsyncRunner;
-use testcontainers::{Image, RunnableImage};
+use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use rusty_init::ops::users;
@@ -16,10 +16,8 @@ async fn create_user_test<I: Image + Default>(
     #[case] image: I,
     #[case] db_type: &str,
     #[case] port: u16,
-) where
-    <I as Image>::Args: Default,
-{
-    let db = RunnableImage::from(image)
+) {
+    let db = image
         .start()
         .await
         .expect("initializing test container failed");

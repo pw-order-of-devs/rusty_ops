@@ -2,7 +2,7 @@ use jwt::{Claims, VerifyWithKey};
 use serde_json::json;
 
 use commons::errors::RustyError;
-use commons::hashing::bcrypt::validate;
+use commons::hashing::bcrypt;
 use commons::hashing::sha::hmac512;
 use domain::auth::credentials::{get_token_claim_str, get_token_claim_u64};
 use domain::auth::user::User;
@@ -18,7 +18,7 @@ pub(crate) async fn basic_auth(
         .await?
     {
         Some(user) => {
-            if validate(password, &user.password)? {
+            if bcrypt::validate(password, &user.password)? {
                 Ok(user.username)
             } else {
                 Err(RustyError::UnauthenticatedError)

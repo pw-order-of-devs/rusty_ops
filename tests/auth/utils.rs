@@ -28,12 +28,7 @@ pub(crate) async fn create_permission_user(db_client: &DbClient) -> Result<Strin
     db_client
         .create(
             PERMISSIONS_INDEX,
-            &Permission {
-                user_id: Some(USER_ID.to_string()),
-                role_id: None,
-                resource: "RESOURCE".to_string(),
-                right: "RIGHT".to_string(),
-            },
+            &Permission::new(Some(USER_ID.to_string()), None, "RESOURCE", "RIGHT", "ALL"),
         )
         .await
 }
@@ -42,12 +37,7 @@ pub(crate) async fn create_permission_role(db_client: &DbClient) -> Result<Strin
     db_client
         .create(
             PERMISSIONS_INDEX,
-            &Permission {
-                user_id: None,
-                role_id: Some(ROLE_ID.to_string()),
-                resource: "RESOURCE".to_string(),
-                right: "RIGHT".to_string(),
-            },
+            &Permission::new(None, Some(ROLE_ID.to_string()), "RESOURCE", "RIGHT", "ALL"),
         )
         .await
 }

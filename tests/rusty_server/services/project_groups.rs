@@ -1,5 +1,4 @@
 use testcontainers::runners::AsyncRunner;
-use testcontainers::RunnableImage;
 use testcontainers_modules::redis::Redis;
 
 use domain::projects::{Group, RegisterGroup};
@@ -9,7 +8,7 @@ use crate::utils::db_connect;
 
 #[tokio::test]
 async fn get_all_paged_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -33,7 +32,7 @@ async fn get_all_paged_test() {
 
 #[tokio::test]
 async fn get_by_id_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -58,7 +57,7 @@ async fn get_by_id_test() {
 
 #[tokio::test]
 async fn create_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -77,7 +76,7 @@ async fn create_test() {
 
 #[tokio::test]
 async fn delete_by_id_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");
@@ -101,7 +100,7 @@ async fn delete_by_id_test() {
 
 #[tokio::test]
 async fn delete_all_test() {
-    let db = RunnableImage::from(Redis)
+    let db = Redis
         .start()
         .await
         .expect("initializing test container failed");

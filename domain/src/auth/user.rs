@@ -2,6 +2,8 @@ use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 use serde_valid::{validation, Validate};
 
+use commons::hashing::bcrypt;
+
 use crate::RustyDomainItem;
 
 /// A struct representing a User.
@@ -35,6 +37,7 @@ pub struct RegisterUser {
     /// password
     #[validate(min_length = 1)]
     #[validate(max_length = 512)]
+    #[validate(custom(validate_password))]
     pub password: String,
 }
 
@@ -48,6 +51,16 @@ fn validate_username(username: &str) -> Result<(), validation::Error> {
     } else {
         Err(validation::Error::Custom(
             "username contains disallowed characters".to_owned(),
+        ))
+    }
+}
+
+fn validate_password(password: &str) -> Result<(), validation::Error> {
+    if bcrypt::encode(password).is_ok() {
+        Ok(())
+    } else {
+        Err(validation::Error::Custom(
+            "password hashing failed".to_owned(),
         ))
     }
 }
@@ -68,7 +81,7 @@ impl From<&RegisterUser> for User {
         Self {
             id: Self::generate_id(),
             username: value.clone().username,
-            password: value.clone().password,
+            password: bcrypt::encode(&value.password).unwrap_or_default(),
         }
     }
 }

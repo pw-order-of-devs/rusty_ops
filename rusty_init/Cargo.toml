@@ -26,5 +26,6 @@ persist = { path = "../persist" }
 
 log.workspace = true
 rand.workspace = true
+serde_valid.workspace = true
 tokio.workspace = true
 uuid.workspace = true
