@@ -61,7 +61,7 @@ fn expand_fn(auth_type: &str, resources: &str, input: &ItemFn, ctx: &PatIdent) -
                 let cred_type = match cred {
                     Credential::Basic(_, _) => "basic",
                     Credential::Bearer(_) => "bearer",
-                    Credential::None => {
+                    Credential::None | Credential::System => {
                         log::error!("missing credential for endpoint `{endpoint}`");
                         return Err(RustyError::CredentialMissingError);
                     },

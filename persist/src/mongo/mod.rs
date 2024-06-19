@@ -80,13 +80,12 @@ impl Persistence for MongoDBClient {
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         let mut cursor = self
             .client
             .database(&self.database)
             .collection::<Value>(index)
-            .find(None, parse_options(options, paged))
+            .find(None, parse_options(options))
             .await?;
 
         let mut result: Vec<Value> = Vec::new();
@@ -106,7 +105,7 @@ impl Persistence for MongoDBClient {
         index: &str,
         filter: Value,
     ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, &Some(filter), &None, false).await?;
+        let values: Vec<T> = self.get_all(index, &Some(filter), &None).await?;
         if values.len() == 1 {
             Ok(Some(values[0].clone()))
         } else {
@@ -215,14 +214,10 @@ impl Persistence for MongoDBClient {
     }
 }
 
-fn parse_options(options: &Option<SearchOptions>, paged: bool) -> Option<FindOptions> {
+fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
     options.as_ref().map_or_else(
         || None,
         |value| {
-            let page_number = value.page_number.unwrap_or(1);
-            let page_number = if page_number == 0 { 1 } else { page_number };
-            let page_size = value.page_size.unwrap_or(20);
-            let page_size = if page_size == 0 { 20 } else { page_size };
             let sort_mode = value.sort_mode.unwrap_or_default();
             let sort = if value.sort_field.is_some() {
                 let field = value.clone().sort_field.unwrap();
@@ -236,16 +231,7 @@ fn parse_options(options: &Option<SearchOptions>, paged: bool) -> Option<FindOpt
                 None
             };
 
-            let options = if paged {
-                FindOptions::builder()
-                    .limit(page_size.try_into().unwrap_or(i64::MAX))
-                    .skip((page_number - 1) * page_size)
-                    .sort(sort)
-                    .build()
-            } else {
-                FindOptions::builder().sort(sort).build()
-            };
-            Some(options)
+            Some(FindOptions::builder().sort(sort).build())
         },
     )
 }

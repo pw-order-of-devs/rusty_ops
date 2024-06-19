@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use commons::env::var_or_default;
+use domain::auth::credentials::Credential;
 use domain::pipelines::PipelineStatus;
 use persist::db_client::DbClient;
 
@@ -47,12 +48,12 @@ pub async fn scheduler_pipelines_cleanup(db: &DbClient) {
     loop {
         task.tick().await;
         log::trace!("running `pipelines::cleanup` scheduled task");
-        if let Ok(pipes) = pipelines_service::get_all(db, &None, &None).await {
+        if let Ok(pipes) = pipelines_service::get_all(db, &Credential::System, &None, &None).await {
             for pipe in pipes {
                 if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status) {
                     let agent = agents_service::get_by_id(db, &pipe.agent_id.unwrap()).await;
                     if agent.is_ok() && agent.unwrap().is_none() {
-                        let _ = pipelines_service::reset(db, &pipe.id).await;
+                        let _ = pipelines_service::reset(db, &Credential::System, &pipe.id).await;
                         log::debug!("pipeline `{}` reassigned.", &pipe.id);
                     }
                 }

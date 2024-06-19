@@ -7,14 +7,14 @@ use domain::commons::search::SearchOptions;
 use domain::jobs::{Job, PagedJobs, RegisterJob};
 use persist::db_client::DbClient;
 
-use crate::gql::get_public_gql_endpoints;
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::jobs as service;
 
 pub struct JobsQuery;
 
 #[Object]
 impl JobsQuery {
-    #[auth_macro::authenticate(bearer, [JOBS:READ])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -22,19 +22,32 @@ impl JobsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedJobs, RustyError> {
         log::debug!("handling `jobs::get` request");
-        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
-        log::debug!("`jobs::get`: found {} entries", entries.total);
-        Ok(entries)
+        let entries = service::get_all(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &filter,
+            &options,
+        )
+        .await?;
+        let (total, page, page_size, entries) = paginate(&entries, options);
+        log::debug!("`jobs::get`: found {} entries", total);
+        Ok(PagedJobs {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 
-    #[auth_macro::authenticate(bearer, [JOBS:READ])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<Job>, RustyError> {
         log::debug!("handling `jobs::getById` request");
-        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let entry =
+            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`jobs::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -44,31 +57,32 @@ pub struct JobsMutation;
 
 #[Object]
 impl JobsMutation {
-    #[auth_macro::authenticate(bearer, [JOBS:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn register(
         &self,
         ctx: &Context<'_>,
         job: RegisterJob,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `jobs::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, job).await?;
+        let id = service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, job).await?;
         log::debug!("`jobs::register`: created job with id `{id}`");
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [JOBS:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `jobs::deleteById` request");
-        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let deleted =
+            service::delete_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`jobs::deleteById`: deleted job with id `{id}`");
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate(bearer, [JOBS:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `jobs::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

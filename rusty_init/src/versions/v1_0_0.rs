@@ -26,55 +26,16 @@ pub async fn execute(db: &DbClient) {
 
     // create system resources
     create_resource(db, "AGENTS", &["READ", "WRITE"]).await;
-    create_resource(db, "JOBS", &["READ", "WRITE"]).await;
-    create_resource(db, "PERMISSIONS", &["READ", "WRITE"]).await;
-    create_resource(db, "PIPELINES", &["READ", "WRITE"]).await;
-    create_resource(db, "PROJECTS", &["READ", "WRITE"]).await;
+    create_resource(db, "AUTH", &["READ", "WRITE"]).await;
+    create_resource(db, "PROJECTS", &["CREATE", "READ", "WRITE"]).await;
     create_resource(db, "USERS", &["READ", "WRITE"]).await;
 
     // assign permissions to admin role
     assign_permission(db, "AGENTS", "READ", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "AGENTS", "WRITE", "ALL", None, Some(&admins_role_id)).await;
-    assign_permission(db, "JOBS", "READ", "ALL", None, Some(&admins_role_id)).await;
-    assign_permission(db, "JOBS", "WRITE", "ALL", None, Some(&admins_role_id)).await;
-    assign_permission(
-        db,
-        "PERMISSIONS",
-        "READ",
-        "ALL",
-        None,
-        Some(&admins_role_id),
-    )
-    .await;
-    assign_permission(
-        db,
-        "PERMISSIONS",
-        "WRITE",
-        "ALL",
-        None,
-        Some(&admins_role_id),
-    )
-    .await;
-    assign_permission(db, "PIPELINES", "READ", "ALL", None, Some(&admins_role_id)).await;
-    assign_permission(db, "PIPELINES", "WRITE", "ALL", None, Some(&admins_role_id)).await;
-    assign_permission(
-        db,
-        "PROJECT_GROUPS",
-        "READ",
-        "ALL",
-        None,
-        Some(&admins_role_id),
-    )
-    .await;
-    assign_permission(
-        db,
-        "PROJECT_GROUPS",
-        "WRITE",
-        "ALL",
-        None,
-        Some(&admins_role_id),
-    )
-    .await;
+    assign_permission(db, "AUTH", "READ", "ALL", None, Some(&admins_role_id)).await;
+    assign_permission(db, "AUTH", "WRITE", "ALL", None, Some(&admins_role_id)).await;
+    assign_permission(db, "PROJECTS", "CREATE", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "PROJECTS", "READ", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "PROJECTS", "WRITE", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "USERS", "READ", "ALL", None, Some(&admins_role_id)).await;
@@ -83,18 +44,6 @@ pub async fn execute(db: &DbClient) {
     // assign permissions to agent role
     assign_permission(db, "AGENTS", "READ", "ALL", None, Some(&agents_role_id)).await;
     assign_permission(db, "AGENTS", "WRITE", "ALL", None, Some(&agents_role_id)).await;
-    assign_permission(db, "JOBS", "READ", "ALL", None, Some(&agents_role_id)).await;
-    assign_permission(db, "PIPELINES", "READ", "ALL", None, Some(&agents_role_id)).await;
-    assign_permission(db, "PIPELINES", "WRITE", "ALL", None, Some(&agents_role_id)).await;
-    assign_permission(
-        db,
-        "PROJECT_GROUPS",
-        "READ",
-        "ALL",
-        None,
-        Some(&agents_role_id),
-    )
-    .await;
     assign_permission(db, "PROJECTS", "READ", "ALL", None, Some(&agents_role_id)).await;
 
     log::info!("=========================");

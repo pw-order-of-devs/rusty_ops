@@ -10,6 +10,8 @@ pub enum RustyError {
     JwtTokenExpiredError,
     /// Authentication User Not Found error
     UnauthenticatedError,
+    /// Authentication User Not Authorized error
+    UnauthorizedError,
     /// Wrong Credential Type error
     WrongCredentialTypeError,
 
@@ -60,6 +62,9 @@ impl Display for RustyError {
             }
             Self::UnauthenticatedError => {
                 write!(f, "Auth error: Failed to authenticate user")
+            }
+            Self::UnauthorizedError => {
+                write!(f, "Auth error: Failed to authorize user")
             }
             Self::WrongCredentialTypeError => {
                 write!(f, "Auth error: Unsupported credential type")

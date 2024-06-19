@@ -7,14 +7,14 @@ use domain::commons::search::SearchOptions;
 use domain::projects::{Group, PagedGroups, RegisterGroup};
 use persist::db_client::DbClient;
 
-use crate::gql::get_public_gql_endpoints;
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::project_groups as service;
 
 pub struct ProjectGroupsQuery;
 
 #[Object]
 impl ProjectGroupsQuery {
-    #[auth_macro::authenticate(bearer, [PROJECT_GROUPS:READ])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -22,12 +22,18 @@ impl ProjectGroupsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedGroups, RustyError> {
         log::debug!("handling `project::groups::get` request");
-        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
-        log::debug!("`project::groups::get`: found {} entries", entries.total);
-        Ok(entries)
+        let entries = service::get_all(ctx.data::<DbClient>()?, &filter, &options).await?;
+        let (total, page, page_size, entries) = paginate(&entries, options);
+        log::debug!("`project::groups::get`: found {} entries", total);
+        Ok(PagedGroups {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECT_GROUPS:READ])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -44,7 +50,7 @@ pub struct ProjectGroupsMutation;
 
 #[Object]
 impl ProjectGroupsMutation {
-    #[auth_macro::authenticate(bearer, [PROJECT_GROUPS:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -56,7 +62,7 @@ impl ProjectGroupsMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECT_GROUPS:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -68,7 +74,7 @@ impl ProjectGroupsMutation {
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECT_GROUPS:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `project::groups::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

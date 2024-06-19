@@ -11,6 +11,8 @@ pub enum Credential {
     Bearer(String),
     /// No Authentication
     None,
+    /// System user
+    System,
 }
 
 impl std::fmt::Display for Credential {
@@ -21,6 +23,7 @@ impl std::fmt::Display for Credential {
                 let username = get_token_claim_str(token, "sub");
                 write!(f, "{username}")
             }
+            Self::System => write!(f, "system user"),
             Self::None => write!(f, "empty credential"),
         }
     }

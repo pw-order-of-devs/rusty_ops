@@ -3,8 +3,9 @@ use serde_json::{json, Value};
 
 use commons::env::var_or_default;
 use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
-use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
+use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
 use crate::services::{agents, jobs, shared};
@@ -15,40 +16,47 @@ const PIPELINES_INDEX: &str = "pipelines";
 
 pub async fn get_all(
     db: &DbClient,
+    cred: &Credential,
     filter: &Option<Value>,
     options: &Option<SearchOptions>,
 ) -> Result<Vec<Pipeline>, RustyError> {
-    shared::get_all(db, PIPELINES_INDEX, filter, options, false).await
+    let entries = shared::get_all::<Pipeline>(db, PIPELINES_INDEX, filter, options).await?;
+    let mut filtered = vec![];
+    for entry in entries {
+        if jobs::get_by_id(db, cred, &entry.job_id).await?.is_some() {
+            filtered.push(entry);
+        }
+    }
+    Ok(filtered)
 }
 
-pub async fn get_all_paged(
+pub async fn get_by_id(
     db: &DbClient,
-    filter: &Option<Value>,
-    options: &Option<SearchOptions>,
-) -> Result<PagedPipelines, RustyError> {
-    let count = shared::get_total_count::<Pipeline>(db, PIPELINES_INDEX, filter).await?;
-    let entries = shared::get_all(db, PIPELINES_INDEX, filter, options, true).await?;
-    let (page, page_size) = shared::to_paged(options)?;
-    Ok(PagedPipelines {
-        total: count,
-        page,
-        page_size,
-        entries,
-    })
-}
-
-pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<Pipeline>, RustyError> {
-    shared::get_by_id(db, PIPELINES_INDEX, id).await
+    cred: &Credential,
+    id: &str,
+) -> Result<Option<Pipeline>, RustyError> {
+    let pipeline = shared::get_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await?;
+    if let Some(pipeline) = pipeline {
+        jobs::get_by_id(db, cred, &pipeline.job_id).await?;
+        Ok(Some(pipeline))
+    } else {
+        Ok(None)
+    }
 }
 
 // mutate
 
-pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String, RustyError> {
-    if jobs::get_by_id(db, &pipeline.job_id).await?.is_none() {
+pub async fn create(
+    db: &DbClient,
+    cred: &Credential,
+    pipeline: RegisterPipeline,
+) -> Result<String, RustyError> {
+    if jobs::get_by_id(db, cred, &pipeline.job_id).await?.is_none() {
         Err(RustyError::ValidationError("job not found".to_string()))
     } else {
         let pipelines_count = get_all(
             db,
+            cred,
             &Some(json!({ "job_id": { "equals": pipeline.job_id } })),
             &None,
         )
@@ -65,10 +73,11 @@ pub async fn create(db: &DbClient, pipeline: RegisterPipeline) -> Result<String,
 
 pub async fn assign(
     db: &DbClient,
+    cred: &Credential,
     pipeline_id: &str,
     agent_id: &str,
 ) -> Result<String, RustyError> {
-    if let Some(mut pipe) = get_by_id(db, pipeline_id).await? {
+    if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
         if pipe.status == PipelineStatus::Defined && pipe.agent_id.is_none() {
             pipe.status = PipelineStatus::Assigned;
             pipe.agent_id = Some(agent_id.to_string());
@@ -76,7 +85,7 @@ pub async fn assign(
             let limit = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
             let condition =
                 json!({ "status": { "equals": "ASSIGNED" }, "agent_id": { "equals": agent_id } });
-            if get_all(db, &Some(condition), &None).await?.len() < limit {
+            if get_all(db, cred, &Some(condition), &None).await?.len() < limit {
                 db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
             } else {
                 let message =
@@ -96,8 +105,12 @@ pub async fn assign(
     }
 }
 
-pub async fn reset(db: &DbClient, pipeline_id: &str) -> Result<String, RustyError> {
-    if let Some(mut pipe) = get_by_id(db, pipeline_id).await? {
+pub async fn reset(
+    db: &DbClient,
+    cred: &Credential,
+    pipeline_id: &str,
+) -> Result<String, RustyError> {
+    if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
         if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status)
             && agents::get_by_id(db, &pipe.agent_id.unwrap())
                 .await?
@@ -120,10 +133,11 @@ pub async fn reset(db: &DbClient, pipeline_id: &str) -> Result<String, RustyErro
 
 pub async fn set_running(
     db: &DbClient,
+    cred: &Credential,
     pipeline_id: &str,
     agent_id: &str,
 ) -> Result<String, RustyError> {
-    if let Some(mut pipe) = get_by_id(db, pipeline_id).await? {
+    if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
         if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
             && pipe.clone().status == PipelineStatus::Assigned
         {
@@ -144,11 +158,12 @@ pub async fn set_running(
 
 pub async fn finalize(
     db: &DbClient,
+    cred: &Credential,
     pipeline_id: &str,
     agent_id: &str,
     status: PipelineStatus,
 ) -> Result<String, RustyError> {
-    if let Some(mut pipe) = get_by_id(db, pipeline_id).await? {
+    if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
         if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
             && pipe.clone().status == PipelineStatus::InProgress
         {
@@ -167,7 +182,8 @@ pub async fn finalize(
     }
 }
 
-pub async fn delete_by_id(db: &DbClient, id: &str) -> Result<u64, RustyError> {
+pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
+    let _ = get_by_id(db, cred, id).await?;
     shared::delete_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await
 }
 

@@ -11,7 +11,9 @@ pub async fn assign_permission(
     user_id: Option<&str>,
     role_id: Option<&str>,
 ) {
-    log::info!("assigning `{resource}:{right}{item}` to {user_id:?}/{role_id:?} permission: start");
+    log::info!(
+        "assigning `{resource}:{right}:{item}` to {user_id:?}/{role_id:?} permission: start"
+    );
     let permission = Permission {
         user_id: user_id.map(ToString::to_string),
         role_id: role_id.map(ToString::to_string),
@@ -22,11 +24,11 @@ pub async fn assign_permission(
     match db.create(PERMISSIONS_INDEX, &permission).await {
         Ok(_) => {
             log::info!(
-                "assigning `{resource}:{right}` to {user_id:?}/{role_id:?} permission: done"
+                "assigning `{resource}:{right}:{item}` to {user_id:?}/{role_id:?} permission: done"
             );
         }
         Err(err) => {
-            panic!("assigning `{resource}:{right}` to {user_id:?}/{role_id:?} permission: `{err}`");
+            panic!("assigning `{resource}:{right}:{item}` to {user_id:?}/{role_id:?} permission: `{err}`");
         }
     }
 }

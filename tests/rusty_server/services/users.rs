@@ -32,30 +32,6 @@ async fn get_all_test() {
 }
 
 #[tokio::test]
-async fn get_all_paged_test() {
-    let db = Redis
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-    let _ = db_client
-        .create(
-            "users",
-            &User {
-                id: "uuid".to_string(),
-                username: "user".to_string(),
-                password: "pass".to_string(),
-            },
-        )
-        .await;
-
-    let result = service::get_all_paged(&db_client, &None, &None).await;
-    let _ = db.stop().await;
-    assert!(result.is_ok());
-    assert_eq!(1, result.unwrap().entries.len());
-}
-
-#[tokio::test]
 async fn get_by_id_test() {
     let db = Redis
         .start()

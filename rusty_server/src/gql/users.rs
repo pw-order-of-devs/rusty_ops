@@ -7,7 +7,7 @@ use domain::auth::user::{PagedUsers, RegisterUser, UserModel};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
-use crate::gql::get_public_gql_endpoints;
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::users as service;
 
 pub struct UsersQuery;
@@ -22,9 +22,15 @@ impl UsersQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedUsers, RustyError> {
         log::debug!("handling `users::get` request");
-        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
-        log::debug!("`users::get`: found {} entries", entries.total);
-        Ok(entries)
+        let entries = service::get_all(ctx.data::<DbClient>()?, &filter, &options).await?;
+        let (total, page, page_size, entries) = paginate(&entries, options);
+        log::debug!("`users::get`: found {} entries", total);
+        Ok(PagedUsers {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 
     #[auth_macro::authenticate(bearer, [USERS:READ])]

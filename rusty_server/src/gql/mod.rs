@@ -15,6 +15,8 @@ mod project_groups;
 mod projects;
 mod users;
 
+mod shared;
+
 static PUBLIC_ENDPOINTS: Lazy<Mutex<Vec<String>>> = Lazy::new(|| Mutex::new(vec![]));
 
 pub fn public_gql_endpoints_init() {

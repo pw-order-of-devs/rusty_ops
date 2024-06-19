@@ -7,7 +7,7 @@ use domain::commons::search::SearchOptions;
 use domain::projects::{PagedProjects, Project, RegisterProject};
 use persist::db_client::DbClient;
 
-use crate::gql::get_public_gql_endpoints;
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::projects as service;
 
 pub struct ProjectsQuery;
@@ -22,9 +22,21 @@ impl ProjectsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedProjects, RustyError> {
         log::debug!("handling `projects::get` request");
-        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
-        log::debug!("`projects::get`: found {} entries", entries.total);
-        Ok(entries)
+        let entries = service::get_all(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &filter,
+            &options,
+        )
+        .await?;
+        let (total, page, page_size, entries) = paginate(&entries, options);
+        log::debug!("`projects::get`: found {} entries", total);
+        Ok(PagedProjects {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 
     #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
@@ -34,7 +46,8 @@ impl ProjectsQuery {
         id: String,
     ) -> async_graphql::Result<Option<Project>, RustyError> {
         log::debug!("handling `projects::getById` request");
-        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let entry =
+            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`projects::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -51,7 +64,8 @@ impl ProjectsMutation {
         project: RegisterProject,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `projects::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, project).await?;
+        let id =
+            service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, project).await?;
         log::debug!("`projects::register`: created project with id `{id}`");
         Ok(id)
     }
@@ -63,7 +77,8 @@ impl ProjectsMutation {
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `projects::deleteById` request");
-        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let deleted =
+            service::delete_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`projects::deleteById`: deleted project with id `{id}`");
         Ok(deleted)
     }

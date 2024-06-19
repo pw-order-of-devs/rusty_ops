@@ -8,14 +8,14 @@ use domain::commons::search::SearchOptions;
 use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
-use crate::gql::get_public_gql_endpoints;
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::pipelines as service;
 
 pub struct PipelinesQuery;
 
 #[Object]
 impl PipelinesQuery {
-    #[auth_macro::authenticate(bearer, [PIPELINES:READ])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -23,19 +23,32 @@ impl PipelinesQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedPipelines, RustyError> {
         log::debug!("handling `pipelines::get` request");
-        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
-        log::debug!("`pipelines::get`: found {} entries", entries.total);
-        Ok(entries)
+        let entries = service::get_all(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &filter,
+            &options,
+        )
+        .await?;
+        let (total, page, page_size, entries) = paginate(&entries, options);
+        log::debug!("`pipelines::get`: found {} entries", total);
+        Ok(PagedPipelines {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 
-    #[auth_macro::authenticate(bearer, [PIPELINES:READ])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<Pipeline>, RustyError> {
         log::debug!("handling `pipelines::getById` request");
-        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let entry =
+            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`pipelines::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -45,19 +58,20 @@ pub struct PipelinesMutation;
 
 #[Object]
 impl PipelinesMutation {
-    #[auth_macro::authenticate(bearer, [PIPELINES:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn register(
         &self,
         ctx: &Context<'_>,
         pipeline: RegisterPipeline,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, pipeline).await?;
+        let id =
+            service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, pipeline).await?;
         log::debug!("`pipelines::register`: created pipeline with id `{id}`");
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PIPELINES:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn assign(
         &self,
         ctx: &Context<'_>,
@@ -65,14 +79,20 @@ impl PipelinesMutation {
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::assign` request");
-        let id = service::assign(ctx.data::<DbClient>()?, &pipeline_id, &agent_id).await?;
+        let id = service::assign(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &pipeline_id,
+            &agent_id,
+        )
+        .await?;
         log::debug!(
             "`pipelines::assign`: assigned pipeline with id `{pipeline_id}` to agent `{agent_id}`"
         );
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PIPELINES:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn set_running(
         &self,
         ctx: &Context<'_>,
@@ -80,12 +100,18 @@ impl PipelinesMutation {
         agent_id: String,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::setRunning` request");
-        let id = service::set_running(ctx.data::<DbClient>()?, &pipeline_id, &agent_id).await?;
+        let id = service::set_running(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &pipeline_id,
+            &agent_id,
+        )
+        .await?;
         log::debug!("`pipelines::setRunning`: updated pipeline with id `{id}` as `InProgress`");
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PIPELINES:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn finalize(
         &self,
         ctx: &Context<'_>,
@@ -94,25 +120,32 @@ impl PipelinesMutation {
         status: PipelineStatus,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `pipelines::finalize` request");
-        let id =
-            service::finalize(ctx.data::<DbClient>()?, &pipeline_id, &agent_id, status).await?;
+        let id = service::finalize(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &pipeline_id,
+            &agent_id,
+            status,
+        )
+        .await?;
         log::debug!("`pipelines::finalize`: updated pipeline with id `{id}` as `{status:?}`");
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PIPELINES:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `pipelines::deleteById` request");
-        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let deleted =
+            service::delete_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`pipelines::deleteById`: deleted pipeline with id `{id}`");
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate(bearer, [PIPELINES:WRITE])]
+    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `pipelines::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

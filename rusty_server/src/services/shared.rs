@@ -1,50 +1,24 @@
+use commons::env::var_or_default;
 use serde_json::{json, Value};
 use serde_valid::Validate;
 
 use commons::errors::RustyError;
+use domain::auth::credentials::{get_token_claim_str, Credential};
+use domain::auth::permissions::Permission;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
-
-pub fn to_paged(options: &Option<SearchOptions>) -> Result<(usize, usize), RustyError> {
-    let options = options.clone().unwrap_or_default();
-    let page = options.page_number.unwrap_or_default();
-    let page = if page == 0 { 1 } else { page };
-    let page = usize::try_from(page)?;
-    let page_size = options.page_size.unwrap_or_default();
-    let page_size = if page_size == 0 { 20 } else { page_size };
-    let page_size = usize::try_from(page_size)?;
-    Ok((page, page_size))
-}
-
-pub async fn get_total_count<T: RustyDomainItem>(
-    db: &DbClient,
-    index: &str,
-    filter: &Option<Value>,
-) -> Result<usize, RustyError> {
-    let entries = db
-        .get_all::<T>(index, filter, &None, false)
-        .await
-        .map_err(|err| {
-            log::error!("`{index}::get`: {err}");
-            err
-        })?;
-    Ok(entries.len())
-}
 
 pub async fn get_all<T: RustyDomainItem>(
     db: &DbClient,
     index: &str,
     filter: &Option<Value>,
     options: &Option<SearchOptions>,
-    paged: bool,
 ) -> Result<Vec<T>, RustyError> {
-    db.get_all(index, filter, options, paged)
-        .await
-        .map_err(|err| {
-            log::error!("`{index}::get`: {err}");
-            err
-        })
+    db.get_all(index, filter, options).await.map_err(|err| {
+        log::error!("`{index}::get`: {err}");
+        err
+    })
 }
 
 pub async fn get_by_id<T: RustyDomainItem>(
@@ -111,8 +85,60 @@ pub async fn delete_by_id<T: RustyDomainItem>(
 }
 
 pub async fn delete_all(db: &DbClient, index: &str) -> Result<u64, RustyError> {
+    if !var_or_default("RUSTY_DEBUG", false) {
+        log::warn!("`delete_all` is only supported in DEBUG mode");
+        return Ok(0);
+    }
+
     db.delete_all(index).await.map_err(|err| {
         log::error!("`{index}::deleteAll`: {err}");
         err
     })
+}
+
+pub async fn has_permission(
+    db_client: &DbClient,
+    cred: &Credential,
+    id: &str,
+    perm: (&str, &str),
+) -> Result<(), RustyError> {
+    match cred {
+        Credential::Bearer(token) => {
+            let username = get_token_claim_str(token, "sub");
+            let permissions = check_user_permission(db_client, &username, perm).await?;
+            if permissions.iter().any(|p| p.item == "ALL") {
+                return Ok(());
+            }
+
+            if parse_permission_ids(&permissions).contains(&id.to_string()) {
+                Ok(())
+            } else {
+                Err(RustyError::UnauthorizedError)
+            }
+        }
+        Credential::System => Ok(()),
+        _ => Err(RustyError::UnauthorizedError),
+    }
+}
+
+async fn check_user_permission(
+    db_client: &DbClient,
+    username: &str,
+    perm: (&str, &str),
+) -> Result<Vec<Permission>, RustyError> {
+    let entries = auth::get_user_permissions(db_client, username)
+        .await?
+        .iter()
+        .filter(|p| p.resource == perm.0 && p.right == perm.1)
+        .cloned()
+        .collect();
+    Ok(entries)
+}
+
+fn parse_permission_ids(permissions: &[Permission]) -> Vec<String> {
+    permissions
+        .iter()
+        .filter(|p| p.item.starts_with("ID["))
+        .map(|p| p.item.replace("ID[", "").replace(']', ""))
+        .collect()
 }

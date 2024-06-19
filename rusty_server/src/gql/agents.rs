@@ -7,7 +7,7 @@ use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
-use crate::gql::get_public_gql_endpoints;
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::agents as service;
 
 pub struct AgentsQuery;
@@ -22,9 +22,15 @@ impl AgentsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedAgents, RustyError> {
         log::debug!("handling `agents::get` request");
-        let entries = service::get_all_paged(ctx.data::<DbClient>()?, &filter, &options).await?;
-        log::debug!("`agents::get`: found {} entries", entries.total);
-        Ok(entries)
+        let entries = service::get_all(ctx.data::<DbClient>()?, &filter, &options).await?;
+        let (total, page, page_size, entries) = paginate(&entries, options);
+        log::debug!("`agents::get`: found {} entries", total);
+        Ok(PagedAgents {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 
     #[auth_macro::authenticate(bearer, [AGENTS:READ])]

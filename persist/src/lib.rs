@@ -107,7 +107,6 @@ pub trait Persistence: Send + Sync {
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-        paged: bool,
     ) -> impl Future<Output = Result<Vec<T>, RustyError>> + Send;
 
     /// Retrieves an item by index and filter document.

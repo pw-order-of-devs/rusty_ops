@@ -30,29 +30,6 @@ async fn get_all_test() {
 }
 
 #[tokio::test]
-async fn get_all_paged_test() {
-    let db = Redis
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-    let _ = db_client
-        .create(
-            "agents",
-            &Agent {
-                id: "uuid".to_string(),
-                expiry: 0,
-            },
-        )
-        .await;
-
-    let result = service::get_all_paged(&db_client, &None, &None).await;
-    let _ = db.stop().await;
-    assert!(result.is_ok());
-    assert_eq!(1, result.unwrap().entries.len());
-}
-
-#[tokio::test]
 async fn get_by_id_test() {
     let db = Redis
         .start()
@@ -203,6 +180,7 @@ async fn delete_by_id_test() {
 
 #[tokio::test]
 async fn delete_all_test() {
+    std::env::set_var("RUSTY_DEBUG", "true");
     let db = Redis
         .start()
         .await
@@ -220,6 +198,7 @@ async fn delete_all_test() {
 
     let result = service::delete_all(&db_client).await;
     let _ = db.stop().await;
+    std::env::remove_var("RUSTY_DEBUG");
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap());
 }

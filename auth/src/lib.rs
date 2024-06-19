@@ -16,8 +16,13 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+use serde_json::{json, Value};
+
 use commons::errors::RustyError;
 use domain::auth::credentials::{parse_credential, Credential};
+use domain::auth::permissions::Permission;
+use domain::auth::roles::Role;
+use domain::auth::user::User;
 use persist::db_client::DbClient;
 
 /// authenticate user
@@ -60,7 +65,7 @@ pub async fn authenticate(db: &DbClient, credential: &Credential) -> Result<Stri
     match credential {
         Credential::Basic(user, pass) => authenticate::basic_auth(db, user, pass).await,
         Credential::Bearer(token) => authenticate::bearer_auth(db, token).await,
-        Credential::None => Ok(String::new()),
+        Credential::None | Credential::System => Ok(String::new()),
     }
 }
 
@@ -73,4 +78,51 @@ pub async fn authenticate(db: &DbClient, credential: &Credential) -> Result<Stri
 /// * `RustyError` - If there was an error during the creation of the item.
 pub async fn authorize(db: &DbClient, username: &str, resources: &str) -> Result<(), RustyError> {
     authorize::authorize(db, username, resources).await
+}
+
+/// fetch list of permissions for user
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+pub async fn get_user_permissions(
+    db: &DbClient,
+    username: &str,
+) -> Result<Vec<Permission>, RustyError> {
+    let user_id = get_user_id(db, username).await?;
+    let mut permissions = get_permissions(db, &json!({ "user_id": { "equals": user_id } })).await?;
+    let roles = get_user_roles_id(db, &user_id).await?;
+    for role_id in roles {
+        let p = get_permissions(db, &json!({ "role_id": { "equals": role_id } })).await?;
+        permissions.extend_from_slice(&p);
+    }
+    Ok(permissions)
+}
+
+async fn get_user_id(db: &DbClient, username: &str) -> Result<String, RustyError> {
+    match db
+        .get_one::<User>("users", json!({ "username": { "equals": username } }))
+        .await?
+    {
+        Some(user) => Ok(user.id),
+        None => Err(RustyError::RequestError("User was not found".to_string())),
+    }
+}
+
+async fn get_user_roles_id(db: &DbClient, user_id: &str) -> Result<Vec<String>, RustyError> {
+    let roles = db
+        .get_all::<Role>("roles", &None, &None)
+        .await?
+        .into_iter()
+        .filter(|role| role.users.contains(&user_id.to_string()))
+        .map(|role| role.id)
+        .collect::<Vec<String>>();
+    Ok(roles)
+}
+
+async fn get_permissions(db: &DbClient, filter: &Value) -> Result<Vec<Permission>, RustyError> {
+    db.get_all("permissions", &Some(filter.clone()), &None)
+        .await
 }

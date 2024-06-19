@@ -125,7 +125,6 @@ impl Persistence for PostgreSQLClient {
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         let conn = self.client.get().await?;
 
@@ -133,7 +132,7 @@ impl Persistence for PostgreSQLClient {
             "select * from {}.{}{}",
             self.schema,
             index,
-            parse_options(options, paged)
+            parse_options(options)
         );
         let rows = conn
             .query(&statement, &[])
@@ -154,7 +153,7 @@ impl Persistence for PostgreSQLClient {
         index: &str,
         filter: Value,
     ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, &Some(filter), &None, false).await?;
+        let values: Vec<T> = self.get_all(index, &Some(filter), &None).await?;
         if values.len() == 1 {
             Ok(Some(values[0].clone()))
         } else {
@@ -294,7 +293,7 @@ fn parse_row(row: &Row) -> Value {
     Value::Object(value)
 }
 
-fn parse_options(options: &Option<SearchOptions>, paged: bool) -> String {
+fn parse_options(options: &Option<SearchOptions>) -> String {
     if options.is_none() {
         return String::new();
     }
@@ -305,18 +304,6 @@ fn parse_options(options: &Option<SearchOptions>, paged: bool) -> String {
         SortOptions::Ascending => "asc".to_string(),
         SortOptions::Descending => "desc".to_string(),
     };
-    let page_number = options.page_number.unwrap_or(1);
-    let page_number = if page_number == 0 { 1 } else { page_number };
-    let page_size = options.page_size.unwrap_or(20);
-    let page_size = if page_size == 0 { 20 } else { page_size };
 
-    if paged {
-        format!(
-            " order by {sort_field} {sort_mode} limit {} offset {}",
-            page_size,
-            page_size * (page_number - 1),
-        )
-    } else {
-        format!(" order by {sort_field} {sort_mode}")
-    }
+    format!(" order by {sort_field} {sort_mode}")
 }

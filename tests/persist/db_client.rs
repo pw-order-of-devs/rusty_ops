@@ -10,7 +10,6 @@ use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use commons::errors::RustyError;
-use domain::commons::search::SearchOptions;
 use domain::projects::Project;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
@@ -42,53 +41,12 @@ async fn get_all_test<I: Image + Default>(
     let _ = create_project(&db_client, "project_3").await;
 
     let results = db_client
-        .get_all::<Project>(PROJECTS_INDEX, &None, &None, false)
+        .get_all::<Project>(PROJECTS_INDEX, &None, &None)
         .await;
     let _ = db.stop().await;
     assert!(results.is_ok());
     let results = results.unwrap();
     assert_eq!(4, results.len());
-}
-
-#[rstest]
-#[case(Mongo, "mongodb", 27017)]
-#[case(Postgres::default(), "postgres", 5432)]
-#[case(Redis, "redis", 6379)]
-#[tokio::test]
-async fn get_all_paged_test<I: Image + Default>(
-    #[case] image: I,
-    #[case] db_type: &str,
-    #[case] port: u16,
-) where
-    I: Image,
-{
-    let db = image
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, db_type, port).await;
-    let _ = create_project(&db_client, "project_1").await;
-    let _ = create_project(&db_client, "project_2").await;
-    let _ = create_project(&db_client, "project_2").await;
-    let _ = create_project(&db_client, "project_3").await;
-
-    let results = db_client
-        .get_all::<Project>(
-            PROJECTS_INDEX,
-            &None,
-            &Some(SearchOptions {
-                page_number: Some(2),
-                page_size: Some(2),
-                sort_field: None,
-                sort_mode: None,
-            }),
-            true,
-        )
-        .await;
-    let _ = db.stop().await;
-    assert!(results.is_ok());
-    let results = results.unwrap();
-    assert_eq!(2, results.len());
 }
 
 #[rstest]
@@ -293,7 +251,7 @@ async fn compare_filter_test(#[case] filter: Value, #[case] found: usize) {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = create_test_entry(&db_client, "name_1", 1).await;
     let result = db_client
-        .get_all::<TestEntry>("entries", &Some(filter), &None, false)
+        .get_all::<TestEntry>("entries", &Some(filter), &None)
         .await;
     let _ = db.stop().await;
     assert!(result.is_ok());

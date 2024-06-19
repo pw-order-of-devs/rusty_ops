@@ -33,12 +33,11 @@ impl DbClient {
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-        paged: bool,
     ) -> Result<Vec<T>, RustyError> {
         match self {
-            Self::MongoDb(client) => client.get_all(index, filter, options, paged).await,
-            Self::PostgreSql(client) => client.get_all(index, filter, options, paged).await,
-            Self::Redis(client) => client.get_all(index, filter, options, paged).await,
+            Self::MongoDb(client) => client.get_all(index, filter, options).await,
+            Self::PostgreSql(client) => client.get_all(index, filter, options).await,
+            Self::Redis(client) => client.get_all(index, filter, options).await,
         }
     }
 

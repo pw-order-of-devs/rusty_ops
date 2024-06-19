@@ -7,7 +7,7 @@ use rusty_server::services::project_groups as service;
 use crate::utils::db_connect;
 
 #[tokio::test]
-async fn get_all_paged_test() {
+async fn get_all_test() {
     let db = Redis
         .start()
         .await
@@ -24,10 +24,10 @@ async fn get_all_paged_test() {
         )
         .await;
 
-    let result = service::get_all_paged(&db_client, &None, &None).await;
+    let result = service::get_all(&db_client, &None, &None).await;
     let _ = db.stop().await;
     assert!(result.is_ok());
-    assert_eq!(1, result.unwrap().entries.len());
+    assert_eq!(1, result.unwrap().len());
 }
 
 #[tokio::test]
@@ -100,6 +100,7 @@ async fn delete_by_id_test() {
 
 #[tokio::test]
 async fn delete_all_test() {
+    std::env::set_var("RUSTY_DEBUG", "true");
     let db = Redis
         .start()
         .await
@@ -118,6 +119,7 @@ async fn delete_all_test() {
 
     let result = service::delete_all(&db_client).await;
     let _ = db.stop().await;
+    std::env::remove_var("RUSTY_DEBUG");
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap());
 }
