@@ -1,6 +1,7 @@
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
 use domain::auth::roles::Role;
 use persist::db_client::DbClient;
 
@@ -18,11 +19,12 @@ async fn get_one(db: &DbClient, value: &Value) -> Result<Option<Role>, RustyErro
 
 pub async fn assign(
     db: &DbClient,
+    cred: &Credential,
     user_id: &str,
     role_id: Option<&str>,
     role_name: Option<&str>,
 ) -> Result<String, RustyError> {
-    if users::get_by_id(db, user_id).await?.is_some() {
+    if users::get_by_id(db, cred, user_id).await?.is_some() {
         let doc = match (role_id, role_name) {
             (Some(id), None) => json!({ "id": { "equals": id } }),
             (None, Some(name)) => json!({ "name": { "equals": name } }),

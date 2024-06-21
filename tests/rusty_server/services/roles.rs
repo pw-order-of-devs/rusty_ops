@@ -1,3 +1,4 @@
+use domain::auth::credentials::Credential;
 use domain::auth::roles::Role;
 use domain::auth::user::User;
 use testcontainers::runners::AsyncRunner;
@@ -36,7 +37,7 @@ async fn assign_by_id_test() {
         )
         .await;
 
-    let result = service::assign(&db_client, "uuid", Some("uuid"), None).await;
+    let result = service::assign(&db_client, &Credential::System, "uuid", Some("uuid"), None).await;
     let _ = db.stop().await;
     assert!(result.is_ok());
 }
@@ -70,7 +71,14 @@ async fn assign_by_name_test() {
         )
         .await;
 
-    let result = service::assign(&db_client, "uuid", None, Some("sample")).await;
+    let result = service::assign(
+        &db_client,
+        &Credential::System,
+        "uuid",
+        None,
+        Some("sample"),
+    )
+    .await;
     let _ = db.stop().await;
     assert!(result.is_ok());
 }
@@ -83,7 +91,14 @@ async fn assign_no_user_test() {
         .expect("initializing test container failed");
     let db_client = db_connect(&db, "redis", 6379).await;
 
-    let result = service::assign(&db_client, "uuid", None, Some("sample")).await;
+    let result = service::assign(
+        &db_client,
+        &Credential::System,
+        "uuid",
+        None,
+        Some("sample"),
+    )
+    .await;
     let _ = db.stop().await;
     assert!(result.is_err());
 }
@@ -106,7 +121,7 @@ async fn assign_no_role_test() {
         )
         .await;
 
-    let result = service::assign(&db_client, "uuid", None, None).await;
+    let result = service::assign(&db_client, &Credential::System, "uuid", None, None).await;
     let _ = db.stop().await;
     assert!(result.is_err());
 }

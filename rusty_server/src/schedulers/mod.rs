@@ -30,11 +30,11 @@ pub async fn scheduler_agent_ttl(db: &DbClient) {
     loop {
         task.tick().await;
         log::trace!("running `agents::expire` scheduled task");
-        if let Ok(agents) = agents_service::get_all(db, &None, &None).await {
+        if let Ok(agents) = agents_service::get_all(db, &Credential::System, &None, &None).await {
             for agent in agents {
                 if agent.expiry < chrono::Utc::now().timestamp() {
                     log::debug!("agent `{}` expired.", &agent.id);
-                    let _ = agents_service::delete_by_id(db, &agent.id).await;
+                    let _ = agents_service::delete_by_id(db, &Credential::System, &agent.id).await;
                 }
             }
         }
@@ -51,7 +51,9 @@ pub async fn scheduler_pipelines_cleanup(db: &DbClient) {
         if let Ok(pipes) = pipelines_service::get_all(db, &Credential::System, &None, &None).await {
             for pipe in pipes {
                 if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status) {
-                    let agent = agents_service::get_by_id(db, &pipe.agent_id.unwrap()).await;
+                    let agent =
+                        agents_service::get_by_id(db, &Credential::System, &pipe.agent_id.unwrap())
+                            .await;
                     if agent.is_ok() && agent.unwrap().is_none() {
                         let _ = pipelines_service::reset(db, &Credential::System, &pipe.id).await;
                         log::debug!("pipeline `{}` reassigned.", &pipe.id);

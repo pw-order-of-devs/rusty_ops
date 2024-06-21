@@ -27,6 +27,7 @@ pub async fn execute(db: &DbClient) {
     // create system resources
     create_resource(db, "AGENTS", &["READ", "WRITE"]).await;
     create_resource(db, "AUTH", &["READ", "WRITE"]).await;
+    create_resource(db, "PROJECT_GROUPS", &["CREATE", "READ", "WRITE"]).await;
     create_resource(db, "PROJECTS", &["CREATE", "READ", "WRITE"]).await;
     create_resource(db, "USERS", &["READ", "WRITE"]).await;
 
@@ -35,6 +36,33 @@ pub async fn execute(db: &DbClient) {
     assign_permission(db, "AGENTS", "WRITE", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "AUTH", "READ", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "AUTH", "WRITE", "ALL", None, Some(&admins_role_id)).await;
+    assign_permission(
+        db,
+        "PROJECT_GROUPS",
+        "CREATE",
+        "ALL",
+        None,
+        Some(&admins_role_id),
+    )
+    .await;
+    assign_permission(
+        db,
+        "PROJECT_GROUPS",
+        "READ",
+        "ALL",
+        None,
+        Some(&admins_role_id),
+    )
+    .await;
+    assign_permission(
+        db,
+        "PROJECT_GROUPS",
+        "WRITE",
+        "ALL",
+        None,
+        Some(&admins_role_id),
+    )
+    .await;
     assign_permission(db, "PROJECTS", "CREATE", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "PROJECTS", "READ", "ALL", None, Some(&admins_role_id)).await;
     assign_permission(db, "PROJECTS", "WRITE", "ALL", None, Some(&admins_role_id)).await;
@@ -42,9 +70,26 @@ pub async fn execute(db: &DbClient) {
     assign_permission(db, "USERS", "WRITE", "ALL", None, Some(&admins_role_id)).await;
 
     // assign permissions to agent role
-    assign_permission(db, "AGENTS", "READ", "ALL", None, Some(&agents_role_id)).await;
-    assign_permission(db, "AGENTS", "WRITE", "ALL", None, Some(&agents_role_id)).await;
+    assign_permission(
+        db,
+        "AGENTS",
+        "READ",
+        &format!("ID[{agents_role_id}]"),
+        None,
+        Some(&agents_role_id),
+    )
+    .await;
+    assign_permission(
+        db,
+        "AGENTS",
+        "WRITE",
+        &format!("ID[{agents_role_id}]"),
+        None,
+        Some(&agents_role_id),
+    )
+    .await;
     assign_permission(db, "PROJECTS", "READ", "ALL", None, Some(&agents_role_id)).await;
+    assign_permission(db, "PROJECTS", "WRITE", "ALL", None, Some(&agents_role_id)).await;
 
     log::info!("=========================");
     log::info!("version v1.0.0 - done");

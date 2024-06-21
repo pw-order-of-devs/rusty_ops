@@ -1,10 +1,12 @@
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
 use domain::auth::user::{RegisterUser, User, UserModel};
 use domain::commons::search::SearchOptions;
 use persist::db_client::DbClient;
 
+use crate::services::shared::get_username_claim;
 use crate::services::{roles, shared};
 
 const USERS_INDEX: &str = "users";
@@ -13,17 +15,29 @@ const USERS_INDEX: &str = "users";
 
 pub async fn get_all(
     db: &DbClient,
+    cred: &Credential,
     filter: &Option<Value>,
     options: &Option<SearchOptions>,
 ) -> Result<Vec<UserModel>, RustyError> {
+    auth::authorize(db, &get_username_claim(cred)?, "USERS:READ").await?;
     shared::get_all(db, USERS_INDEX, filter, options).await
 }
 
-pub async fn get_by_id(db: &DbClient, id: &str) -> Result<Option<UserModel>, RustyError> {
+pub async fn get_by_id(
+    db: &DbClient,
+    cred: &Credential,
+    id: &str,
+) -> Result<Option<UserModel>, RustyError> {
+    auth::authorize(db, &get_username_claim(cred)?, "USERS:READ").await?;
     shared::get_by_id(db, USERS_INDEX, id).await
 }
 
-pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<User>, RustyError> {
+pub async fn get_by_username(
+    db: &DbClient,
+    cred: &Credential,
+    username: &str,
+) -> Result<Option<User>, RustyError> {
+    auth::authorize(db, &get_username_claim(cred)?, "USERS:READ").await?;
     shared::get_one(
         db,
         USERS_INDEX,
@@ -34,9 +48,14 @@ pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<Use
 
 // mutate
 
-pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyError> {
+pub async fn create(
+    db: &DbClient,
+    cred: &Credential,
+    user: RegisterUser,
+) -> Result<String, RustyError> {
     if get_all(
         db,
+        cred,
         &Some(json!({ "username": { "equals": user.username } })),
         &None,
     )
@@ -44,7 +63,7 @@ pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyEr
     .is_empty()
     {
         let user_id = shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await?;
-        match roles::assign(db, &user_id, None, Some("USERS")).await {
+        match roles::assign(db, cred, &user_id, None, Some("USERS")).await {
             Ok(_) => log::info!("added user {user_id} to group `USERS`"),
             Err(err) => log::warn!("error while adding user `{user_id}` to group `USERS`: {err}"),
         };

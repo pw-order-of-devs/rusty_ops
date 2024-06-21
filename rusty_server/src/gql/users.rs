@@ -14,7 +14,7 @@ pub struct UsersQuery;
 
 #[Object]
 impl UsersQuery {
-    #[auth_macro::authenticate(bearer, [USERS:READ])]
+    #[auth_macro::authenticate(bearer)]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -22,7 +22,13 @@ impl UsersQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedUsers, RustyError> {
         log::debug!("handling `users::get` request");
-        let entries = service::get_all(ctx.data::<DbClient>()?, &filter, &options).await?;
+        let entries = service::get_all(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &filter,
+            &options,
+        )
+        .await?;
         let (total, page, page_size, entries) = paginate(&entries, options);
         log::debug!("`users::get`: found {} entries", total);
         Ok(PagedUsers {
@@ -33,14 +39,15 @@ impl UsersQuery {
         })
     }
 
-    #[auth_macro::authenticate(bearer, [USERS:READ])]
+    #[auth_macro::authenticate(bearer)]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<UserModel>, RustyError> {
         log::debug!("handling `users::getById` request");
-        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let entry =
+            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`users::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -50,14 +57,14 @@ pub struct UsersMutation;
 
 #[Object]
 impl UsersMutation {
-    #[auth_macro::authenticate(bearer, [USERS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn register(
         &self,
         ctx: &Context<'_>,
         user: RegisterUser,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `users::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, user).await?;
+        let id = service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, user).await?;
         log::debug!("`users::register`: registered user with id `{id}`");
         Ok(id)
     }

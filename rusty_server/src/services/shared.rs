@@ -4,7 +4,6 @@ use serde_valid::Validate;
 
 use commons::errors::RustyError;
 use domain::auth::credentials::{get_token_claim_str, Credential};
-use domain::auth::permissions::Permission;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
@@ -96,49 +95,23 @@ pub async fn delete_all(db: &DbClient, index: &str) -> Result<u64, RustyError> {
     })
 }
 
-pub async fn has_permission(
-    db_client: &DbClient,
-    cred: &Credential,
-    id: &str,
-    perm: (&str, &str),
-) -> Result<(), RustyError> {
+pub fn get_username_claim(cred: &Credential) -> Result<String, RustyError> {
     match cred {
-        Credential::Bearer(token) => {
-            let username = get_token_claim_str(token, "sub");
-            let permissions = check_user_permission(db_client, &username, perm).await?;
-            if permissions.iter().any(|p| p.item == "ALL") {
-                return Ok(());
-            }
-
-            if parse_permission_ids(&permissions).contains(&id.to_string()) {
-                Ok(())
-            } else {
-                Err(RustyError::UnauthorizedError)
-            }
-        }
-        Credential::System => Ok(()),
+        Credential::Bearer(token) => Ok(get_token_claim_str(token, "sub")),
+        Credential::System => Ok("SYSTEM".to_string()),
         _ => Err(RustyError::UnauthorizedError),
     }
 }
 
-async fn check_user_permission(
-    db_client: &DbClient,
-    username: &str,
-    perm: (&str, &str),
-) -> Result<Vec<Permission>, RustyError> {
-    let entries = auth::get_user_permissions(db_client, username)
-        .await?
-        .iter()
-        .filter(|p| p.resource == perm.0 && p.right == perm.1)
-        .cloned()
-        .collect();
-    Ok(entries)
-}
-
-fn parse_permission_ids(permissions: &[Permission]) -> Vec<String> {
-    permissions
-        .iter()
-        .filter(|p| p.item.starts_with("ID["))
-        .map(|p| p.item.replace("ID[", "").replace(']', ""))
-        .collect()
+pub async fn check_project_write_permission(
+    db: &DbClient,
+    cred: &Credential,
+    id: &str,
+) -> Result<(), RustyError> {
+    auth::authorize(
+        db,
+        &get_username_claim(cred)?,
+        &format!("PROJECTS:WRITE:ID[{}]", id),
+    )
+    .await
 }

@@ -6,6 +6,7 @@ use domain::commons::search::SearchOptions;
 use domain::projects::{Project, RegisterProject};
 use persist::db_client::DbClient;
 
+use crate::services::shared::get_username_claim;
 use crate::services::{project_groups, shared};
 
 const PROJECTS_INDEX: &str = "projects";
@@ -20,9 +21,12 @@ pub async fn get_all(
 ) -> Result<Vec<Project>, RustyError> {
     let entries = shared::get_all::<Project>(db, PROJECTS_INDEX, filter, options).await?;
     let mut filtered = vec![];
+    let username = get_username_claim(cred)?;
     for entry in entries {
-        let has = shared::has_permission(db, cred, &entry.id, ("PROJECTS", "READ")).await;
-        if has.is_ok() {
+        if auth::authorize(db, &username, &format!("PROJECTS:READ:ID[{}]", entry.id))
+            .await
+            .is_ok()
+        {
             filtered.push(entry);
         }
     }
@@ -34,7 +38,8 @@ pub async fn get_by_id(
     cred: &Credential,
     id: &str,
 ) -> Result<Option<Project>, RustyError> {
-    shared::has_permission(db, cred, id, ("PROJECTS", "READ")).await?;
+    let username = get_username_claim(cred)?;
+    auth::authorize(db, &username, &format!("PROJECTS:READ:ID[{id}]")).await?;
     shared::get_by_id(db, PROJECTS_INDEX, id).await
 }
 
@@ -45,7 +50,8 @@ pub async fn create(
     cred: &Credential,
     project: RegisterProject,
 ) -> Result<String, RustyError> {
-    shared::has_permission(db, cred, "", ("PROJECTS", "CREATE")).await?;
+    let username = get_username_claim(cred)?;
+    auth::authorize(db, &username, "PROJECTS:CREATE").await?;
     let group_id = project.clone().group_id.unwrap_or_default();
     if !group_id.is_empty() && project_groups::get_by_id(db, &group_id).await?.is_none() {
         Err(RustyError::ValidationError(
@@ -57,7 +63,7 @@ pub async fn create(
 }
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
-    let _ = get_by_id(db, cred, id).await?;
+    shared::check_project_write_permission(db, cred, id).await?;
     shared::delete_by_id::<Project>(db, PROJECTS_INDEX, id).await
 }
 

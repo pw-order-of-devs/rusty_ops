@@ -225,6 +225,29 @@ async fn assign_pipeline_positive_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
+            "projects",
+            &Project {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                url: None,
+                group_id: None,
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
+            "jobs",
+            &Job {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                description: None,
+                template: "".to_string(),
+                project_id: "uuid".to_string(),
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
             "pipelines",
             &Pipeline {
                 id: "uuid".to_string(),
@@ -372,6 +395,29 @@ async fn set_running_positive_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
+            "projects",
+            &Project {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                url: None,
+                group_id: None,
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
+            "jobs",
+            &Job {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                description: None,
+                template: "".to_string(),
+                project_id: "uuid".to_string(),
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
             "pipelines",
             &Pipeline {
                 id: "uuid".to_string(),
@@ -457,6 +503,29 @@ async fn finalize_positive_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
+            "projects",
+            &Project {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                url: None,
+                group_id: None,
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
+            "jobs",
+            &Job {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                description: None,
+                template: "".to_string(),
+                project_id: "uuid".to_string(),
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
             "pipelines",
             &Pipeline {
                 id: "uuid".to_string(),
@@ -490,6 +559,29 @@ async fn delete_by_id_test() {
         .await
         .expect("initializing test container failed");
     let db_client = db_connect(&db, "redis", 6379).await;
+    let _ = db_client
+        .create(
+            "projects",
+            &Project {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                url: None,
+                group_id: None,
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
+            "jobs",
+            &Job {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                description: None,
+                template: "".to_string(),
+                project_id: "uuid".to_string(),
+            },
+        )
+        .await;
     let _ = db_client
         .create(
             "pipelines",

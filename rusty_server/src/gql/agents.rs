@@ -14,7 +14,7 @@ pub struct AgentsQuery;
 
 #[Object]
 impl AgentsQuery {
-    #[auth_macro::authenticate(bearer, [AGENTS:READ])]
+    #[auth_macro::authenticate(bearer)]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -22,7 +22,13 @@ impl AgentsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedAgents, RustyError> {
         log::debug!("handling `agents::get` request");
-        let entries = service::get_all(ctx.data::<DbClient>()?, &filter, &options).await?;
+        let entries = service::get_all(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &filter,
+            &options,
+        )
+        .await?;
         let (total, page, page_size, entries) = paginate(&entries, options);
         log::debug!("`agents::get`: found {} entries", total);
         Ok(PagedAgents {
@@ -33,14 +39,15 @@ impl AgentsQuery {
         })
     }
 
-    #[auth_macro::authenticate(bearer, [AGENTS:READ])]
+    #[auth_macro::authenticate(bearer)]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<Option<Agent>, RustyError> {
         log::debug!("handling `agents::getById` request");
-        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let entry =
+            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`agents::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -50,43 +57,45 @@ pub struct AgentsMutation;
 
 #[Object]
 impl AgentsMutation {
-    #[auth_macro::authenticate(bearer, [AGENTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn register(
         &self,
         ctx: &Context<'_>,
         agent: RegisterAgent,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `agents::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, agent).await?;
+        let id = service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, agent).await?;
         log::debug!("`agents::register`: created agent with id `{id}`");
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [AGENTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn healthcheck(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `agents::healthcheck` request");
-        let id = service::healthcheck(ctx.data::<DbClient>()?, &id).await?;
+        let id =
+            service::healthcheck(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`agents::healthcheck`: agent with id `{id}` checked out");
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [AGENTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `agents::deleteById` request");
-        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let deleted =
+            service::delete_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`agents::deleteById`: deleted agent with id `{id}`");
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate(bearer, [AGENTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `agents::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;

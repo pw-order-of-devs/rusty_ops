@@ -38,7 +38,7 @@ pub async fn get_by_id(
 ) -> Result<Option<Job>, RustyError> {
     let job = shared::get_by_id::<Job>(db, JOBS_INDEX, id).await?;
     if let Some(job) = job {
-        shared::has_permission(db, cred, &job.project_id, ("PROJECTS", "READ")).await?;
+        projects::get_by_id(db, cred, &job.project_id).await?;
         Ok(Some(job))
     } else {
         Ok(None)
@@ -52,19 +52,18 @@ pub async fn create(
     cred: &Credential,
     job: RegisterJob,
 ) -> Result<String, RustyError> {
-    shared::has_permission(db, cred, &job.project_id, ("PROJECTS", "WRITE")).await?;
-    if projects::get_by_id(db, cred, &job.project_id)
-        .await?
-        .is_none()
-    {
-        Err(RustyError::ValidationError("project not found".to_string()))
-    } else {
+    if let Some(project) = projects::get_by_id(db, cred, &job.project_id).await? {
+        shared::check_project_write_permission(db, cred, &project.id).await?;
         shared::create(db, JOBS_INDEX, job, |r| Job::from(&r)).await
+    } else {
+        Err(RustyError::ValidationError("project not found".to_string()))
     }
 }
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
-    let _ = get_by_id(db, cred, id).await?;
+    if let Some(job) = get_by_id(db, cred, id).await? {
+        shared::check_project_write_permission(db, cred, &job.project_id).await?;
+    }
     shared::delete_by_id::<Job>(db, JOBS_INDEX, id).await
 }
 

@@ -55,7 +55,7 @@ async fn authorize_no_permissions_test<I: Image + Default>(
     let authorized = auth::authorize(&db_client, USER_NAME, "dummy:dummy").await;
     let _ = db.stop().await;
     assert!(authorized.is_err());
-    assert_eq!(RustyError::UnauthenticatedError, authorized.unwrap_err());
+    assert_eq!(RustyError::UnauthorizedError, authorized.unwrap_err());
 }
 
 #[rstest]

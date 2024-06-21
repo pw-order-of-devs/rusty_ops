@@ -51,9 +51,8 @@ pub async fn create(
     cred: &Credential,
     pipeline: RegisterPipeline,
 ) -> Result<String, RustyError> {
-    if jobs::get_by_id(db, cred, &pipeline.job_id).await?.is_none() {
-        Err(RustyError::ValidationError("job not found".to_string()))
-    } else {
+    if let Some(job) = jobs::get_by_id(db, cred, &pipeline.job_id).await? {
+        shared::check_project_write_permission(db, cred, &job.project_id).await?;
         let pipelines_count = get_all(
             db,
             cred,
@@ -68,6 +67,8 @@ pub async fn create(
         pipeline.number = pipelines_count + 1;
         pipeline.register_date = chrono::Utc::now().to_rfc3339();
         shared::create(db, PIPELINES_INDEX, register, |_| pipeline).await
+    } else {
+        Err(RustyError::ValidationError("job not found".to_string()))
     }
 }
 
@@ -78,25 +79,30 @@ pub async fn assign(
     agent_id: &str,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if pipe.status == PipelineStatus::Defined && pipe.agent_id.is_none() {
-            pipe.status = PipelineStatus::Assigned;
-            pipe.agent_id = Some(agent_id.to_string());
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            if pipe.status == PipelineStatus::Defined && pipe.agent_id.is_none() {
+                pipe.status = PipelineStatus::Assigned;
+                pipe.agent_id = Some(agent_id.to_string());
 
-            let limit = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
-            let condition =
-                json!({ "status": { "equals": "ASSIGNED" }, "agent_id": { "equals": agent_id } });
-            if get_all(db, cred, &Some(condition), &None).await?.len() < limit {
-                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+                let limit = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
+                let condition = json!({ "status": { "equals": "ASSIGNED" }, "agent_id": { "equals": agent_id } });
+                if get_all(db, cred, &Some(condition), &None).await?.len() < limit {
+                    db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+                } else {
+                    let message = format!(
+                        "`pipelines::assign` - exceeded {limit} pipeline(s) assigned to agent"
+                    );
+                    log::debug!("{message}");
+                    Err(RustyError::AsyncGraphqlError(message))
+                }
             } else {
-                let message =
-                    format!("`pipelines::assign` - exceeded {limit} pipeline(s) assigned to agent");
+                let message = "`pipelines::assign` - pipeline already assigned".to_string();
                 log::debug!("{message}");
                 Err(RustyError::AsyncGraphqlError(message))
             }
         } else {
-            let message = "`pipelines::assign` - pipeline already assigned".to_string();
-            log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError(message))
+            Err(RustyError::UnauthorizedError)
         }
     } else {
         let message = "`pipelines::assign` - pipeline not found".to_string();
@@ -111,18 +117,23 @@ pub async fn reset(
     pipeline_id: &str,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status)
-            && agents::get_by_id(db, &pipe.agent_id.unwrap())
-                .await?
-                .is_none()
-        {
-            pipe.status = PipelineStatus::Defined;
-            pipe.agent_id = None;
-            db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status)
+                && agents::get_by_id(db, cred, &pipe.agent_id.unwrap())
+                    .await?
+                    .is_none()
+            {
+                pipe.status = PipelineStatus::Defined;
+                pipe.agent_id = None;
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+            } else {
+                let message = "`pipelines::reset` - cannot update".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError(message))
+            }
         } else {
-            let message = "`pipelines::reset` - cannot update".to_string();
-            log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError(message))
+            Err(RustyError::UnauthorizedError)
         }
     } else {
         let message = "`pipelines::reset` - pipeline not found".to_string();
@@ -138,16 +149,21 @@ pub async fn set_running(
     agent_id: &str,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
-            && pipe.clone().status == PipelineStatus::Assigned
-        {
-            pipe.status = PipelineStatus::InProgress;
-            pipe.start_date = Some(chrono::Utc::now().to_rfc3339());
-            db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
+                && pipe.clone().status == PipelineStatus::Assigned
+            {
+                pipe.status = PipelineStatus::InProgress;
+                pipe.start_date = Some(chrono::Utc::now().to_rfc3339());
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+            } else {
+                let message = "`pipelines::setRunning` - cannot update".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError(message))
+            }
         } else {
-            let message = "`pipelines::setRunning` - cannot update".to_string();
-            log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError(message))
+            Err(RustyError::UnauthorizedError)
         }
     } else {
         let message = "`pipelines::setRunning` - pipeline not found".to_string();
@@ -164,16 +180,21 @@ pub async fn finalize(
     status: PipelineStatus,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
-            && pipe.clone().status == PipelineStatus::InProgress
-        {
-            pipe.status = status;
-            pipe.end_date = Some(chrono::Utc::now().to_rfc3339());
-            db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
+                && pipe.clone().status == PipelineStatus::InProgress
+            {
+                pipe.status = status;
+                pipe.end_date = Some(chrono::Utc::now().to_rfc3339());
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+            } else {
+                let message = "`pipelines::finalize` - cannot update".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError(message))
+            }
         } else {
-            let message = "`pipelines::finalize` - cannot update".to_string();
-            log::debug!("{message}");
-            Err(RustyError::AsyncGraphqlError(message))
+            Err(RustyError::UnauthorizedError)
         }
     } else {
         let message = "`pipelines::finalize` - pipeline not found".to_string();
@@ -183,8 +204,16 @@ pub async fn finalize(
 }
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
-    let _ = get_by_id(db, cred, id).await?;
-    shared::delete_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await
+    if let Some(pipe) = get_by_id(db, cred, id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            shared::delete_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await
+        } else {
+            Ok(0)
+        }
+    } else {
+        Ok(0)
+    }
 }
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {

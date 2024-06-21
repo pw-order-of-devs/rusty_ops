@@ -42,6 +42,10 @@ pub struct RegisterUser {
 }
 
 fn validate_username(username: &str) -> Result<(), validation::Error> {
+    if username == "SYSTEM" {
+        return Err(validation::Error::Custom("restricted username".to_owned()));
+    };
+
     let allowed = ['!', '@', '#', '$', '%', '^', '&', '_', '-'];
     if username
         .chars()

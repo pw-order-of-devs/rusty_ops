@@ -8,12 +8,11 @@ pub fn authenticate(args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
 
     let auth_type = extract_auth_type(&args);
-    let resources = extract_resources(&args);
     // Extract the context parameter
     let ctx = extract_ctx(&input);
 
     // expand function
-    expand_fn(&auth_type, &resources, &input, &ctx)
+    expand_fn(&auth_type, &input, &ctx)
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -42,7 +41,7 @@ fn extract_ctx(input: &ItemFn) -> PatIdent {
 }
 
 #[cfg(not(tarpaulin_include))]
-fn expand_fn(auth_type: &str, resources: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
+fn expand_fn(auth_type: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
     let sig = input.clone().sig;
     let name = sig.clone().ident;
     let inputs = sig.clone().inputs;
@@ -72,20 +71,7 @@ fn expand_fn(auth_type: &str, resources: &str, input: &ItemFn, ctx: &PatIdent) -
                 }
                 let db = #ctx.data::<DbClient>()?;
                 match auth::authenticate(db, cred).await {
-                    Ok(username) => {
-                        if !#resources.is_empty() {
-                            log::debug!("authorizing user resources: {:?}", #resources);
-                            match auth::authorize(db, &username, #resources).await {
-                                Ok(_) => log::info!("authorized user `{cred}` for endpoint `{endpoint}`: success"),
-                                Err(err) => {
-                                    log::error!("authorized user `{cred}` for endpoint `{endpoint}`: {}", err.to_string());
-                                    return Err(err)
-                                },
-                            }
-                        } else {
-                            log::info!("authenticated user `{cred}` for endpoint `{endpoint}`: success");
-                        }
-                    },
+                    Ok(username) => log::info!("authenticated user `{cred}` for endpoint `{endpoint}`: success"),
                     Err(err) => {
                         log::error!("authenticated user `{cred}` for endpoint `{endpoint}`: {}", err.to_string());
                         return Err(err)
@@ -102,17 +88,6 @@ fn expand_fn(auth_type: &str, resources: &str, input: &ItemFn, ctx: &PatIdent) -
 fn extract_auth_type(args: &TokenStream) -> String {
     match args.clone().into_iter().next() {
         Some(item) => item.to_string(),
-        None => String::new(),
-    }
-}
-
-#[cfg(not(tarpaulin_include))]
-fn extract_resources(args: &TokenStream) -> String {
-    match args.clone().into_iter().nth(2) {
-        Some(item) => {
-            let resources = item.to_string();
-            resources[1..resources.len() - 1].to_string()
-        }
         None => String::new(),
     }
 }

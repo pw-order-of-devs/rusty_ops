@@ -15,7 +15,7 @@ pub struct PipelinesQuery;
 
 #[Object]
 impl PipelinesQuery {
-    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
+    #[auth_macro::authenticate(bearer)]
     async fn get(
         &self,
         ctx: &Context<'_>,
@@ -40,7 +40,7 @@ impl PipelinesQuery {
         })
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECTS:READ])]
+    #[auth_macro::authenticate(bearer)]
     async fn get_by_id(
         &self,
         ctx: &Context<'_>,
@@ -58,7 +58,7 @@ pub struct PipelinesMutation;
 
 #[Object]
 impl PipelinesMutation {
-    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn register(
         &self,
         ctx: &Context<'_>,
@@ -71,7 +71,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn assign(
         &self,
         ctx: &Context<'_>,
@@ -92,7 +92,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn set_running(
         &self,
         ctx: &Context<'_>,
@@ -111,7 +111,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn finalize(
         &self,
         ctx: &Context<'_>,
@@ -132,7 +132,7 @@ impl PipelinesMutation {
         Ok(id)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn delete_by_id(
         &self,
         ctx: &Context<'_>,
@@ -145,7 +145,7 @@ impl PipelinesMutation {
         Ok(deleted)
     }
 
-    #[auth_macro::authenticate(bearer, [PROJECTS:WRITE])]
+    #[auth_macro::authenticate(bearer)]
     async fn delete_all(&self, ctx: &Context<'_>) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `pipelines::deleteAll` request");
         let deleted = service::delete_all(ctx.data::<DbClient>()?).await?;
