@@ -53,7 +53,11 @@ pub async fn create(
     let username = get_username_claim(cred)?;
     auth::authorize(db, &username, "PROJECTS:CREATE").await?;
     let group_id = project.clone().group_id.unwrap_or_default();
-    if !group_id.is_empty() && project_groups::get_by_id(db, &group_id).await?.is_none() {
+    if !group_id.is_empty()
+        && project_groups::get_by_id(db, cred, &group_id)
+            .await?
+            .is_none()
+    {
         Err(RustyError::ValidationError(
             "project group not found".to_string(),
         ))

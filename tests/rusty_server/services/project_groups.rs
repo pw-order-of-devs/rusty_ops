@@ -1,3 +1,4 @@
+use domain::auth::credentials::Credential;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
@@ -24,7 +25,7 @@ async fn get_all_test() {
         )
         .await;
 
-    let result = service::get_all(&db_client, &None, &None).await;
+    let result = service::get_all(&db_client, &Credential::System, &None, &None).await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap().len());
@@ -48,7 +49,7 @@ async fn get_by_id_test() {
         )
         .await;
 
-    let result = service::get_by_id(&db_client, "uuid").await;
+    let result = service::get_by_id(&db_client, &Credential::System, "uuid").await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert!(result.clone().unwrap().is_some());
@@ -65,6 +66,7 @@ async fn create_test() {
 
     let result = service::create(
         &db_client,
+        &Credential::System,
         RegisterGroup {
             name: "sample".to_string(),
         },
@@ -92,7 +94,7 @@ async fn delete_by_id_test() {
         )
         .await;
 
-    let result = service::delete_by_id(&db_client, "uuid").await;
+    let result = service::delete_by_id(&db_client, &Credential::System, "uuid").await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap());

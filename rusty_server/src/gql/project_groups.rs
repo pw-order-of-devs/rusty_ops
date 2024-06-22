@@ -22,7 +22,13 @@ impl ProjectGroupsQuery {
         options: Option<SearchOptions>,
     ) -> async_graphql::Result<PagedGroups, RustyError> {
         log::debug!("handling `project::groups::get` request");
-        let entries = service::get_all(ctx.data::<DbClient>()?, &filter, &options).await?;
+        let entries = service::get_all(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &filter,
+            &options,
+        )
+        .await?;
         let (total, page, page_size, entries) = paginate(&entries, options);
         log::debug!("`project::groups::get`: found {} entries", total);
         Ok(PagedGroups {
@@ -40,7 +46,8 @@ impl ProjectGroupsQuery {
         id: String,
     ) -> async_graphql::Result<Option<Group>, RustyError> {
         log::debug!("handling `project::groups::getById` request");
-        let entry = service::get_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let entry =
+            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`project::groups::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
@@ -57,7 +64,7 @@ impl ProjectGroupsMutation {
         group: RegisterGroup,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `project::groups::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, group).await?;
+        let id = service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, group).await?;
         log::debug!("`project::groups::register`: created project with id `{id}`");
         Ok(id)
     }
@@ -69,7 +76,8 @@ impl ProjectGroupsMutation {
         id: String,
     ) -> async_graphql::Result<u64, RustyError> {
         log::debug!("handling `project::groups::deleteById` request");
-        let deleted = service::delete_by_id(ctx.data::<DbClient>()?, &id).await?;
+        let deleted =
+            service::delete_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
         log::debug!("`project::groups::deleteById`: deleted project with id `{id}`");
         Ok(deleted)
     }
