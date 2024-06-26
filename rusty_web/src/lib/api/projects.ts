@@ -3,7 +3,7 @@ import type { Project } from '$lib/domain/project';
 
 const getProjectsQuery = (page: number, filter: string) => `query {
 	projects {
-		get(filter: ${filter}, options: { pageNumber: ${page}, pageSize: 30 }){
+		get(filter: ${filter}, options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }){
 			total
 			page
 			pageSize

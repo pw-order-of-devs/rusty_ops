@@ -49,6 +49,10 @@ pub(crate) fn filter_results(filter: &Option<Value>, values: &[Value]) -> Vec<Va
                         filter.keys().all(|key| {
                             filter.get(key).map_or(true, |filter| {
                                 let item = item.get(key).unwrap_or(&Value::Null);
+                                if filter == &Value::Null && item == &Value::Null {
+                                    return true
+                                }
+
                                 match serde_json::from_value::<SearchFilter>(filter.clone())
                                     .unwrap_or_default()
                                 {

@@ -3,7 +3,7 @@ import type { Group } from '$lib/domain/group';
 
 const getGroupsQuery = (page: number) => `query {
 	projectGroups {
-		get(options: { pageNumber: ${page}, pageSize: 50 }){
+		get(options: { pageNumber: ${page}, pageSize: 50, sortMode: ASCENDING, sortField: "name" }){
 			total
 			page
 			pageSize
