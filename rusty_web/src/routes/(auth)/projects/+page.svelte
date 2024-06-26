@@ -67,9 +67,11 @@
 		.projects-groups {
 			display: flex;
 			flex-direction: column;
+      height: calc(100vh - 6rem);
 			width: 25rem;
 			padding: 0.5rem;
 			gap: 0.5rem;
+			overflow-y: auto;
 
 			:global(.card) {
 				padding: 0;
@@ -102,6 +104,7 @@
 			grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
 			gap: 0.5rem;
 			padding: 0.5rem;
+      overflow-y: auto;
 		}
 	}
 </style>

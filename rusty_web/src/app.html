@@ -20,7 +20,7 @@
 		background-color: #1b1b1b;
 		color: #e2e2e2;
 		font-family: Helvetica, serif;
-		overflow-x: hidden;
+		overflow: hidden;
 		cursor: default;
 		margin: 0;
 		padding: 0;
@@ -31,4 +31,22 @@
 		-webkit-user-select: none;
 		box-sizing: border-box;
 	}
+
+  ::-webkit-scrollbar {
+      width: 0.7rem;
+  }
+
+  ::-webkit-scrollbar-track {
+      background-color: #5b5b5b;
+  }
+
+  ::-webkit-scrollbar-thumb {
+      background-color: #2e2e2e;
+      border-radius: 0.3rem;
+      border: 0.15rem solid #5b5b5b;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+      background-color: #1f1f1f;
+  }
 </style>

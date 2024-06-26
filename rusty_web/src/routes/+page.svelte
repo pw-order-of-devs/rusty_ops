@@ -7,6 +7,15 @@
 	mobileCheck();
 </script>
 
-<Welcome />
-<Features />
-<Footer />
+<div class="landing-page">
+	<Welcome />
+	<Features />
+	<Footer />
+</div>
+
+<style lang="scss">
+	.landing-page {
+		max-height: calc(100vh - 4rem);
+		overflow-y: auto;
+	}
+</style>
