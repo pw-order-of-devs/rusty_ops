@@ -1,17 +1,27 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
 	import ProjectCard from 'src/components/auth/projects/ProjectCard.svelte';
-	import type { Group } from '$lib/domain/group';
 	import Loader from 'src/components/shared/Loader.svelte';
+	import type { Group } from '$lib/domain/group';
 	import { groupsFilterKeyPressed, groupsListScrolled } from '$lib/scripts/auth/projects/groups';
+	import { fetchGroups, parseGroups } from '$lib/scripts/auth/projects/groups';
+	import { fetchProjects, parseProjects } from '$lib/scripts/auth/projects/projects';
 	import { groupClicked } from '$lib/scripts/auth/projects/projects';
 	import { writable } from 'svelte/store';
+	import { onMount } from 'svelte';
 
 	let loading = writable(false);
 	let loadingGroups = writable(false);
 	let scrollableGroups: HTMLElement;
 	let groupsFilter = '';
-	export let data;
+	let data = { groups: {}, projects: {} };
+
+	onMount(async () => {
+		loading.update(() => true);
+		data.groups = await parseGroups(await fetchGroups('', 1));
+		data.projects = await parseProjects(await fetchProjects('', 1));
+		loading.update(() => false);
+	});
 
 	const groupClicked_ = (entry: Group) => async () => {
 		data = await groupClicked(entry, loading, data);

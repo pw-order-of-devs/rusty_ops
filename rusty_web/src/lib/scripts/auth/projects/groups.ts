@@ -44,14 +44,14 @@ export const groupsListScrolled = async (
 	return data;
 };
 
-const fetchGroups = async (groupsFilter: string, pageNumber: number) => {
+export const fetchGroups = async (groupsFilter: string, pageNumber: number) => {
 	return await fetch('?/fetchGroups', {
 		method: 'POST',
 		body: JSON.stringify({ groupName: groupsFilter, pageNumber })
 	});
 };
 
-const parseGroups = async (response: Response) => {
+export const parseGroups = async (response: Response) => {
 	const resp = (await response.json()).data;
 	let parsed = JSON.parse(resp.substring(1, resp.length - 1));
 	if (typeof parsed === 'string') {
