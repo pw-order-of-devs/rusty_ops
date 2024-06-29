@@ -6,7 +6,31 @@
 	import { toastError } from '$lib/ui/toasts';
 
 	let loading = false;
+	let loadingGroups = false;
+	let scrollableGroups: HTMLElement;
+	let groupsFilter = '';
 	export let data;
+
+	const groupsFilterKeyPressed = async (_: KeyboardEvent) => {
+		loadingGroups = true;
+		const response = await fetch('?/fetchGroups', {
+			method: 'POST',
+			body: JSON.stringify({ groupName: groupsFilter, pageNumber: 1 })
+		});
+
+		if (!response.ok) {
+			toastError('Error while fetching groups');
+		} else {
+			const resp = (await response.json()).data;
+			let parsed = JSON.parse(resp.substring(1, resp.length - 1));
+			if (typeof parsed === 'string') {
+				parsed = JSON.parse(parsed);
+			}
+
+			data.groups = parsed;
+			loadingGroups = false;
+		}
+	};
 
 	const groupClicked = (entry: Group) => async () => {
 		if (entry.id === data.groups?.active?.id) {
@@ -32,6 +56,37 @@
 		}
 		loading = false;
 	};
+
+	const groupsListScrolled = async () => {
+		if (
+			scrollableGroups.scrollTop + scrollableGroups.clientHeight >=
+			scrollableGroups.scrollHeight
+		) {
+			if (data.groups!.page * data.groups!.pageSize >= data.groups!.total) {
+				return;
+			}
+
+			loadingGroups = true;
+			const response = await fetch('?/fetchGroups', {
+				method: 'POST',
+				body: JSON.stringify({ groupName: groupsFilter, pageNumber: data.groups!.page + 1 })
+			});
+
+			if (!response.ok) {
+				toastError('Error while fetching groups');
+			} else {
+				const resp = (await response.json()).data;
+				let parsed = JSON.parse(resp.substring(1, resp.length - 1));
+				if (typeof parsed === 'string') {
+					parsed = JSON.parse(parsed);
+				}
+
+				parsed.entries = [...data.groups!.entries!, ...parsed.entries];
+				data.groups! = parsed;
+				loadingGroups = false;
+			}
+		}
+	};
 </script>
 
 {#if loading}
@@ -40,12 +95,23 @@
 
 <div class="projects-page">
 	<div class="projects-groups-wrapper">
+		<input
+			class="projects-group-filter"
+			type="text"
+			placeholder="Group name"
+			bind:value={groupsFilter}
+			on:keyup={groupsFilterKeyPressed}
+		/>
 		<div class="projects-group-default">
 			<Card classes={data.groups?.active?.id === '' ? 'active' : ''}>
 				<div on:click={groupClicked({ id: '', name: 'Default' })} role="none">{'Default'}</div>
 			</Card>
 		</div>
-		<div class="projects-groups">
+		<div class="projects-groups" bind:this={scrollableGroups} on:scroll={groupsListScrolled}>
+			{#if loadingGroups}
+				<Loader />
+			{/if}
+
 			{#each data.groups?.entries ?? [] as entry (entry.id)}
 				<Card classes={data.groups?.active?.id === entry.id ? 'active' : ''}>
 					<div on:click={groupClicked(entry)} role="none">{entry.name}</div>
@@ -72,24 +138,33 @@
 		display: flex;
 		flex-direction: row;
 
-		.projects-groups-wrapper {
-      position: relative;
-    }
+		.projects-group-filter {
+			box-sizing: border-box;
+			margin: 0.5rem;
+			width: 25rem;
+			padding: 0.4rem;
+			background-color: $color-black-1;
+			color: $color-white-2;
+			font-size: 1rem;
+			border: 0.05rem $color-white-2 solid;
+			border-radius: 0.5rem;
+		}
 
 		.projects-group-default {
-      height: 2rem;
-      width: 25rem;
-      padding: 0.5rem;
+			height: 2rem;
+			width: 25rem;
+			padding: 0.5rem;
 
-      :global(.active) {
-        background-color: $color-black-2;
-      }
-    }
+			:global(.active) {
+				background-color: $color-black-2;
+			}
+		}
 
 		.projects-groups {
+			position: relative;
 			display: flex;
 			flex-direction: column;
-      height: calc(100vh - 6rem - 2rem);
+			height: calc(100vh - 11rem);
 			width: 25rem;
 			padding: 0.5rem;
 			gap: 0.5rem;
@@ -126,7 +201,7 @@
 			grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
 			gap: 0.5rem;
 			padding: 0.5rem;
-      overflow-y: auto;
+			overflow-y: auto;
 		}
 	}
 </style>

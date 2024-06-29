@@ -1,23 +1,30 @@
 import { fetchPost } from '$lib/utils/api';
 import type { Group } from '$lib/domain/group';
 
-const getGroupsQuery = (page: number) => `query {
-	projectGroups {
-		get(options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }){
-			total
-			page
-			pageSize
-			entries {
-				id
-				name
+const getGroupsQuery = (page: number, name: string) => {
+	let filter = `filter: { name: { contains: "${name}" } }, `;
+	let options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
+	return `query {
+		projectGroups {
+			get(${filter}${options}){
+				total
+				page
+				pageSize
+				entries {
+					id
+					name
+				}
 			}
 		}
-	}
-}`;
+	}`;
+};
 
-export const fetchGroups = async (auth: string, page: number) => {
+export const fetchGroups = async (auth: string, page: number, groupName: string) => {
 	try {
-		const response = await fetchPost(auth, JSON.stringify({ query: getGroupsQuery(page) }));
+		const response = await fetchPost(
+			auth,
+			JSON.stringify({ query: getGroupsQuery(page, groupName) })
+		);
 
 		if (!response.ok) {
 			return {
