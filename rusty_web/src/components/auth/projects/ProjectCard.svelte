@@ -45,33 +45,5 @@
 </Card>
 
 <style lang="scss">
-	@import 'src/styles/global';
-
-	.project-card {
-		height: 100%;
-		display: flex;
-		flex-direction: column;
-		justify-content: space-evenly;
-
-		.project-name {
-			font-size: 2rem;
-			padding: 0.5rem;
-		}
-
-		.project-buttons {
-			display: flex;
-			flex-direction: row;
-			gap: 0.5rem;
-			padding: 0.5rem;
-
-			a {
-				padding: 0.5rem;
-				border: 0.1rem $color-white-2 solid;
-				border-radius: 0.5rem;
-				cursor: pointer;
-				text-decoration: none;
-				color: $color-white-2;
-			}
-		}
-	}
+	@import 'src/styles/auth/projects/projectCard';
 </style>

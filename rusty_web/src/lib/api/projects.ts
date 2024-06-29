@@ -1,28 +1,33 @@
 import { fetchPost } from '$lib/utils/api';
 import type { Project } from '$lib/domain/project';
 
-const getProjectsQuery = (page: number, filter: string) => `query {
-	projects {
-		get(filter: ${filter}, options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }){
-			total
-			page
-			pageSize
-			entries {
-				id
-				name
-				url
+const getProjectsQuery = (page: number, group: string, name: string) => {
+	let groupMatch = group.match(/[a-z-]/gi);
+	let groupIdFilter = `group_id: ${groupMatch === null ? null : `${group}`}`;
+	let filter = `filter: { ${groupIdFilter}, name: { contains: "${name}" } }, `;
+	let options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
+
+	return `query {
+		projects {
+			get(${filter}${options}){
+				total
+				page
+				pageSize
+				entries {
+					id
+					name
+					url
+				}
 			}
 		}
-	}
-}`;
+	}`;
+};
 
-export const fetchProjects = async (auth: string, page: number, group: string) => {
+export const fetchProjects = async (auth: string, page: number, group: string, name: string) => {
 	try {
-		let groupMatch = group.match(/[a-z-]/gi);
-		const filter = `{ group_id: ${groupMatch === null ? null : `${group}`} }`;
 		const response = await fetchPost(
 			auth,
-			JSON.stringify({ query: getProjectsQuery(page, filter) })
+			JSON.stringify({ query: getProjectsQuery(page, group, name) })
 		);
 
 		if (!response.ok) {

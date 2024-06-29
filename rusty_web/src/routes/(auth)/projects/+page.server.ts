@@ -12,7 +12,7 @@ export const actions = {
 	fetchProjects: async ({ request, cookies }) => {
 		const body = await request.json();
 		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');
-		let projects = await fetchProjects(jwtToken, body.pageNumber, body.groupId);
+		let projects = await fetchProjects(jwtToken, body.pageNumber, body.groupId, body.name);
 		return JSON.stringify(projects);
 	}
 };

@@ -2,35 +2,35 @@ import type { Writable } from 'svelte/store';
 import { toastError } from '$lib/ui/toasts';
 
 export const groupsFilterKeyPressed = async (
-	loadingGroups: Writable<boolean>,
-	groupsFilter: string,
+	loading: Writable<boolean>,
+	filter: string,
 	data: any
 ) => {
-	loadingGroups.update((_) => true);
-	const response = await fetchGroups(groupsFilter, 1);
+	loading.update((_) => true);
+	const response = await fetchGroups(filter, 1);
 
 	if (!response.ok) {
 		toastError('Error while fetching groups');
 	} else {
 		data.groups = await parseGroups(response);
-		loadingGroups.update((_) => false);
+		loading.update((_) => false);
 	}
 	return data;
 };
 
 export const groupsListScrolled = async (
-	scrollableGroups: HTMLElement,
-	loadingGroups: Writable<boolean>,
-	groupsFilter: string,
+	scrollable: HTMLElement,
+	loading: Writable<boolean>,
+	filter: string,
 	data: any
 ) => {
-	if (scrollableGroups.scrollTop + scrollableGroups.clientHeight >= scrollableGroups.scrollHeight) {
+	if (scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight) {
 		if (data.groups!.page * data.groups!.pageSize >= data.groups!.total) {
 			return data;
 		}
 
-		loadingGroups.update((_) => true);
-		const response = await fetchGroups(groupsFilter, data.groups!.page + 1);
+		loading.update((_) => true);
+		const response = await fetchGroups(filter, data.groups!.page + 1);
 
 		if (!response.ok) {
 			toastError('Error while fetching groups');
@@ -38,16 +38,16 @@ export const groupsListScrolled = async (
 			const parsed = await parseGroups(response);
 			parsed.entries = [...data.groups!.entries!, ...parsed.entries];
 			data.groups! = parsed;
-			loadingGroups.update((_) => false);
+			loading.update((_) => false);
 		}
 	}
 	return data;
 };
 
-export const fetchGroups = async (groupsFilter: string, pageNumber: number) => {
+export const fetchGroups = async (filter: string, pageNumber: number) => {
 	return await fetch('?/fetchGroups', {
 		method: 'POST',
-		body: JSON.stringify({ groupName: groupsFilter, pageNumber })
+		body: JSON.stringify({ groupName: filter, pageNumber })
 	});
 };
 
