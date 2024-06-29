@@ -1,0 +1,75 @@
+@import '../../global';
+
+.projects-page {
+	display: flex;
+	flex-direction: row;
+
+	.projects-group-filter {
+		box-sizing: border-box;
+		margin: 0.5rem;
+		width: 25rem;
+		padding: 0.4rem;
+		background-color: $color-black-1;
+		color: $color-white-2;
+		font-size: 1rem;
+		border: 0.05rem $color-white-2 solid;
+		border-radius: 0.5rem;
+	}
+
+	.projects-group-default {
+		height: 2rem;
+		width: 25rem;
+		padding: 0.5rem;
+
+		:global(.active) {
+			background-color: $color-black-2;
+		}
+	}
+
+	.projects-group-wrapper {
+		position: relative;
+	}
+
+	.projects-groups {
+		display: flex;
+		flex-direction: column;
+		height: calc(100vh - 11rem);
+		width: 25rem;
+		padding: 0.5rem;
+		gap: 0.5rem;
+		overflow-y: auto;
+
+		:global(.card) {
+			padding: 0;
+		}
+
+		div {
+			max-width: 25rem;
+			padding: 0.5rem;
+			cursor: pointer;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
+		:global(.active) {
+			background-color: $color-black-2;
+		}
+	}
+
+	.no-entries {
+		padding: 1rem;
+		font-size: 2rem;
+	}
+
+	.entries {
+		height: calc(100vh - 6rem);
+		width: calc(100vw - 25rem - 6rem);
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: 1fr 1fr 1fr 1fr 1fr;
+		gap: 0.5rem;
+		padding: 0.5rem;
+		overflow-y: auto;
+	}
+}
