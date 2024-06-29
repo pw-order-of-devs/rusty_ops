@@ -14,6 +14,12 @@ export const load = async ({ cookies, fetch }) => {
 };
 
 export const actions = {
+	fetchGroups: async ({ request, cookies }) => {
+		const body = await request.json();
+		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');
+		let groups = await fetchGroups(jwtToken, body.pageNumber);
+		return JSON.stringify(groups);
+	},
 	fetchProjects: async ({ request, cookies }) => {
 		const body = await request.json();
 		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');

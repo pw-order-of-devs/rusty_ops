@@ -39,13 +39,21 @@
 {/if}
 
 <div class="projects-page">
-	<div class="projects-groups">
-		{#each data.groups?.entries ?? [] as entry (entry.id)}
-			<Card classes={data.groups?.active?.id === entry.id ? 'active' : ''}>
-				<div on:click={groupClicked(entry)} role="none">{entry.name}</div>
+	<div class="projects-groups-wrapper">
+		<div class="projects-group-default">
+			<Card classes={data.groups?.active?.id === '' ? 'active' : ''}>
+				<div on:click={groupClicked({ id: '', name: 'Default' })} role="none">{'Default'}</div>
 			</Card>
-		{/each}
+		</div>
+		<div class="projects-groups">
+			{#each data.groups?.entries ?? [] as entry (entry.id)}
+				<Card classes={data.groups?.active?.id === entry.id ? 'active' : ''}>
+					<div on:click={groupClicked(entry)} role="none">{entry.name}</div>
+				</Card>
+			{/each}
+		</div>
 	</div>
+
 	{#if (data.projects?.entries ?? []).length === 0}
 		<div class="no-entries">No entries</div>
 	{:else}
@@ -64,10 +72,24 @@
 		display: flex;
 		flex-direction: row;
 
+		.projects-groups-wrapper {
+      position: relative;
+    }
+
+		.projects-group-default {
+      height: 2rem;
+      width: 25rem;
+      padding: 0.5rem;
+
+      :global(.active) {
+        background-color: $color-black-2;
+      }
+    }
+
 		.projects-groups {
 			display: flex;
 			flex-direction: column;
-      height: calc(100vh - 6rem);
+      height: calc(100vh - 6rem - 2rem);
 			width: 25rem;
 			padding: 0.5rem;
 			gap: 0.5rem;
