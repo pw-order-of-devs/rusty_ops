@@ -14,8 +14,5 @@
 </div>
 
 <style lang="scss">
-	.landing-page {
-		max-height: calc(100vh - 4rem);
-		overflow-y: auto;
-	}
+	@import 'src/styles/landing';
 </style>

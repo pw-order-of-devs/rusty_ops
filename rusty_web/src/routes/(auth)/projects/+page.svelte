@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Loader from 'src/components/shared/Loader.svelte';
-	import ProjectCard from 'src/components/auth/projects/ProjectCard.svelte';
-	import { groupsFilterKeyPressed, groupsListScrolled } from 'src/scripts/auth/projects/groups';
-	import { groupClicked } from 'src/scripts/auth/projects/projects';
 	import Card from 'src/components/auth/Card.svelte';
+	import ProjectCard from 'src/components/auth/projects/ProjectCard.svelte';
 	import type { Group } from '$lib/domain/group';
+	import Loader from 'src/components/shared/Loader.svelte';
+	import { groupsFilterKeyPressed, groupsListScrolled } from '$lib/scripts/auth/projects/groups';
+	import { groupClicked } from '$lib/scripts/auth/projects/projects';
 	import { writable } from 'svelte/store';
 
 	let loading = writable(false);

@@ -13,13 +13,5 @@
 </div>
 
 <style lang="scss">
-	.page {
-		display: flex;
-		flex-direction: row;
-
-		.content {
-			width: calc(100vw - 3rem);
-			height: calc(100vh - 4rem);
-		}
-	}
+	@import 'src/styles/auth/style';
 </style>

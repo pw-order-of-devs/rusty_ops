@@ -7,9 +7,7 @@
 	export let data;
 	export let backButtonVisible: boolean = false;
 
-	$: {
-		backButtonVisible = data.backButtonVisible;
-	}
+	$: backButtonVisible = data.backButtonVisible;
 </script>
 
 <div class="container">
@@ -22,24 +20,5 @@
 </div>
 
 <style lang="scss">
-	.container {
-		width: 100vw;
-		height: 100vh;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-
-		.kind {
-			margin-top: 1rem;
-			font-size: 2rem;
-			font-weight: bold;
-		}
-
-		.message {
-			font-size: 1rem;
-			margin-top: 0.5rem;
-			margin-bottom: 1rem;
-		}
-	}
+	@import 'src/styles/error/style';
 </style>
