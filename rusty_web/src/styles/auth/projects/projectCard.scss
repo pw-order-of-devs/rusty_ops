@@ -1,29 +1,29 @@
 @import 'src/styles/global';
 
 .project-card {
-  height: 8rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
+	height: 8rem;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-evenly;
 
-  .project-name {
-    font-size: 2rem;
-    padding: 0 0.4rem;
-  }
+	.project-name {
+		font-size: 2rem;
+		padding: 0 0.4rem;
+	}
 
-  .project-buttons {
-    display: flex;
-    flex-direction: row;
-    gap: 0.5rem;
-    padding: 0 0.4rem;
+	.project-buttons {
+		display: flex;
+		flex-direction: row;
+		gap: 0.5rem;
+		padding: 0 0.4rem;
 
-    a {
-      padding: 0.5rem;
-      border: 0.1rem $color-white-2 solid;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      text-decoration: none;
-      color: $color-white-2;
-    }
-  }
+		a {
+			padding: 0.5rem;
+			border: 0.1rem $color-white-2 solid;
+			border-radius: 0.5rem;
+			cursor: pointer;
+			text-decoration: none;
+			color: $color-white-2;
+		}
+	}
 }
