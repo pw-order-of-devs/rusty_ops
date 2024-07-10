@@ -4,7 +4,7 @@ use std::time::Duration;
 use futures_util::StreamExt;
 use mongodb::bson::{doc, to_document, Document};
 use mongodb::change_stream::event::OperationType;
-use mongodb::options::{Credential, FindOptions};
+use mongodb::options::Credential;
 use mongodb::{options::ClientOptions, Client};
 use serde_json::{json, Value};
 
@@ -62,7 +62,7 @@ impl PersistenceBuilder for MongoDBClient {
     }
 
     async fn from_string(conn: &str) -> Self {
-        let mut client_options = ClientOptions::parse_async(conn)
+        let mut client_options = ClientOptions::parse(conn)
             .await
             .expect("error while parsing mongodb connection string");
         Self::configure(&mut client_options);
@@ -85,7 +85,7 @@ impl Persistence for MongoDBClient {
             .client
             .database(&self.database)
             .collection::<Value>(index)
-            .find(None, parse_options(options))
+            .find(parse_options(options))
             .await?;
 
         let mut result: Vec<Value> = Vec::new();
@@ -121,7 +121,7 @@ impl Persistence for MongoDBClient {
         self.client
             .database(&self.database)
             .collection::<T>(index)
-            .insert_one(item, None)
+            .insert_one(item)
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|_| item.get_id())
@@ -140,11 +140,7 @@ impl Persistence for MongoDBClient {
             self.client
                 .database(&self.database)
                 .collection::<T>(index)
-                .update_one(
-                    to_document(&original)?,
-                    doc! { "$set": to_document(item)? },
-                    None,
-                )
+                .update_one(to_document(&original)?, doc! { "$set": to_document(item)? })
                 .await
                 .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
                 .map(|_| item.get_id())
@@ -163,7 +159,7 @@ impl Persistence for MongoDBClient {
         self.client
             .database(&self.database)
             .collection::<Document>(index)
-            .delete_one(to_document(&filter)?, None)
+            .delete_one(to_document(&filter)?)
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|res| res.deleted_count)
@@ -173,7 +169,7 @@ impl Persistence for MongoDBClient {
         self.client
             .database(&self.database)
             .collection::<Document>(index)
-            .delete_many(doc! {}, None)
+            .delete_many(doc! {})
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|res| res.deleted_count)
@@ -187,7 +183,7 @@ impl Persistence for MongoDBClient {
             if let Ok(mut change_stream) = self.client
                 .database(&self.database)
                 .collection::<T>(index)
-                .watch(None, None)
+                .watch()
                 .await {
                 while let Some(event) = change_stream.next().await {
                     if let Ok(event) = event {
@@ -208,30 +204,28 @@ impl Persistence for MongoDBClient {
     async fn purge(&self) -> Result<(), RustyError> {
         self.client
             .database(&self.database)
-            .drop(None)
+            .drop()
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
     }
 }
 
-fn parse_options(options: &Option<SearchOptions>) -> Option<FindOptions> {
+fn parse_options(options: &Option<SearchOptions>) -> Document {
     options.as_ref().map_or_else(
-        || None,
+        || doc! {},
         |value| {
-            let sort_mode = value.sort_mode.unwrap_or_default();
-            let sort = if value.sort_field.is_some() {
+            let sort_mode = value.clone().sort_mode.unwrap_or_default();
+            if value.sort_field.is_some() {
                 let field = value.clone().sort_field.unwrap();
                 let mode = if sort_mode == SortOptions::Ascending {
                     1
                 } else {
                     -1
                 };
-                Some(doc! { field: mode })
+                doc! { field: mode }
             } else {
-                None
-            };
-
-            Some(FindOptions::builder().sort(sort).build())
+                doc! {}
+            }
         },
     )
 }

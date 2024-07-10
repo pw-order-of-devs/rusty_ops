@@ -2,6 +2,7 @@ prepare_env:
 	curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain stable -y
 	rustup target add x86_64-unknown-linux-musl
 	rustup component add llvm-tools-preview
+	cargo install cargo-audit
 	cargo install cargo-machete
 	cargo install cargo-tarpaulin
 	cargo install grcov
