@@ -1,6 +1,7 @@
 import type { Writable } from 'svelte/store';
 import type { Group } from '$lib/domain/group';
 import { toastError } from '$lib/ui/toasts';
+import { parseResponse } from '$lib/scripts/utils/parse';
 
 export const groupClicked = async (entry: Group, loading: Writable<boolean>, data: any) => {
 	if (entry.id === data.groups?.active?.id) {
@@ -13,7 +14,7 @@ export const groupClicked = async (entry: Group, loading: Writable<boolean>, dat
 	if (!response.ok) {
 		toastError('Error while fetching projects');
 	} else {
-		const parsed = await parseProjects(response);
+		const parsed = await parseResponse(response);
 		data.projects!.entries = parsed.entries;
 	}
 	loading.update((_) => false);
@@ -32,7 +33,7 @@ export const projectsFilterKeyPressed = async (
 	if (!response.ok) {
 		toastError('Error while fetching projects');
 	} else {
-		data.projects = await parseProjects(response);
+		data.projects = await parseResponse(response);
 		loading.update((_) => false);
 	}
 	return data;
@@ -56,7 +57,7 @@ export const projectsListScrolled = async (
 		if (!response.ok) {
 			toastError('Error while fetching projects');
 		} else {
-			const parsed = await parseProjects(response);
+			const parsed = await parseResponse(response);
 			parsed.entries = [...data.projects!.entries!, ...parsed.entries];
 			data.projects! = parsed;
 			loading.update((_) => false);
@@ -72,12 +73,9 @@ export const fetchProjects = async (id: string, name: string, pageNumber: number
 	});
 };
 
-export const parseProjects = async (response: Response) => {
-	const resp = (await response.json()).data;
-	let parsed = JSON.parse(resp.substring(1, resp.length - 1));
-	if (typeof parsed === 'string') {
-		parsed = JSON.parse(parsed);
-	}
-
-	return parsed;
+export const getProjectById = async (id: string) => {
+	return await fetch('?/getProjectById', {
+		method: 'POST',
+		body: JSON.stringify({ id })
+	});
 };

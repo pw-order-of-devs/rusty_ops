@@ -57,3 +57,40 @@ export const fetchProjects = async (auth: string, page: number, group: string, n
 		};
 	}
 };
+
+const getProjectByIdQuery = (id: string) => {
+	return `query {
+		projects {
+			getById(id: "${id}"){
+				id
+				name
+				url
+			}
+		}
+	}`;
+};
+
+export const getProjectById = async (auth: string, id: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: getProjectByIdQuery(id) }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Get project by id failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.projects?.getById;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Get project by id failed']
+		};
+	}
+};

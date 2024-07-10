@@ -3,20 +3,19 @@
 	import ProjectCard from 'src/components/auth/projects/ProjectCard.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
 	import type { Group } from '$lib/domain/group';
-	import { type Data } from '$lib/scripts/auth/projects/data';
+	import { type ProjectsData } from '$lib/scripts/auth/projects/data';
 	import {
 		fetchGroups,
-		parseGroups,
 		groupsFilterKeyPressed,
 		groupsListScrolled
 	} from '$lib/scripts/auth/projects/groups';
 	import {
 		fetchProjects,
-		parseProjects,
 		projectsFilterKeyPressed,
 		projectsListScrolled
 	} from '$lib/scripts/auth/projects/projects';
 	import { groupClicked } from '$lib/scripts/auth/projects/projects';
+	import { parseResponse } from '$lib/scripts/utils/parse';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 
@@ -30,43 +29,43 @@
 	let groupsFilter = '';
 	let projectsFilter = '';
 
-	let data: Data | undefined = undefined;
+	let pageData: ProjectsData | undefined = undefined;
 
 	onMount(async () => {
 		loading.update(() => true);
-		let groups = await parseGroups(await fetchGroups('', 1));
-		let projects = await parseProjects(await fetchProjects('', '', 1));
-		data = { groups, projects };
+		let groups = await parseResponse(await fetchGroups('', 1));
+		let projects = await parseResponse(await fetchProjects('', '', 1));
+		pageData = { groups, projects };
 		loading.update(() => false);
 	});
 
 	const groupClicked_ = (entry: Group) => async () => {
-		data = await groupClicked(entry, loading, data);
+		pageData = await groupClicked(entry, loading, pageData);
 		projectsFilter = '';
 	};
 
 	const groupsFilterKeyPressed_ = async (_: KeyboardEvent) => {
-		data = await groupsFilterKeyPressed(loadingGroups, groupsFilter, data);
+		pageData = await groupsFilterKeyPressed(loadingGroups, groupsFilter, pageData);
 	};
 
 	const groupsListScrolled_ = async () => {
-		data = await groupsListScrolled(scrollableGroups, loadingGroups, groupsFilter, data);
+		pageData = await groupsListScrolled(scrollableGroups, loadingGroups, groupsFilter, pageData);
 	};
 
 	const projectsListScrolled_ = async () => {
-		let groupId = data?.groups?.active?.id ?? '';
-		data = await projectsListScrolled(
+		let groupId = pageData?.groups?.active?.id ?? '';
+		pageData = await projectsListScrolled(
 			scrollableProjects,
 			loadingProjects,
 			groupId,
 			projectsFilter,
-			data
+			pageData
 		);
 	};
 
 	const projectsFilterKeyPressed_ = async (_: KeyboardEvent) => {
-		let groupId = data?.groups?.active?.id ?? '';
-		data = await projectsFilterKeyPressed(loadingProjects, groupId, projectsFilter, data);
+		let groupId = pageData?.groups?.active?.id ?? '';
+		pageData = await projectsFilterKeyPressed(loadingProjects, groupId, projectsFilter, pageData);
 	};
 </script>
 
@@ -84,7 +83,7 @@
 			on:keyup={groupsFilterKeyPressed_}
 		/>
 		<div class="projects-group-default">
-			<Card classes={data?.groups?.active?.id === '' ? 'active' : ''}>
+			<Card classes={pageData?.groups?.active?.id === '' ? 'active' : ''}>
 				<div on:click={groupClicked_({ id: '', name: 'Default' })} role="none">{'Default'}</div>
 			</Card>
 		</div>
@@ -94,8 +93,8 @@
 			{/if}
 
 			<div class="projects-groups" bind:this={scrollableGroups} on:scroll={groupsListScrolled_}>
-				{#each data?.groups?.entries ?? [] as entry (entry.id)}
-					<Card classes={data?.groups?.active?.id === entry.id ? 'active' : ''}>
+				{#each pageData?.groups?.entries ?? [] as entry (entry.id)}
+					<Card classes={pageData?.groups?.active?.id === entry.id ? 'active' : ''}>
 						<div on:click={groupClicked_(entry)} role="none">{entry.name}</div>
 					</Card>
 				{/each}
@@ -112,7 +111,7 @@
 			on:keyup={projectsFilterKeyPressed_}
 		/>
 
-		{#if (data?.projects?.entries ?? []).length === 0}
+		{#if (pageData?.projects?.entries ?? []).length === 0}
 			<div class="no-entries">No entries</div>
 		{:else}
 			<div class="projects-wrapper">
@@ -121,7 +120,7 @@
 				{/if}
 
 				<div class="entries" bind:this={scrollableProjects} on:scroll={projectsListScrolled_}>
-					{#each data?.projects?.entries ?? [] as entry (entry.id)}
+					{#each pageData?.projects?.entries ?? [] as entry (entry.id)}
 						<ProjectCard {entry} />
 					{/each}
 				</div>

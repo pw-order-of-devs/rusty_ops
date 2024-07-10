@@ -1,4 +1,5 @@
 import type { Group } from '$lib/domain/group';
+import type { Job } from '$lib/domain/job';
 import type { Project } from '$lib/domain/project';
 
 interface Groups {
@@ -10,7 +11,14 @@ interface Projects {
 	entries: Project[];
 }
 
-export interface Data {
+export interface ProjectsData {
 	groups: Groups | undefined;
 	projects: Projects | undefined;
+}
+
+export interface ProjectData {
+	jobs: {
+		entries: Job[];
+	};
+	project: Project | undefined;
 }

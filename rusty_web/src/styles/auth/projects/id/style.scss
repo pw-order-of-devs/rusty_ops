@@ -1,0 +1,58 @@
+@import 'src/styles/global';
+
+.project-page {
+	.jobs-filter {
+		box-sizing: border-box;
+		margin: 0.5rem;
+		width: 25rem;
+		padding: 0.4rem;
+		background-color: $color-black-1;
+		color: $color-white-2;
+		font-size: 1rem;
+		border: 0.05rem $color-white-2 solid;
+		border-radius: 0.5rem;
+	}
+
+	.project-title {
+		:global(.card) {
+			margin: 0.5rem;
+			height: 5rem;
+		}
+
+		.project-name {
+			font-size: 2rem;
+			font-weight: bold;
+		}
+
+		.project-url {
+			margin-top: 0.5rem;
+			font-size: 1.5rem;
+		}
+	}
+
+	.project-jobs {
+		.no-entries {
+			padding: 1rem;
+			font-size: 2rem;
+		}
+
+		.project-jobs-wrapper {
+			position: relative;
+
+			.entries {
+				height: calc(100vh - 15rem);
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+				padding: 0.5rem;
+				overflow-y: auto;
+			}
+		}
+	}
+}
+
+.wrap-text {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
