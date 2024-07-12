@@ -71,6 +71,29 @@ async fn get_by_id_test() {
     let db_client = db_connect(&db, "redis", 6379).await;
     let _ = db_client
         .create(
+            "projects",
+            &Project {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                url: None,
+                group_id: None,
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
+            "jobs",
+            &Job {
+                id: "uuid".to_string(),
+                name: "sample".to_string(),
+                description: None,
+                template: "".to_string(),
+                project_id: "uuid".to_string(),
+            },
+        )
+        .await;
+    let _ = db_client
+        .create(
             "pipelines",
             &Pipeline {
                 id: "uuid".to_string(),

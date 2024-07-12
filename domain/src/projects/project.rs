@@ -2,7 +2,24 @@ use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 use serde_valid::{validation, Validate};
 
+use crate::jobs::JobModel;
 use crate::RustyDomainItem;
+
+/// A struct representing a project.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct ProjectModel {
+    /// project id
+    pub id: String,
+    /// project name
+    pub name: String,
+    /// project url
+    pub url: Option<String>,
+    /// project group id
+    #[serde(rename(deserialize = "groupId", deserialize = "group_id"))]
+    pub group_id: Option<String>,
+    /// project jobs
+    pub jobs: Vec<JobModel>,
+}
 
 /// A struct representing a project.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
@@ -54,6 +71,18 @@ impl RegisterProject {
     }
 }
 
+impl From<&Project> for ProjectModel {
+    fn from(value: &Project) -> Self {
+        Self {
+            id: value.clone().id,
+            name: value.clone().name,
+            url: value.clone().url,
+            group_id: value.clone().group_id,
+            jobs: vec![],
+        }
+    }
+}
+
 impl From<&RegisterProject> for Project {
     fn from(value: &RegisterProject) -> Self {
         Self {
@@ -62,6 +91,12 @@ impl From<&RegisterProject> for Project {
             url: Some(value.clone().url),
             group_id: value.clone().group_id,
         }
+    }
+}
+
+impl RustyDomainItem for ProjectModel {
+    fn get_id(&self) -> String {
+        self.clone().id
     }
 }
 
@@ -81,5 +116,5 @@ pub struct PagedProjects {
     /// size of a page
     pub page_size: usize,
     /// data returned by query
-    pub entries: Vec<Project>,
+    pub entries: Vec<ProjectModel>,
 }

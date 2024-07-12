@@ -4,10 +4,13 @@ use serde_json::Value;
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
-use domain::jobs::{Job, PagedJobs, RegisterJob};
+use domain::jobs::{JobModel, PagedJobs, RegisterJob};
 use persist::db_client::DbClient;
 
-use crate::gql::{get_public_gql_endpoints, shared::paginate};
+use crate::gql::{
+    get_public_gql_endpoints,
+    shared::{paginate, selected_fields},
+};
 use crate::services::jobs as service;
 
 pub struct JobsQuery;
@@ -27,6 +30,7 @@ impl JobsQuery {
             ctx.data::<Credential>()?,
             &filter,
             &options,
+            &selected_fields(ctx),
         )
         .await?;
         let (total, page, page_size, entries) = paginate(&entries, options);
@@ -44,10 +48,15 @@ impl JobsQuery {
         &self,
         ctx: &Context<'_>,
         id: String,
-    ) -> async_graphql::Result<Option<Job>, RustyError> {
+    ) -> async_graphql::Result<Option<JobModel>, RustyError> {
         log::debug!("handling `jobs::getById` request");
-        let entry =
-            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
+        let entry = service::get_by_id(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &id,
+            &selected_fields(ctx),
+        )
+        .await?;
         log::debug!("`jobs::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }

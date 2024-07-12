@@ -1,13 +1,14 @@
-use serde_json::Value;
+use async_graphql::SelectionField;
+use serde_json::{json, Value};
 
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
-use domain::projects::{Group, RegisterGroup};
+use domain::projects::{Group, GroupModel, ProjectModel, RegisterGroup};
 use persist::db_client::DbClient;
 
-use crate::services::shared;
 use crate::services::shared::get_username_claim;
+use crate::services::{projects, shared};
 
 const GROUPS_INDEX: &str = "project_groups";
 
@@ -18,7 +19,8 @@ pub async fn get_all(
     cred: &Credential,
     filter: &Option<Value>,
     options: &Option<SearchOptions>,
-) -> Result<Vec<Group>, RustyError> {
+    inner: &[SelectionField<'_>],
+) -> Result<Vec<GroupModel>, RustyError> {
     let entries = shared::get_all::<Group>(db, GROUPS_INDEX, filter, options).await?;
     let mut filtered = vec![];
     let username = get_username_claim(cred)?;
@@ -31,7 +33,15 @@ pub async fn get_all(
         .await
         .is_ok()
         {
-            filtered.push(entry);
+            filtered.push(GroupModel::from(&entry));
+        }
+    }
+
+    if inner.iter().map(|f| f.name()).any(|f| f == "projects") {
+        for f in &mut filtered {
+            if let Ok(projects) = get_projects_for_group(db, cred, &f.id, inner).await {
+                f.projects = projects;
+            }
         }
     }
     Ok(filtered)
@@ -41,10 +51,43 @@ pub async fn get_by_id(
     db: &DbClient,
     cred: &Credential,
     id: &str,
-) -> Result<Option<Group>, RustyError> {
+    inner: &[SelectionField<'_>],
+) -> Result<Option<GroupModel>, RustyError> {
     let username = get_username_claim(cred)?;
     auth::authorize(db, &username, &format!("PROJECT_GROUPS:READ:ID[{id}]")).await?;
-    shared::get_by_id(db, GROUPS_INDEX, id).await
+    if let Some(group) = shared::get_by_id::<Group>(db, GROUPS_INDEX, id).await? {
+        let mut model = GroupModel::from(&group);
+        if inner.iter().map(|f| f.name()).any(|f| f == "projects") {
+            if let Ok(projects) = get_projects_for_group(db, cred, &group.id, inner).await {
+                model.projects = projects;
+            }
+        }
+        Ok(Some(model))
+    } else {
+        Ok(None)
+    }
+}
+
+async fn get_projects_for_group(
+    db: &DbClient,
+    cred: &Credential,
+    id: &str,
+    inner: &[SelectionField<'_>],
+) -> Result<Vec<ProjectModel>, RustyError> {
+    let projects_inner = if let Some(field) = inner.iter().find(|f| f.name() == "projects") {
+        field.selection_set().collect()
+    } else {
+        vec![]
+    };
+
+    projects::get_all(
+        db,
+        cred,
+        &Some(json!({ "group_id": { "equals": id } })),
+        &None,
+        &projects_inner,
+    )
+    .await
 }
 
 // mutate

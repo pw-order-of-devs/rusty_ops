@@ -5,9 +5,11 @@ use commons::env::var_or_default;
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
+use domain::jobs::Job;
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 
+use crate::services::shared::get_username_claim;
 use crate::services::{agents, jobs, shared};
 
 const PIPELINES_INDEX: &str = "pipelines";
@@ -22,9 +24,19 @@ pub async fn get_all(
 ) -> Result<Vec<Pipeline>, RustyError> {
     let entries = shared::get_all::<Pipeline>(db, PIPELINES_INDEX, filter, options).await?;
     let mut filtered = vec![];
+    let username = get_username_claim(cred)?;
     for entry in entries {
-        if jobs::get_by_id(db, cred, &entry.job_id).await?.is_some() {
-            filtered.push(entry);
+        if let Some(job) = shared::get_by_id::<Job>(db, "jobs", &entry.job_id).await? {
+            if auth::authorize(
+                db,
+                &username,
+                &format!("PROJECTS:READ:ID[{}]", job.project_id),
+            )
+            .await
+            .is_ok()
+            {
+                filtered.push(entry);
+            }
         }
     }
     Ok(filtered)
@@ -35,10 +47,19 @@ pub async fn get_by_id(
     cred: &Credential,
     id: &str,
 ) -> Result<Option<Pipeline>, RustyError> {
-    let pipeline = shared::get_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await?;
-    if let Some(pipeline) = pipeline {
-        jobs::get_by_id(db, cred, &pipeline.job_id).await?;
-        Ok(Some(pipeline))
+    if let Some(pipeline) = shared::get_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await? {
+        if let Some(job) = shared::get_by_id::<Job>(db, "jobs", id).await? {
+            let username = get_username_claim(cred)?;
+            auth::authorize(
+                db,
+                &username,
+                &format!("PROJECTS:READ:ID[{}]", job.project_id),
+            )
+            .await?;
+            Ok(Some(pipeline))
+        } else {
+            Ok(None)
+        }
     } else {
         Ok(None)
     }
@@ -51,7 +72,7 @@ pub async fn create(
     cred: &Credential,
     pipeline: RegisterPipeline,
 ) -> Result<String, RustyError> {
-    if let Some(job) = jobs::get_by_id(db, cred, &pipeline.job_id).await? {
+    if let Some(job) = jobs::get_by_id(db, cred, &pipeline.job_id, &[]).await? {
         shared::check_project_write_permission(db, cred, &job.project_id).await?;
         let pipelines_count = get_all(
             db,
@@ -79,7 +100,7 @@ pub async fn assign(
     agent_id: &str,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &[]).await? {
             shared::check_project_write_permission(db, cred, &job.project_id).await?;
             if pipe.status == PipelineStatus::Defined && pipe.agent_id.is_none() {
                 pipe.status = PipelineStatus::Assigned;
@@ -117,7 +138,7 @@ pub async fn reset(
     pipeline_id: &str,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &[]).await? {
             shared::check_project_write_permission(db, cred, &job.project_id).await?;
             if [PipelineStatus::Assigned, PipelineStatus::InProgress].contains(&pipe.status)
                 && agents::get_by_id(db, cred, &pipe.agent_id.unwrap())
@@ -149,7 +170,7 @@ pub async fn set_running(
     agent_id: &str,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &[]).await? {
             shared::check_project_write_permission(db, cred, &job.project_id).await?;
             if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
                 && pipe.clone().status == PipelineStatus::Assigned
@@ -180,7 +201,7 @@ pub async fn finalize(
     status: PipelineStatus,
 ) -> Result<String, RustyError> {
     if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
-        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &[]).await? {
             shared::check_project_write_permission(db, cred, &job.project_id).await?;
             if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id
                 && pipe.clone().status == PipelineStatus::InProgress
@@ -205,7 +226,7 @@ pub async fn finalize(
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
     if let Some(pipe) = get_by_id(db, cred, id).await? {
-        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &[]).await? {
             shared::check_project_write_permission(db, cred, &job.project_id).await?;
             shared::delete_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await
         } else {

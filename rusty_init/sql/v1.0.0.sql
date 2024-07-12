@@ -34,8 +34,7 @@ create table if not exists rusty.agents (
 
 create table if not exists rusty.project_groups (
     id varchar(36) primary key,
-    name text not null,
-    projects varchar(36)[]
+    name text not null
 );
 
 create table if not exists rusty.projects (

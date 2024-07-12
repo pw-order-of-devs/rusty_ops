@@ -4,10 +4,13 @@ use serde_json::Value;
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
-use domain::projects::{PagedProjects, Project, RegisterProject};
+use domain::projects::{PagedProjects, ProjectModel, RegisterProject};
 use persist::db_client::DbClient;
 
-use crate::gql::{get_public_gql_endpoints, shared::paginate};
+use crate::gql::{
+    get_public_gql_endpoints,
+    shared::{paginate, selected_fields},
+};
 use crate::services::projects as service;
 
 pub struct ProjectsQuery;
@@ -27,6 +30,7 @@ impl ProjectsQuery {
             ctx.data::<Credential>()?,
             &filter,
             &options,
+            &selected_fields(ctx),
         )
         .await?;
         let (total, page, page_size, entries) = paginate(&entries, options);
@@ -44,10 +48,15 @@ impl ProjectsQuery {
         &self,
         ctx: &Context<'_>,
         id: String,
-    ) -> async_graphql::Result<Option<Project>, RustyError> {
+    ) -> async_graphql::Result<Option<ProjectModel>, RustyError> {
         log::debug!("handling `projects::getById` request");
-        let entry =
-            service::get_by_id(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
+        let entry = service::get_by_id(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &id,
+            &selected_fields(ctx),
+        )
+        .await?;
         log::debug!("`projects::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }

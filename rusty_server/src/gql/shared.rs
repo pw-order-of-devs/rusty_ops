@@ -1,3 +1,4 @@
+use async_graphql::{parser::types::Field, ContextBase, Positioned, SelectionField};
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
@@ -18,4 +19,22 @@ pub fn paginate<T: RustyDomainItem>(
         .cloned()
         .collect::<Vec<T>>();
     (entries.len(), page, page_size, paginated)
+}
+
+pub fn selected_fields<'a>(
+    ctx: &'a ContextBase<'_, &Positioned<Field>>,
+) -> Vec<SelectionField<'a>> {
+    match ctx.look_ahead().selection_fields().first() {
+        Some(item) => match item.name() {
+            "get" => item
+                .selection_set()
+                .find(|f| f.name() == "entries")
+                .unwrap()
+                .selection_set()
+                .collect(),
+            "getById" => item.selection_set().collect(),
+            _ => vec![],
+        },
+        _ => vec![],
+    }
 }

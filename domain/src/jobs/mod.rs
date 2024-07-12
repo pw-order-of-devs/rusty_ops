@@ -2,8 +2,27 @@ use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 use serde_valid::{validation, Validate};
 
+use crate::pipelines::Pipeline;
 use crate::templates::pipeline::PipelineTemplate;
 use crate::RustyDomainItem;
+
+/// A struct representing a job.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct JobModel {
+    /// job id
+    pub id: String,
+    /// job name
+    pub name: String,
+    /// job description
+    pub description: Option<String>,
+    /// job pipeline template
+    pub template: String,
+    /// job project id
+    #[serde(rename(deserialize = "projectId", deserialize = "project_id"))]
+    pub project_id: String,
+    /// job pipelines
+    pub pipelines: Vec<Pipeline>,
+}
 
 /// A struct representing a job.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
@@ -67,6 +86,19 @@ fn validate_template(url: &str) -> Result<(), validation::Error> {
     }
 }
 
+impl From<&Job> for JobModel {
+    fn from(value: &Job) -> Self {
+        Self {
+            id: value.clone().id,
+            name: value.clone().name,
+            description: value.clone().description,
+            template: value.clone().template,
+            project_id: value.clone().project_id,
+            pipelines: vec![],
+        }
+    }
+}
+
 impl From<&RegisterJob> for Job {
     fn from(value: &RegisterJob) -> Self {
         Self {
@@ -76,6 +108,12 @@ impl From<&RegisterJob> for Job {
             template: value.clone().template,
             project_id: value.clone().project_id,
         }
+    }
+}
+
+impl RustyDomainItem for JobModel {
+    fn get_id(&self) -> String {
+        self.clone().id
     }
 }
 
@@ -95,5 +133,5 @@ pub struct PagedJobs {
     /// size of a page
     pub page_size: usize,
     /// data returned by query
-    pub entries: Vec<Job>,
+    pub entries: Vec<JobModel>,
 }

@@ -20,12 +20,11 @@ async fn get_all_test() {
             &Group {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                projects: vec![],
             },
         )
         .await;
 
-    let result = service::get_all(&db_client, &Credential::System, &None, &None).await;
+    let result = service::get_all(&db_client, &Credential::System, &None, &None, &[]).await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap().len());
@@ -44,12 +43,11 @@ async fn get_by_id_test() {
             &Group {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                projects: vec![],
             },
         )
         .await;
 
-    let result = service::get_by_id(&db_client, &Credential::System, "uuid").await;
+    let result = service::get_by_id(&db_client, &Credential::System, "uuid", &[]).await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert!(result.clone().unwrap().is_some());
@@ -89,7 +87,6 @@ async fn delete_by_id_test() {
             &Group {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                projects: vec![],
             },
         )
         .await;
@@ -114,7 +111,6 @@ async fn delete_all_test() {
             &Group {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
-                projects: vec![],
             },
         )
         .await;
