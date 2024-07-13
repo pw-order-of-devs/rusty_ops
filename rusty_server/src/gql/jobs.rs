@@ -48,12 +48,14 @@ impl JobsQuery {
         &self,
         ctx: &Context<'_>,
         id: String,
+        filter: Option<Value>,
     ) -> async_graphql::Result<Option<JobModel>, RustyError> {
         log::debug!("handling `jobs::getById` request");
         let entry = service::get_by_id(
             ctx.data::<DbClient>()?,
             ctx.data::<Credential>()?,
             &id,
+            &filter,
             &selected_fields(ctx),
         )
         .await?;

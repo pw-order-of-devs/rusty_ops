@@ -8,7 +8,7 @@ use domain::jobs::{Job, JobModel, RegisterJob};
 use domain::pipelines::Pipeline;
 use persist::db_client::DbClient;
 
-use crate::services::shared::get_username_claim;
+use crate::services::shared::{add_filter_field, get_username_claim, remove_filter_field};
 use crate::services::{pipelines, projects, shared};
 
 const JOBS_INDEX: &str = "jobs";
@@ -22,7 +22,10 @@ pub async fn get_all(
     options: &Option<SearchOptions>,
     inner: &[SelectionField<'_>],
 ) -> Result<Vec<JobModel>, RustyError> {
-    let entries = shared::get_all::<Job>(db, JOBS_INDEX, filter, options).await?;
+    let mut filter = filter.clone();
+    let mut inner_filter = remove_filter_field(&mut filter, "pipelines");
+
+    let entries = shared::get_all::<Job>(db, JOBS_INDEX, &filter, options).await?;
     let mut filtered = vec![];
     let username = get_username_claim(cred)?;
     for entry in entries {
@@ -40,7 +43,8 @@ pub async fn get_all(
 
     if inner.iter().map(|f| f.name()).any(|f| f == "pipelines") {
         for f in &mut filtered {
-            if let Ok(pipelines) = get_pipelines_for_job(db, cred, &f.id).await {
+            let filter = add_filter_field(&mut inner_filter, "job_id", json!({ "equals": f.id }));
+            if let Ok(pipelines) = get_pipelines_for_job(db, cred, &filter).await {
                 f.pipelines = pipelines;
             }
         }
@@ -52,8 +56,12 @@ pub async fn get_by_id(
     db: &DbClient,
     cred: &Credential,
     id: &str,
+    filter: &Option<Value>,
     inner: &[SelectionField<'_>],
 ) -> Result<Option<JobModel>, RustyError> {
+    let mut filter = filter.clone();
+    let mut inner_filter = remove_filter_field(&mut filter, "pipelines");
+
     let job = shared::get_by_id::<Job>(db, JOBS_INDEX, id).await?;
     if let Some(job) = job {
         let username = get_username_claim(cred)?;
@@ -63,10 +71,12 @@ pub async fn get_by_id(
             &format!("PROJECTS:READ:ID[{}]", job.project_id),
         )
         .await?;
-        projects::get_by_id(db, cred, &job.project_id, &[]).await?;
+        projects::get_by_id(db, cred, &job.project_id, &None, &[]).await?;
         let mut model = JobModel::from(&job);
         if inner.iter().map(|f| f.name()).any(|f| f == "pipelines") {
-            if let Ok(pipelines) = get_pipelines_for_job(db, cred, &job.id).await {
+            let filter =
+                add_filter_field(&mut inner_filter, "job_id", json!({ "equals": model.id }));
+            if let Ok(pipelines) = get_pipelines_for_job(db, cred, &filter).await {
                 model.pipelines = pipelines;
             }
         }
@@ -79,15 +89,9 @@ pub async fn get_by_id(
 async fn get_pipelines_for_job(
     db: &DbClient,
     cred: &Credential,
-    id: &str,
+    filter: &Value,
 ) -> Result<Vec<Pipeline>, RustyError> {
-    pipelines::get_all(
-        db,
-        cred,
-        &Some(json!({ "job_id": { "equals": id } })),
-        &None,
-    )
-    .await
+    pipelines::get_all(db, cred, &Some(filter.clone()), &None).await
 }
 
 // mutate
@@ -97,7 +101,7 @@ pub async fn create(
     cred: &Credential,
     job: RegisterJob,
 ) -> Result<String, RustyError> {
-    if let Some(project) = projects::get_by_id(db, cred, &job.project_id, &[]).await? {
+    if let Some(project) = projects::get_by_id(db, cred, &job.project_id, &None, &[]).await? {
         shared::check_project_write_permission(db, cred, &project.id).await?;
         shared::create(db, JOBS_INDEX, job, |r| Job::from(&r)).await
     } else {
@@ -106,7 +110,7 @@ pub async fn create(
 }
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
-    if let Some(job) = get_by_id(db, cred, id, &[]).await? {
+    if let Some(job) = get_by_id(db, cred, id, &None, &[]).await? {
         shared::check_project_write_permission(db, cred, &job.project_id).await?;
     }
     shared::delete_by_id::<Job>(db, JOBS_INDEX, id).await

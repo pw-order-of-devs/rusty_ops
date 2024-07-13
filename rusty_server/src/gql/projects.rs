@@ -48,12 +48,14 @@ impl ProjectsQuery {
         &self,
         ctx: &Context<'_>,
         id: String,
+        filter: Option<Value>,
     ) -> async_graphql::Result<Option<ProjectModel>, RustyError> {
         log::debug!("handling `projects::getById` request");
         let entry = service::get_by_id(
             ctx.data::<DbClient>()?,
             ctx.data::<Credential>()?,
             &id,
+            &filter,
             &selected_fields(ctx),
         )
         .await?;

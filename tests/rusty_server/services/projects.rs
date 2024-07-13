@@ -51,7 +51,7 @@ async fn get_by_id_test() {
         )
         .await;
 
-    let result = service::get_by_id(&db_client, &Credential::System, "uuid", &[]).await;
+    let result = service::get_by_id(&db_client, &Credential::System, "uuid", &None, &[]).await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert!(result.clone().unwrap().is_some());

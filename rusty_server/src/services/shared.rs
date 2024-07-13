@@ -115,3 +115,28 @@ pub async fn check_project_write_permission(
     )
     .await
 }
+
+pub fn remove_filter_field(filter: &mut Option<Value>, field_to_remove: &str) -> Option<Value> {
+    if let Some(ref mut value) = filter {
+        if let Some(obj) = value.as_object_mut() {
+            obj.remove(field_to_remove)
+        } else {
+            None
+        }
+    } else {
+        None
+    }
+}
+
+pub fn add_filter_field(filter: &mut Option<Value>, key: &str, value: Value) -> Value {
+    if let Some(ref mut obj) = filter {
+        if let Some(map) = obj.as_object_mut() {
+            map.insert(key.to_string(), value);
+            obj.clone()
+        } else {
+            json!({ key: value })
+        }
+    } else {
+        json!({ key: value })
+    }
+}
