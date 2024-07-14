@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
-use domain::commons::search::SearchOptions;
+use domain::commons::search::{SearchOptions, SortOptions};
 use domain::jobs::{Job, JobModel, RegisterJob};
 use domain::pipelines::Pipeline;
 use persist::db_client::DbClient;
@@ -91,7 +91,12 @@ async fn get_pipelines_for_job(
     cred: &Credential,
     filter: &Value,
 ) -> Result<Vec<Pipeline>, RustyError> {
-    pipelines::get_all(db, cred, &Some(filter.clone()), &None).await
+    pipelines::get_all(db, cred, &Some(filter.clone()), &Some(SearchOptions {
+        page_number: None,
+        page_size: None,
+        sort_field: Some("number".to_string()),
+        sort_mode: Some(SortOptions::Descending),
+    })).await
 }
 
 // mutate
