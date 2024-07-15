@@ -26,7 +26,9 @@
 
 		.project-url {
 			margin-top: 0.5rem;
-			font-size: 1.5rem;
+			display: flex;
+			flex-direction: row;
+			height: 2rem;
 		}
 	}
 

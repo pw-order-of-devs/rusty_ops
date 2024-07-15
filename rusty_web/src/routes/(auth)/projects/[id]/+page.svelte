@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
 	import JobCard from 'src/components/auth/projects/JobCard.svelte';
+	import Button from 'src/components/shared/Button.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
 	import { getProjectById } from '$lib/scripts/auth/projects/projects';
 	import {
@@ -12,6 +13,7 @@
 	import { parseResponse } from '$lib/scripts/utils/parse';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
+	import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 
 	let loading = writable(false);
 	let loadingJobs = writable(false);
@@ -56,8 +58,16 @@
 			<div class="project-name wrap-text">
 				{pageData?.project?.name}
 			</div>
-			<div class="project-url wrap-text">
-				{pageData?.project?.url}
+			<div class="project-url">
+				<Button
+					label={pageData?.project?.url}
+					href={pageData?.project?.url}
+					classes="project-url-button"
+					icon={faArrowUpRightFromSquare}
+					tooltipOpts={{ content: 'Project repository', placement: 'bottom' }}
+					target="_blank"
+					flat
+				/>
 			</div>
 		</Card>
 	</div>
