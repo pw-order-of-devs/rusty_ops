@@ -40,6 +40,10 @@
 	});
 
 	const groupClicked_ = (entry: Group) => async () => {
+		if (pageData?.groups?.active.id === entry.id) {
+			return;
+		}
+
 		pageData = await groupClicked(entry, loading, pageData);
 		projectsFilter = '';
 	};

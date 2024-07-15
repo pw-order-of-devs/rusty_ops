@@ -3,7 +3,7 @@ import type { Job } from '$lib/domain/job';
 
 const getProjectJobsQuery = (page: number, id: string, name: string) => {
 	let filter = `filter: { project_id: { equals: "${id}" }, name: { contains: "${name}" } }, `;
-	let options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
+	let options = `options: { pageNumber: ${page}, pageSize: 50, sortMode: ASCENDING, sortField: "name" }`;
 
 	return `query {
 		jobs {
@@ -16,6 +16,11 @@ const getProjectJobsQuery = (page: number, id: string, name: string) => {
 					name
 					description
 					projectId
+					pipelines {
+						id
+						number
+						status
+					}
 				}
 			}
 		}

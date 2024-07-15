@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
+	import JobCard from 'src/components/auth/projects/JobCard.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
 	import { getProjectById } from '$lib/scripts/auth/projects/projects';
 	import {
@@ -79,11 +80,7 @@
 
 				<div class="entries" bind:this={scrollableJobs} on:scroll={jobsListScrolled_}>
 					{#each pageData?.jobs?.entries ?? [] as entry (entry.id)}
-						<Card>
-							<div>{entry.id}</div>
-							<div>{entry.name}</div>
-							<div>{entry.description}</div>
-						</Card>
+						<JobCard {entry} />
 					{/each}
 				</div>
 			</div>

@@ -8,7 +8,7 @@
 	export let entry: Project;
 </script>
 
-<Card>
+<Card classes="project-card-wrapper">
 	<div class="project-card">
 		<div class="project-name">{entry.name}</div>
 		<div class="project-buttons">

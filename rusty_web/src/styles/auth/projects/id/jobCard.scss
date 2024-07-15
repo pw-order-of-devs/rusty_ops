@@ -1,0 +1,79 @@
+@import 'src/styles/global';
+
+:global(.job-card-wrapper) {
+	height: 3rem;
+}
+
+.job-card {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	height: 3rem;
+	gap: 1rem;
+	margin-left: 1rem;
+	margin-right: 0.5rem;
+
+	.job-card-status {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 1.3rem;
+
+		.circle {
+			width: 1rem;
+			height: 1rem;
+			border: 0.1rem solid $color-black-6;
+			border-radius: 50%;
+		}
+
+		.circle-defined,
+		.circle-assigned {
+			background-color: cornflowerblue;
+		}
+
+		.circle-in_progress {
+			background-color: gold;
+		}
+
+		.circle-unstable {
+			background-color: darkorange;
+		}
+
+		.circle-failed {
+			background-color: red;
+		}
+
+		.circle-success {
+			background-color: green;
+		}
+
+		.circle-default {
+			background-color: transparent;
+		}
+	}
+
+	.job-card-meta {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		width: 100%;
+		justify-content: space-between;
+		gap: 1rem;
+
+		div:nth-child(1) {
+			font-size: 1.4rem;
+			font-weight: bold;
+		}
+
+		a {
+			padding: 0.5rem;
+			border: 0.1rem $color-white-2 solid;
+			border-radius: 0.5rem;
+			cursor: pointer;
+			text-decoration: none;
+			color: $color-white-2;
+		}
+	}
+}

@@ -3,7 +3,7 @@ import type { Project } from '$lib/domain/project';
 
 const getProjectsQuery = (page: number, group: string, name: string) => {
 	let groupMatch = group.match(/[a-z-]/gi);
-	let groupIdFilter = `group_id: ${groupMatch === null ? null : `${group}`}`;
+	let groupIdFilter = `group_id: ${groupMatch === null ? null : `{ equals: ${group} }`}`;
 	let filter = `filter: { ${groupIdFilter}, name: { contains: "${name}" } }, `;
 	let options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
 

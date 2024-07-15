@@ -48,7 +48,7 @@ pub async fn get_by_id(
     id: &str,
 ) -> Result<Option<Pipeline>, RustyError> {
     if let Some(pipeline) = shared::get_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await? {
-        if let Some(job) = shared::get_by_id::<Job>(db, "jobs", id).await? {
+        if let Some(job) = shared::get_by_id::<Job>(db, "jobs", &pipeline.job_id).await? {
             let username = get_username_claim(cred)?;
             auth::authorize(
                 db,

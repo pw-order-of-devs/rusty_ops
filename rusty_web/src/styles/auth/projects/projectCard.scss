@@ -1,5 +1,9 @@
 @import 'src/styles/global';
 
+:global(.project-card-wrapper) {
+	height: 8rem;
+}
+
 .project-card {
 	height: 8rem;
 	display: flex;
