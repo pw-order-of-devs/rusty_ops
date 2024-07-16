@@ -24,6 +24,7 @@ async fn get_all_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -46,6 +47,7 @@ async fn get_all_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -76,6 +78,7 @@ async fn get_by_id_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -98,6 +101,7 @@ async fn get_by_id_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -140,6 +144,7 @@ async fn create_test() {
         &Credential::System,
         RegisterPipeline {
             job_id: "57c38e8b-1845-49f1-874a-1eefe9923456".to_string(),
+            branch: None,
         },
     )
     .await;
@@ -160,6 +165,7 @@ async fn create_no_job_test() {
         &Credential::System,
         RegisterPipeline {
             job_id: "57c38e8b-1845-49f1-874a-1eefe9923456".to_string(),
+            branch: None,
         },
     )
     .await;
@@ -193,6 +199,7 @@ async fn assign_pipeline_already_assigned_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -222,6 +229,7 @@ async fn assign_pipeline_limit_exceeded_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -253,6 +261,7 @@ async fn assign_pipeline_positive_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -275,6 +284,7 @@ async fn assign_pipeline_positive_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -316,6 +326,7 @@ async fn reset_pipeline_wrong_status_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -353,6 +364,7 @@ async fn reset_positive_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -394,6 +406,7 @@ async fn set_running_wrong_status_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -423,6 +436,7 @@ async fn set_running_positive_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -445,6 +459,7 @@ async fn set_running_positive_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -494,6 +509,7 @@ async fn finalize_wrong_status_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -531,6 +547,7 @@ async fn finalize_positive_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -553,6 +570,7 @@ async fn finalize_positive_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -589,6 +607,7 @@ async fn delete_by_id_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -611,6 +630,7 @@ async fn delete_by_id_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
@@ -641,6 +661,7 @@ async fn delete_all_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,

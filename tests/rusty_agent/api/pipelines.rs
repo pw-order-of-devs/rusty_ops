@@ -57,6 +57,7 @@ async fn mock_server_request_get(server: &mut ServerGuard) -> Mock {
             r#"{{"data": {{"pipelines": {{ "get": {{"entries": [{{
                 "id": "c2b83cae-2e66-465b-a66d-573f41e90905",
                 "number": 0,
+                "branch": "master",
                 "registerDate": "2024-05-31T11:08:36.556775405+00:00",
                 "status": "DEFINED",
                 "jobId": "da30423b-92bb-47f3-9710-28b106c3cb0c"

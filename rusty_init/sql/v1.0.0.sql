@@ -41,6 +41,7 @@ create table if not exists rusty.projects (
     id varchar(36) primary key,
     name text not null,
     url text not null,
+    main_branch varchar(256) not null,
     group_id varchar(36)
 );
 
@@ -58,6 +59,7 @@ create table if not exists rusty.jobs (
 create table if not exists rusty.pipelines (
     id varchar(36) primary key,
     number integer not null,
+    branch varchar(256) not null,
     register_date text not null,
     start_date text,
     end_date text,

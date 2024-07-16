@@ -21,6 +21,7 @@ async fn get_all_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -46,6 +47,7 @@ async fn get_by_id_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -72,6 +74,7 @@ async fn create_test() {
         RegisterProject {
             name: "sample".to_string(),
             url: "http://dummy.ext".to_string(),
+            main_branch: None,
             group_id: None,
         },
     )
@@ -94,6 +97,7 @@ async fn create_no_group_test() {
         RegisterProject {
             name: "sample".to_string(),
             url: "http://dummy.ext".to_string(),
+            main_branch: None,
             group_id: Some("uuid".to_string()),
         },
     )
@@ -116,6 +120,7 @@ async fn delete_by_id_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -142,6 +147,7 @@ async fn delete_all_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )

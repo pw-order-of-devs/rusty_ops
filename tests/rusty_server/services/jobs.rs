@@ -22,6 +22,7 @@ async fn get_all_test() {
                 id: "uuid".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -86,6 +87,7 @@ async fn create_test() {
                 id: "07fa1b63-1b4b-46a2-8a30-d80440bf6bc3".to_string(),
                 name: "sample".to_string(),
                 url: None,
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )

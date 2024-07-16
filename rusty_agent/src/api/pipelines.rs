@@ -45,6 +45,7 @@ async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {
                     entries {{
                         id
                         number
+                        branch
                         startDate
                         registerDate
                         status

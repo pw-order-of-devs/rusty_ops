@@ -56,6 +56,7 @@ async fn scheduler_pipelines_cleanup_test() {
             &Pipeline {
                 id: "uuid".to_string(),
                 number: 0,
+                branch: "master".to_string(),
                 register_date: "now".to_string(),
                 start_date: Some("now".to_string()),
                 end_date: None,

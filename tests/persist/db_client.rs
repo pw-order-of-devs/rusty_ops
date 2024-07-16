@@ -97,6 +97,7 @@ where
                 id: result.clone(),
                 name: "project_1_u".to_string(),
                 url: Some("url://project_1.ext".to_string()),
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )
@@ -266,6 +267,7 @@ async fn create_project(db_client: &DbClient, name: &str) -> Result<String, Rust
                 id: uuid::Uuid::new_v4().to_string(),
                 name: name.to_string(),
                 url: Some(format!("url://{name}.ext")),
+                main_branch: "master".to_string(),
                 group_id: None,
             },
         )

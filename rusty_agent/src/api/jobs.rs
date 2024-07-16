@@ -26,13 +26,14 @@ pub async fn get_pipeline_template(id: &str) -> Result<(String, PipelineTemplate
 
     let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
-    let project_id = json_data["data"]["jobs"]["getById"]["projectId"]
-        .as_str()
-        .unwrap_or("");
-    json_data["data"]["jobs"]["getById"]["template"]
-        .as_str()
-        .map_or_else(
-            || Err(RustyError::RequestError("No results".to_string())),
-            |value| Ok((project_id.to_string(), PipelineTemplate::from_yaml(value)?)),
-        )
+    if let Some(job) = json_data["data"]["jobs"]["getById"].as_object() {
+        let project_id = job["projectId"].as_str().unwrap_or_default();
+        let template = job["template"].as_str().unwrap_or_default();
+        Ok((
+            project_id.to_string(),
+            PipelineTemplate::from_yaml(template)?,
+        ))
+    } else {
+        Err(RustyError::RequestError("No results".to_string()))
+    }
 }

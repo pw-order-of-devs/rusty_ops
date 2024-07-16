@@ -91,12 +91,18 @@ async fn get_pipelines_for_job(
     cred: &Credential,
     filter: &Value,
 ) -> Result<Vec<Pipeline>, RustyError> {
-    pipelines::get_all(db, cred, &Some(filter.clone()), &Some(SearchOptions {
-        page_number: None,
-        page_size: None,
-        sort_field: Some("number".to_string()),
-        sort_mode: Some(SortOptions::Descending),
-    })).await
+    pipelines::get_all(
+        db,
+        cred,
+        &Some(filter.clone()),
+        &Some(SearchOptions {
+            page_number: None,
+            page_size: None,
+            sort_field: Some("number".to_string()),
+            sort_mode: Some(SortOptions::Descending),
+        }),
+    )
+    .await
 }
 
 // mutate

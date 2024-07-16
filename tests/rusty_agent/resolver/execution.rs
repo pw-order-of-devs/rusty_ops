@@ -9,6 +9,7 @@ use crate::utils::mockito_start_server;
 async fn execute_pipeline_test() {
     let pipeline = Pipeline::from(&RegisterPipeline {
         job_id: "dummy".to_string(),
+        branch: Some("master".to_string()),
     });
     let mut server = mockito_start_server().await;
     let _ = mock_server_request(&mut server).await;
@@ -31,6 +32,7 @@ async fn mock_server_request(server: &mut ServerGuard) -> Mock {
                 }},
                 "projects": {{
                     "getById": {{
+                        "mainBranch": "master",
                         "url": "https://github.com/pw-order-of-devs/rusty_ops"
                     }}
                 }}

@@ -14,6 +14,9 @@ pub struct ProjectModel {
     pub name: String,
     /// project url
     pub url: Option<String>,
+    /// project main branch name
+    #[serde(rename(deserialize = "mainBranch", deserialize = "main_branch"))]
+    pub main_branch: String,
     /// project group id
     #[serde(rename(deserialize = "groupId", deserialize = "group_id"))]
     pub group_id: Option<String>,
@@ -30,6 +33,9 @@ pub struct Project {
     pub name: String,
     /// project url
     pub url: Option<String>,
+    /// project main branch name
+    #[serde(rename(deserialize = "mainBranch", deserialize = "main_branch"))]
+    pub main_branch: String,
     /// project group id
     #[serde(rename(deserialize = "groupId", deserialize = "group_id"))]
     pub group_id: Option<String>,
@@ -45,6 +51,9 @@ pub struct RegisterProject {
     /// project url
     #[validate(custom(validate_url))]
     pub url: String,
+    /// project main branch name
+    #[serde(rename(deserialize = "mainBranch", deserialize = "main_branch"))]
+    pub main_branch: Option<String>,
     /// project group id
     #[serde(rename(deserialize = "groupId", deserialize = "group_id"))]
     #[validate(min_length = 36)]
@@ -66,6 +75,7 @@ impl RegisterProject {
         Self {
             name: name.to_string(),
             url: url.to_string(),
+            main_branch: Some("master".to_string()),
             group_id: None,
         }
     }
@@ -77,6 +87,7 @@ impl From<&Project> for ProjectModel {
             id: value.clone().id,
             name: value.clone().name,
             url: value.clone().url,
+            main_branch: value.clone().main_branch,
             group_id: value.clone().group_id,
             jobs: vec![],
         }
@@ -89,6 +100,10 @@ impl From<&RegisterProject> for Project {
             id: Self::generate_id(),
             name: value.clone().name,
             url: Some(value.clone().url),
+            main_branch: value
+                .clone()
+                .main_branch
+                .unwrap_or_else(|| "master".to_string()),
             group_id: value.clone().group_id,
         }
     }

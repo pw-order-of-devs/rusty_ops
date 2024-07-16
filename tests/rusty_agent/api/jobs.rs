@@ -17,7 +17,7 @@ async fn mock_server_request(server: &mut ServerGuard) -> Mock {
         .with_status(200)
         .with_header("content-type", "application/json")
         .with_body(format!(
-            r#"{{"data": {{"jobs": {{"getById": {{"template": "c3RhZ2VzOgogICB0ZXN0OgogICAgICBzY3JpcHQ6CiAgICAgICAgLSBlY2hvICJoZWxsbyI"}} }} }} }}"#
+            r#"{{"data": {{"jobs": {{"getById": {{"projectId": "uuid", "template": "c3RhZ2VzOgogICB0ZXN0OgogICAgICBzY3JpcHQ6CiAgICAgICAgLSBlY2hvICJoZWxsbyI"}} }} }} }}"#
         ))
         .create()
 }

@@ -12,18 +12,23 @@ use domain::templates::pipeline::{PipelineTemplate, Stage};
 
 use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
-use crate::api::projects::get_pipeline_repository;
+use crate::api::projects::get_pipeline_project;
 
 pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
     let (project_id, mut template) = get_pipeline_template(&pipeline.job_id).await?;
-    let repo_url = get_pipeline_repository(&project_id).await?;
+    let (default_branch, repo_url) = get_pipeline_project(&project_id).await?;
+    let branch = if pipeline.branch.is_empty() {
+        default_branch
+    } else {
+        pipeline.branch.clone()
+    };
     // if image: run in docker
 
     let working_directory = format!("/tmp/rusty/{}", uuid::Uuid::new_v4());
     std::fs::create_dir_all(&working_directory)?;
-    clone_repository(&working_directory, uuid, &pipeline.id, &repo_url).await?;
-    let project_directory = format!("{working_directory}/source");
+    clone_repository(&working_directory, uuid, &pipeline.id, &repo_url, &branch).await?;
+    let project_directory = format!("{working_directory}/{}", &pipeline.id);
     if let Ok(temp) = fetch_template_from_files(&project_directory) {
         log::debug!("found template in project files.");
         template = temp;
@@ -101,7 +106,7 @@ async fn run_bash_command(
     dir: &str,
     command: &str,
     env: &HashMap<String, String>,
-) -> std::io::Result<()> {
+) -> Result<(), RustyError> {
     let mut process = Command::new("sh")
         .current_dir(dir)
         .arg("-c")
@@ -128,11 +133,10 @@ async fn run_bash_command(
     stderr_handle.await.unwrap();
 
     if !status.success() {
-        // react to pipeline errors
-        log::error!("Command executed with error: {}", status);
+        Err(RustyError::IoError(format!("Command error: {status}")))
+    } else {
+        Ok(())
     }
-
-    Ok(())
 }
 
 async fn clone_repository(
@@ -140,17 +144,19 @@ async fn clone_repository(
     uuid: &str,
     pipeline_id: &str,
     repo_url: &str,
+    branch: &str,
 ) -> Result<(), RustyError> {
+    log::debug!("cloning repository: {repo_url} -b {branch}");
     if let Err(err) = run_bash_command(
         dir,
-        &format!("git clone {repo_url} source"),
+        &format!("git clone {repo_url} -b {branch} {pipeline_id}"),
         &HashMap::new(),
     )
     .await
     {
         log::error!("Error in pipeline {}: {}", &pipeline_id, err);
         cleanup(dir, pipeline_id, uuid, PipelineStatus::Failure).await;
-        Err(RustyError::from(err))
+        Err(err)
     } else {
         Ok(())
     }

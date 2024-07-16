@@ -34,6 +34,8 @@ pub struct Pipeline {
     pub id: String,
     /// pipeline order number
     pub number: u64,
+    /// pipeline branch
+    pub branch: String,
     /// pipeline register date
     #[serde(rename(deserialize = "registerDate", deserialize = "register_date"))]
     pub register_date: String,
@@ -59,6 +61,8 @@ pub struct RegisterPipeline {
     /// pipeline job id
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]
     pub job_id: String,
+    /// pipeline branch
+    pub branch: Option<String>,
 }
 
 impl RegisterPipeline {
@@ -67,6 +71,7 @@ impl RegisterPipeline {
     pub fn new(job_id: &str) -> Self {
         Self {
             job_id: job_id.to_string(),
+            branch: Some("master".to_string()),
         }
     }
 }
@@ -76,6 +81,7 @@ impl From<&RegisterPipeline> for Pipeline {
         Self {
             id: Self::generate_id(),
             number: 0,
+            branch: value.clone().branch.unwrap_or_default(),
             register_date: String::new(),
             start_date: None,
             end_date: None,
