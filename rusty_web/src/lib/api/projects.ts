@@ -17,6 +17,15 @@ const getProjectsQuery = (page: number, group: string, name: string) => {
 					id
 					name
 					url
+					jobs {
+						name
+						pipelines {
+							id
+							number
+							status
+							registerDate
+						}
+					}
 				}
 			}
 		}
@@ -43,6 +52,21 @@ export const fetchProjects = async (auth: string, page: number, group: string, n
 			} else if (data) {
 				const paged = data?.projects?.get;
 				const projects: Project[] = paged?.entries ?? [];
+				projects.forEach(p => {
+					let flattened = p.jobs.reduce((accumulator: any[], current: any) => {
+						current.pipelines.forEach((pp: any) => pp.jobName = current.name);
+						return accumulator.concat(current.pipelines);
+					}, []);
+					flattened.sort((a, b) => {
+						if (a.registerDate < b.registerDate) { return 1; }
+						if (a.registerDate > b.registerDate) { return -1; }
+						return 0;
+					});
+					if (flattened.length > 0) {
+						p.lastPipeline = flattened[0];
+					}
+				});
+
 				return {
 					total: paged?.total ?? 0,
 					page: paged?.page ?? 1,

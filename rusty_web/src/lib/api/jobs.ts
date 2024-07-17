@@ -20,6 +20,7 @@ const getProjectJobsQuery = (page: number, id: string, name: string) => {
 						id
 						number
 						status
+						registerDate
 					}
 				}
 			}

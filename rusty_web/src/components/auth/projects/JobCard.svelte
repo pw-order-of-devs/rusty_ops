@@ -1,4 +1,5 @@
 <script lang="ts">
+	import moment from "moment";
 	import { tooltip } from '$lib/ui/tooltip';
 	import type { Job } from '$lib/domain/job';
 	import Card from 'src/components/auth/Card.svelte';
@@ -15,10 +16,19 @@
 	<div class="job-card">
 		<div class="job-card-status">
 			<div>#{entry.pipelines?.[0]?.number ?? '0'}</div>
-			<div class="circle circle-{status}" />
+			<div
+				class="circle circle-{status}"
+				use:tooltip={{
+					content: status,
+					placement: 'bottom'
+				}}
+			/>
 		</div>
 		<div class="job-card-meta">
-			<div class="wrap-text">{entry.name}</div>
+			<div>
+				<div class="wrap-text">{entry.name}</div>
+				<div>@ {moment(entry.pipelines?.[0].registerDate ?? '').fromNow()}</div>
+			</div>
 			<div>
 				<a
 					href="/jobs/{entry.id}"

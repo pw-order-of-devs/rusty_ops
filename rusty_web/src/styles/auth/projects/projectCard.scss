@@ -1,4 +1,5 @@
 @import 'src/styles/global';
+@import 'src/styles/status';
 
 :global(.project-card-wrapper) {
 	height: 8rem;
@@ -11,23 +12,54 @@
 	justify-content: space-evenly;
 
 	.project-name {
+		font-weight: bold;
 		font-size: 2rem;
 		padding: 0 0.4rem;
 	}
 
-	.project-buttons {
+	.project-card-bottom-row {
 		display: flex;
 		flex-direction: row;
-		gap: 0.5rem;
-		padding: 0 0.4rem;
+		justify-content: space-between;
 
-		a {
-			padding: 0.5rem;
-			border: 0.1rem $color-white-2 solid;
-			border-radius: 0.5rem;
-			cursor: pointer;
-			text-decoration: none;
-			color: $color-white-2;
+		.project-last-pipeline {
+			display: flex;
+			flex-direction: row;
+			gap: 1rem;
+
+			.project-last-pipeline-status {
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+				align-items: center;
+				gap: 0.5rem;
+				font-size: 1.3rem;
+			}
+
+			.project-last-pipeline-build {
+				display: flex;
+				flex-direction: column;
+
+				div:first-child {
+					font-weight: bold;
+				}
+			}
+		}
+
+		.project-buttons {
+			display: flex;
+			flex-direction: row;
+			gap: 0.5rem;
+			padding: 0 0.4rem;
+
+			a {
+				padding: 0.5rem;
+				border: 0.1rem $color-white-2 solid;
+				border-radius: 0.5rem;
+				cursor: pointer;
+				text-decoration: none;
+				color: $color-white-2;
+			}
 		}
 	}
 }
