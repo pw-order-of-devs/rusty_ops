@@ -8,7 +8,7 @@ use tokio::spawn;
 
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
-use domain::templates::pipeline::{PipelineTemplate, Stage};
+use domain::templates::pipeline::{PipelineTemplate, Script, Stage};
 
 use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
@@ -36,6 +36,16 @@ pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), Rust
         log::debug!("no template in project files, using default one.");
     };
 
+    execute_stage(
+        &project_directory,
+        &working_directory,
+        &pipeline.id,
+        uuid,
+        &template.before,
+        &prepare_env(&template, &None),
+    )
+    .await?;
+
     let stages_tree = template.dependency_tree();
     for branch in stages_tree {
         let mut tasks = Vec::new();
@@ -52,20 +62,20 @@ pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), Rust
                 let (name, stage) = template.stages.iter().find(|(n, _)| leaf == **n).unwrap();
                 log::debug!("running stage: {name}");
                 // if image: run in docker
-                let env = prepare_env(&template, stage);
-                for command in &stage.script {
-                    if let Err(err) = run_bash_command(&project_directory, command, &env).await {
-                        log::error!("Error in pipeline {}: {}", &pipeline.id, err);
-                        cleanup(
-                            &working_directory,
-                            &pipeline.id,
-                            &uuid,
-                            PipelineStatus::Failure,
-                        )
-                        .await;
-                        return Err(());
-                    }
+                if let Err(err) = execute_stage(
+                    &project_directory,
+                    &working_directory,
+                    &pipeline.id,
+                    &uuid,
+                    &Some(Script::new(&stage.script)),
+                    &prepare_env(&template, &Some(stage.clone())),
+                )
+                .await
+                {
+                    log::error!("Error in pipeline {}: {}", &pipeline.id, err);
+                    return Err(());
                 }
+
                 let duration = start.elapsed().as_millis();
                 log::debug!("done: running stage: {name} in {duration} ms");
                 Ok(())
@@ -75,6 +85,16 @@ pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), Rust
 
         try_join_all(tasks).await?;
     }
+
+    execute_stage(
+        &project_directory,
+        &working_directory,
+        &pipeline.id,
+        uuid,
+        &template.after,
+        &prepare_env(&template, &None),
+    )
+    .await?;
 
     cleanup(
         &working_directory,
@@ -87,16 +107,48 @@ pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), Rust
     Ok(())
 }
 
-fn prepare_env(template: &PipelineTemplate, stage: &Stage) -> HashMap<String, String> {
+async fn execute_stage(
+    project_directory: &str,
+    working_directory: &str,
+    pipeline_id: &str,
+    uuid: &str,
+    script: &Option<Script>,
+    env: &HashMap<String, String>,
+) -> Result<(), RustyError> {
+    if let Some(script) = &script {
+        for command in &script.script {
+            if let Err(err) = run_bash_command(project_directory, command, env).await {
+                log::error!("Error in pipeline {}: {}", pipeline_id, err);
+                cleanup(
+                    working_directory,
+                    pipeline_id,
+                    uuid,
+                    PipelineStatus::Failure,
+                )
+                .await;
+                return Err(RustyError::IoError(format!(
+                    "`before` stage failed for pipeline `{}`",
+                    pipeline_id
+                )));
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn prepare_env(template: &PipelineTemplate, stage: &Option<Stage>) -> HashMap<String, String> {
     let mut envs = HashMap::new();
     if let Some(env) = template.clone().env {
         for (k, v) in env {
             envs.insert(k, v);
         }
     }
-    if let Some(env) = stage.clone().env {
-        for (k, v) in env {
-            envs.insert(k, v);
+    if let Some(stage) = stage {
+        if let Some(env) = stage.clone().env {
+            for (k, v) in env {
+                envs.insert(k, v);
+            }
         }
     }
     envs

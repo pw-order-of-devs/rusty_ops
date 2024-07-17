@@ -11,6 +11,16 @@ pub struct Script {
     pub script: Vec<String>,
 }
 
+impl Script {
+    /// constructor
+    #[must_use]
+    pub fn new(script: &[String]) -> Self {
+        Self {
+            script: script.to_vec(),
+        }
+    }
+}
+
 /// Pipeline stage
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stage {

@@ -23,5 +23,7 @@ RUN cargo build --release --target x86_64-unknown-linux-musl \
 
 FROM alpine:3.19 AS final-stage
 
+RUN apk add --no-cache git
+
 COPY --from=build-stage /usr/app/src/target/x86_64-unknown-linux-musl/release/rusty_agent /app/
 CMD ["/app/rusty_agent"]
