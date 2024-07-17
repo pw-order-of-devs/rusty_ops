@@ -1,6 +1,7 @@
-use serde_json::Value;
+use serde_json::{json, Value};
+use std::cmp::Ordering;
 
-use domain::commons::search::SearchFilter;
+use domain::commons::search::{SearchFilter, SearchOptions, SortOptions};
 
 fn compare_strings(item: &Value, f: &Value, comparison: fn(&String, &String) -> bool) -> bool {
     if item.is_string() && f.is_string() {
@@ -113,4 +114,37 @@ pub(crate) fn filter_results(filter: &Option<Value>, values: &[Value]) -> Vec<Va
                 .collect()
         },
     )
+}
+
+pub(crate) fn sort_results(options: &SearchOptions, filtered: &mut [Value]) {
+    let sort_field = &options
+        .clone()
+        .sort_field
+        .unwrap_or_else(|| "id".to_string());
+    filtered.sort_by(
+        |a, b| match (a[sort_field].clone(), b[sort_field].clone()) {
+            (Value::String(a), Value::String(b)) => a.cmp(&b),
+            (Value::Number(a), Value::Number(b)) => a
+                .as_f64()
+                .partial_cmp(&b.as_f64())
+                .unwrap_or_else(|| panic!("Failed comparing by {sort_field}")),
+            (Value::Bool(a), Value::Bool(b)) => a.cmp(&b),
+            _ => Ordering::Equal,
+        },
+    );
+    if options.sort_mode.unwrap_or_default() == SortOptions::Descending {
+        filtered.reverse();
+    }
+}
+
+pub(crate) fn delete_one_filter(filter: &Value) -> Value {
+    if let Value::Object(map) = filter.clone() {
+        let (first_key, first_value) = map
+            .into_iter()
+            .next()
+            .unwrap_or((String::new(), Value::Null));
+        json!({ first_key: { "equals": first_value } })
+    } else {
+        Value::Null
+    }
 }

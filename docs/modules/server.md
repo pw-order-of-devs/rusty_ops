@@ -72,6 +72,8 @@ For complete configuration, refer to application dependencies environment variab
 ## Example configuration:
 
 docker compose:
+- mongodb:
+
 ```yaml
 rustyServer:
   image: rusty-server
@@ -80,17 +82,57 @@ rustyServer:
   restart: no
   environment:
     - LOG_LEVEL=debug
-    - AGENT_HOST=localhost
-    - AGENT_PORT=7000
-    - AGENT_USER=agent
-    - AGENT_PASSWORD=password
-    - SERVER_HOST=password
-    - SERVER_PORT=password
-    - SERVER_PROTOCOL=http
-    - SUBSCRIPTION_ENABLED=true
-    - SCHEDULER_GET_ASSIGNED=300
-    - SCHEDULER_GET_UNASSIGNED=300
-    - SCHEDULER_HEALTHCHECK=120
+    - MONGODB_DATABASE=rusty
+    - MONGODB_HOST=192.168.0.2
+    - MONGODB_PASSWORD=password
+    - MONGODB_PORT=5454
+    - MONGODB_USER=admin
+    - RUSTY_PERSISTENCE=mongodb
+    - SERVER_ADDR=0.0.0.0
+    - SERVER_PORT=8000
+  networks:
+    - backend
+```
+
+- postgresql:
+
+```yaml
+rustyServer:
+  image: rusty-server
+  ports:
+    - "8000:8000"
+  restart: no
+  environment:
+    - LOG_LEVEL=debug
+    - POSTGRESQL_DATABASE=rusty
+    - POSTGRESQL_HOST=192.168.0.2
+    - POSTGRESQL_PASSWORD=password
+    - POSTGRESQL_PORT=5454
+    - POSTGRESQL_SCHEMA=rusty
+    - POSTGRESQL_USER=admin
+    - RUSTY_PERSISTENCE=postgresql
+    - SERVER_ADDR=0.0.0.0
+    - SERVER_PORT=8000
+  networks:
+    - backend
+```
+
+- redis:
+
+```yaml
+rustyServer:
+  image: rusty-server
+  ports:
+    - "8000:8000"
+  restart: no
+  environment:
+    - LOG_LEVEL=debug
+    - REDIS_HOST=redis
+    - REDIS_PORT=6379
+    - REDIS_PASSWORD=password
+    - RUSTY_PERSISTENCE=redis
+    - SERVER_ADDR=0.0.0.0
+    - SERVER_PORT=8000
   networks:
     - backend
 ```

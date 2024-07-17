@@ -8,6 +8,7 @@ use rusty_init::ops::roles;
 use crate::utils::{create_user, db_connect, USER_ID};
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]

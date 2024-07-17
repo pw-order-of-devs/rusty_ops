@@ -5,6 +5,7 @@ use commons::errors::RustyError;
 use commons::hashing::bcrypt;
 use domain::auth::user::User;
 use persist::db_client::DbClient;
+use persist::inmemory::InMemoryClient;
 use persist::mongo::MongoDBClient;
 use persist::postgre::PostgreSQLClient;
 use persist::redis::RedisClient;
@@ -31,14 +32,17 @@ pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u1
     } else {
         ""
     };
-    let connection = &format!(
-        "{db_type}://{}localhost:{}",
-        auth,
-        db.get_host_port_ipv4(port)
+    let connection = if db_type == "internal" {
+        ""
+    } else {
+        let port = db
+            .get_host_port_ipv4(port)
             .await
-            .expect("failed to obtain container port")
-    );
+            .expect("failed to obtain container port");
+        &format!("{db_type}://{}localhost:{}", auth, port)
+    };
     match db_type {
+        "internal" => DbClient::InMemory(InMemoryClient::from_string(connection).await),
         "mongodb" => DbClient::MongoDb(MongoDBClient::from_string(connection).await),
         "postgres" => {
             std::env::set_var("POSTGRESQL_SCHEMA", "rusty");

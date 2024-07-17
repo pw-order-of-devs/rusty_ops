@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::pin::Pin;
 use std::time::Duration;
 
@@ -9,11 +8,11 @@ use serde_json::{json, Value};
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
-use domain::commons::search::{SearchOptions, SortOptions};
+use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
 use crate::redis::pubsub::RedisPubSubConnectionManager;
-use crate::shared::filter_results;
+use crate::shared::{delete_one_filter, filter_results, sort_results};
 use crate::{Persistence, PersistenceBuilder};
 
 mod pubsub;
@@ -155,15 +154,7 @@ impl Persistence for RedisClient {
         filter: Value,
     ) -> Result<u64, RustyError> {
         let mut conn = self.client.get().await?;
-        let filter = if let Value::Object(map) = filter {
-            let (first_key, first_value) = map
-                .into_iter()
-                .next()
-                .unwrap_or((String::new(), Value::Null));
-            json!({ first_key: { "equals": first_value } })
-        } else {
-            Value::Null
-        };
+        let filter = delete_one_filter(&filter);
         let item: Option<T> = self.get_one(index, filter).await?;
         if let Some(item) = item {
             conn.del(format!("{index}_{}", item.get_id())).await?;
@@ -217,26 +208,5 @@ impl Persistence for RedisClient {
         }
 
         Ok(())
-    }
-}
-
-fn sort_results(options: &SearchOptions, filtered: &mut [Value]) {
-    let sort_field = &options
-        .clone()
-        .sort_field
-        .unwrap_or_else(|| "id".to_string());
-    filtered.sort_by(
-        |a, b| match (a[sort_field].clone(), b[sort_field].clone()) {
-            (Value::String(a), Value::String(b)) => a.cmp(&b),
-            (Value::Number(a), Value::Number(b)) => a
-                .as_f64()
-                .partial_cmp(&b.as_f64())
-                .unwrap_or_else(|| panic!("Failed comparing by {sort_field}")),
-            (Value::Bool(a), Value::Bool(b)) => a.cmp(&b),
-            _ => Ordering::Equal,
-        },
-    );
-    if options.sort_mode.unwrap_or_default() == SortOptions::Descending {
-        filtered.reverse();
     }
 }

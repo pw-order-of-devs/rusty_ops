@@ -27,6 +27,7 @@ use domain::RustyDomainItem;
 
 use crate::db_client::DbClient;
 use crate::db_type::DbType;
+use crate::inmemory::InMemoryClient;
 use crate::mongo::MongoDBClient;
 use crate::postgre::PostgreSQLClient;
 use crate::redis::RedisClient;
@@ -34,6 +35,9 @@ use crate::redis::RedisClient;
 /// Wrapper for DB client
 pub mod db_client;
 mod db_type;
+
+/// # `InMemory` Module
+pub mod inmemory;
 
 /// # `MongoDB` Module
 pub mod mongo;
@@ -251,6 +255,7 @@ pub trait Persistence: Send + Sync {
 /// Returns an instance of the persistence layer that implements the `Persistence` trait.
 pub async fn init() -> DbClient {
     match DbType::parse() {
+        DbType::InMemory => DbClient::InMemory(InMemoryClient::build().await),
         DbType::MongoDb => DbClient::MongoDb(MongoDBClient::build().await),
         DbType::PostgreSQL => DbClient::PostgreSql(PostgreSQLClient::build().await),
         DbType::Redis => DbClient::Redis(RedisClient::build().await),

@@ -4,6 +4,7 @@ use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
+use crate::inmemory::InMemoryClient;
 use crate::mongo::MongoDBClient;
 use crate::postgre::PostgreSQLClient;
 use crate::redis::RedisClient;
@@ -12,6 +13,8 @@ use crate::Persistence;
 /// Wrapper for database client
 #[derive(Clone, Debug)]
 pub enum DbClient {
+    /// `DbClient` variant - `InMemory` client
+    InMemory(InMemoryClient),
     /// `DbClient` variant - `MongoDb` client
     MongoDb(MongoDBClient),
     /// `DbClient` variant - `PostgreSql` client
@@ -35,6 +38,7 @@ impl DbClient {
         options: &Option<SearchOptions>,
     ) -> Result<Vec<T>, RustyError> {
         match self {
+            Self::InMemory(client) => client.get_all(index, filter, options).await,
             Self::MongoDb(client) => client.get_all(index, filter, options).await,
             Self::PostgreSql(client) => client.get_all(index, filter, options).await,
             Self::Redis(client) => client.get_all(index, filter, options).await,
@@ -54,6 +58,7 @@ impl DbClient {
         filter: Value,
     ) -> Result<Option<T>, RustyError> {
         match self {
+            Self::InMemory(client) => client.get_one(index, filter).await,
             Self::MongoDb(client) => client.get_one(index, filter).await,
             Self::PostgreSql(client) => client.get_one(index, filter).await,
             Self::Redis(client) => client.get_one(index, filter).await,
@@ -73,6 +78,7 @@ impl DbClient {
         item: &T,
     ) -> Result<String, RustyError> {
         match self {
+            Self::InMemory(client) => client.create(index, item).await,
             Self::MongoDb(client) => client.create(index, item).await,
             Self::PostgreSql(client) => client.create(index, item).await,
             Self::Redis(client) => client.create(index, item).await,
@@ -93,6 +99,7 @@ impl DbClient {
         item: &T,
     ) -> Result<String, RustyError> {
         match self {
+            Self::InMemory(client) => client.update(index, id, item).await,
             Self::MongoDb(client) => client.update(index, id, item).await,
             Self::PostgreSql(client) => client.update(index, id, item).await,
             Self::Redis(client) => client.update(index, id, item).await,
@@ -112,6 +119,7 @@ impl DbClient {
         filter: Value,
     ) -> Result<u64, RustyError> {
         match self {
+            Self::InMemory(client) => client.delete_one::<T>(index, filter).await,
             Self::MongoDb(client) => client.delete_one::<T>(index, filter).await,
             Self::PostgreSql(client) => client.delete_one::<T>(index, filter).await,
             Self::Redis(client) => client.delete_one::<T>(index, filter).await,
@@ -127,6 +135,7 @@ impl DbClient {
     /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn delete_all(&self, index: &str) -> Result<u64, RustyError> {
         match self {
+            Self::InMemory(client) => client.delete_all(index).await,
             Self::MongoDb(client) => client.delete_all(index).await,
             Self::PostgreSql(client) => client.delete_all(index).await,
             Self::Redis(client) => client.delete_all(index).await,
@@ -145,6 +154,7 @@ impl DbClient {
         index: &'a str,
     ) -> impl futures_util::Stream<Item = Option<T>> + 'a {
         match self {
+            Self::InMemory(client) => client.change_stream(index),
             Self::MongoDb(client) => client.change_stream(index),
             Self::PostgreSql(client) => client.change_stream(index),
             Self::Redis(client) => client.change_stream(index),
@@ -158,6 +168,7 @@ impl DbClient {
     /// Returns a `RustyError` if any of the underlying database clients encounter an error during the purge operation.
     pub async fn purge(&self) -> Result<(), RustyError> {
         match self {
+            Self::InMemory(client) => client.purge().await,
             Self::MongoDb(client) => client.purge().await,
             Self::PostgreSql(client) => client.purge().await,
             Self::Redis(client) => client.purge().await,

@@ -9,6 +9,7 @@ Currently, it supports:
 - MongoDB
 - PostgreSQL
 - Redis [not recommended for production]
+- InMemory [definitely not recommended for production]
 
 In the future, more databases may be supported
 
@@ -25,6 +26,7 @@ In the future, specific databases might be stored behind features, if specific c
   - database type used in a given service
   - required
   - supported values:
+    - InMemory: `internal`|`in_memory`|`local`
     - MongoDB: `mongodb`|`mongo_db`|`mongo`
     - PostgreSQL: `postgresql`|`postgre`|`pg`
     - Redis: `redis`

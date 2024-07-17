@@ -8,6 +8,7 @@ use rusty_init::ops::schema;
 use crate::utils::db_connect;
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -28,6 +29,7 @@ async fn purge_db_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]

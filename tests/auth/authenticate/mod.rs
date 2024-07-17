@@ -12,6 +12,7 @@ use domain::auth::user::User;
 use crate::utils::{create_user, db_connect, USERS_INDEX, USER_ID, USER_NAME};
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -37,6 +38,7 @@ async fn basic_auth_positive_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -62,6 +64,7 @@ async fn basic_auth_wrong_credential_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -86,6 +89,7 @@ async fn basic_auth_no_user_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -120,6 +124,7 @@ async fn bearer_auth_positive_test<I: Image + Default>(
 const JWT_TOKEN_EXPIRED: &str = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJSdXN0eU9wcyIsInN1YiI6InVzZXIiLCJhdWQiOiJ1c2VyIiwiZXhwIjoxNjE3MDEwNDg4LCJuYmYiOjE2MTcwMTA0ODgsImlhdCI6MTYxNzAxMDQ4OCwianRpIjoiYTQyZDYyN2YtYTEwMC00OWViLTg0MDYtMWZkMWMzMmI2MDMxIn0.a7EK570ag-KZDSiX-KVAvkcOxwsIVUnU5ho9UrmuOe1TEQC5xgC2EY7LkXyKqOqWgzqE-qMyFS6bq3M6Je3oHQ";
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -148,6 +153,7 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -187,6 +193,7 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -211,6 +218,7 @@ async fn bearer_auth_invalid_token_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]

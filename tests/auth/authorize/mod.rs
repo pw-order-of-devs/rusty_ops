@@ -9,6 +9,7 @@ use crate::auth::utils::{create_permission_role, create_permission_user, create_
 use crate::utils::{create_user, db_connect, USER_NAME};
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -35,6 +36,7 @@ async fn authorize_no_user_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -59,6 +61,7 @@ async fn authorize_no_permissions_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
@@ -83,6 +86,7 @@ async fn authorize_user_positive_test<I: Image + Default>(
 }
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]

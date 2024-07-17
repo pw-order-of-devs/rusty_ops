@@ -8,6 +8,7 @@ use rusty_init::versions::v1_0_0::execute;
 use crate::utils::db_connect;
 
 #[rstest]
+#[case(Redis, "internal", 0)]
 #[case(Mongo, "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
