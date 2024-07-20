@@ -4,10 +4,11 @@
 	import type { Pipeline } from '$lib/domain/pipeline';
 	import Card from 'src/components/auth/Card.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
-	import { faArrowRight } from '@fortawesome/free-solid-svg-icons';
+	import { faArrowRight, faArrowRightRotate } from '@fortawesome/free-solid-svg-icons';
 
 	export let entry: Pipeline;
 	export let currentPath: string;
+	export let rerunPipeline: any;
 
 	let executionTime: string = '';
 
@@ -16,14 +17,20 @@
 			moment(entry.endDate).valueOf() - moment(entry.startDate).valueOf()
 		);
 		if (duration.isValid()) {
-			executionTime = '';
+			executionTime = 'Ran for ';
 			if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
 			if (duration.hours() > 0) executionTime += duration.hours().toString() + 'h ';
 			if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
 			if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
 			executionTime += duration.milliseconds().toString() + 'ms';
 		} else {
-			executionTime = '-';
+			let duration = moment.duration(moment.now().valueOf() - moment(entry.startDate).valueOf());
+			executionTime = 'Running for ';
+			if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
+			if (duration.hours() > 0) executionTime += duration.hours().toString() + 'h ';
+			if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
+			if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
+			executionTime += duration.milliseconds().toString() + 'ms';
 		}
 	}
 </script>
@@ -41,8 +48,18 @@
 			/>
 		</div>
 		<div class="pipeline-card-meta">
-			<div>Execution time: {executionTime}</div>
+			<div>{executionTime} @ {entry.branch}</div>
 			<div>
+				<a
+					href={undefined}
+					on:click={rerunPipeline(entry)}
+					use:tooltip={{
+						content: 'Rerun pipeline',
+						placement: 'bottom'
+					}}
+				>
+					<FontAwesomeIcon icon={faArrowRightRotate} />
+				</a>
 				<a
 					href="{currentPath}/pipelines/{entry.id}"
 					use:tooltip={{

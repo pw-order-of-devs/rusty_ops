@@ -1,9 +1,14 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
+	import type { Pipeline } from '$lib/domain/pipeline';
 	import type { JobData } from '$lib/scripts/auth/projects/data';
 	import { getJobById } from '$lib/scripts/auth/projects/jobs';
-	import { getJobPipelines, pipelinesListScrolled } from '$lib/scripts/auth/projects/pipelines';
+	import {
+		getJobPipelines,
+		pipelinesListScrolled,
+		registerPipeline
+	} from '$lib/scripts/auth/projects/pipelines';
 	import { parseResponse } from '$lib/scripts/utils/parse';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
@@ -42,6 +47,10 @@
 			pageData
 		);
 	};
+
+	const rerunPipeline = async (entry: Pipeline) => {
+		await registerPipeline(entry.jobId, entry.branch);
+	};
 </script>
 
 {#if $loading}
@@ -72,7 +81,7 @@
 
 			<div class="entries" bind:this={scrollablePipelines} on:scroll={pipelinesListScrolled_}>
 				{#each pageData?.pipelines?.entries ?? [] as entry (entry.id)}
-					<PipelineCard {entry} {currentPath} />
+					<PipelineCard {entry} {currentPath} {rerunPipeline} />
 				{/each}
 			</div>
 		</div>

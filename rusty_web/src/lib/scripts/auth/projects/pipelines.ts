@@ -34,3 +34,10 @@ export const pipelinesListScrolled = async (
 	}
 	return data;
 };
+
+export const registerPipeline = async (jobId: string, branch: string) => {
+	return await fetch('?/registerPipeline', {
+		method: 'POST',
+		body: JSON.stringify({ jobId, branch })
+	});
+};

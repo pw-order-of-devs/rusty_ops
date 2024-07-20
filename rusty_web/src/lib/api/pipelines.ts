@@ -15,9 +15,11 @@ const getJobPipelinesQuery = (page: number, id: string) => {
 					id
 					number
 					status
+					branch
 					registerDate
 					startDate
 					endDate
+					jobId
 				}
 			}
 		}
@@ -55,6 +57,45 @@ export const getJobPipelines = async (auth: string, page: number, id: string) =>
 	} catch (error) {
 		return {
 			errors: ['Fetch job pipelines failed']
+		};
+	}
+};
+
+const registerPipelineMutation = (jobId: string, branch: string) => {
+	return `mutation {
+		pipelines {
+			register(pipeline: {
+				jobId: "${jobId}",
+				branch: "${branch}"
+			})
+		}
+	}`;
+};
+
+export const registerPipeline = async (auth: string, jobId: string, branch: string) => {
+	try {
+		const response = await fetchPost(
+			auth,
+			JSON.stringify({ query: registerPipelineMutation(jobId, branch) })
+		);
+
+		if (!response.ok) {
+			return {
+				errors: ['Register pipeline failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Register pipeline failed']
 		};
 	}
 };
