@@ -7,7 +7,7 @@ export interface TooltipOpts {
 
 export function tooltip(node: SingleTarget, props: TooltipOpts | null) {
 	if (props) {
-		let tip = tippy(node, props);
+		const tip = tippy(node, props);
 		return {
 			update: (newParams: Pick<Props, 'content' | 'placement'>) => {
 				tip.setProps(newParams);

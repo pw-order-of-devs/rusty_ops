@@ -1,0 +1,50 @@
+@import 'src/styles/global';
+@import 'src/styles/wrapText';
+
+.job-page {
+	.job-title {
+		:global(.card) {
+			margin: 0.5rem;
+			height: 5rem;
+		}
+
+		.job-name {
+			font-size: 2rem;
+			font-weight: bold;
+		}
+
+		.job-description {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
+			font-size: 1.2rem;
+			height: 3rem;
+		}
+	}
+
+	.job-data {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		padding: 0.5rem;
+		gap: 0.5rem;
+
+		.job-template,
+		.job-pipelines {
+			height: calc(100vh - 12rem);
+		}
+
+		.job-pipelines {
+			position: relative;
+
+			.entries {
+				height: calc(100vh - 12rem);
+				width: calc((100vw - 4rem) / 2);
+				display: flex;
+				flex-direction: column;
+				padding: 0.2rem;
+				gap: 0.5rem;
+				overflow-y: auto;
+			}
+		}
+	}
+}

@@ -10,7 +10,7 @@ const compare = (a: Error, b: Error) => {
 const noButton: Error[] = [{ kind: 'Not supported', message: 'Mobile view is not supported' }];
 
 export const load = ({ url }) => {
-	let error: Error = {
+	const error: Error = {
 		kind: url.searchParams.get('kind'),
 		message: url.searchParams.get('message')
 	};

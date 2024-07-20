@@ -1,31 +1,31 @@
 .circle {
-  width: 1rem;
-  height: 1rem;
-  border: 0.1rem solid $color-black-6;
-  border-radius: 50%;
+	width: 1rem;
+	height: 1rem;
+	border: 0.1rem solid $color-black-6;
+	border-radius: 50%;
 }
 
 .circle-defined,
 .circle-assigned {
-  background-color: cornflowerblue;
+	background-color: cornflowerblue;
 }
 
 .circle-in_progress {
-  background-color: gold;
+	background-color: gold;
 }
 
 .circle-unstable {
-  background-color: darkorange;
+	background-color: darkorange;
 }
 
 .circle-failure {
-  background-color: red;
+	background-color: red;
 }
 
 .circle-success {
-  background-color: green;
+	background-color: green;
 }
 
 .circle-default {
-  background-color: transparent;
+	background-color: transparent;
 }

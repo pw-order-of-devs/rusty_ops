@@ -2,11 +2,11 @@
 @import 'src/styles/status';
 @import 'src/styles/wrapText';
 
-:global(.job-card-wrapper) {
+:global(.pipeline-card-wrapper) {
 	height: 3rem;
 }
 
-.job-card {
+.pipeline-card {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -15,7 +15,7 @@
 	margin-left: 1rem;
 	margin-right: 0.5rem;
 
-	.job-card-status {
+	.pipeline-card-status {
 		display: flex;
 		flex-direction: row;
 		justify-content: center;
@@ -24,7 +24,7 @@
 		font-size: 1.3rem;
 	}
 
-	.job-card-meta {
+	.pipeline-card-meta {
 		display: flex;
 		flex-direction: row;
 		align-items: center;
@@ -33,11 +33,6 @@
 		gap: 1rem;
 
 		div {
-			div:nth-child(1) {
-				font-size: 1.4rem;
-				font-weight: bold;
-			}
-
 			a {
 				padding: 0.5rem;
 				border: 0.1rem $color-white-2 solid;

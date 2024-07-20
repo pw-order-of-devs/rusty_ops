@@ -1,5 +1,5 @@
 <script lang="ts">
-	import moment from "moment";
+	import moment from 'moment';
 	import { tooltip } from '$lib/ui/tooltip';
 	import type { Project } from '$lib/domain/project';
 	import Card from 'src/components/auth/Card.svelte';

@@ -15,14 +15,14 @@ export const jobsFilterKeyPressed = async (
 	filter: string,
 	data: any
 ) => {
-	loading.update((_) => true);
+	loading.update(() => true);
 	const response = await getProjectJobs(projectId, filter, 1);
 
 	if (!response.ok) {
 		toastError('Error while fetching project jobs');
 	} else {
 		data.jobs = await parseResponse(response);
-		loading.update((_) => false);
+		loading.update(() => false);
 	}
 	return data;
 };
@@ -39,7 +39,7 @@ export const jobsListScrolled = async (
 			return data;
 		}
 
-		loading.update((_) => true);
+		loading.update(() => true);
 		const response = await getProjectJobs(projectId, filter, data.jobs!.page + 1);
 
 		if (!response.ok) {
@@ -48,8 +48,15 @@ export const jobsListScrolled = async (
 			const parsed = await parseResponse(response);
 			parsed.entries = [...data.jobs!.entries!, ...parsed.entries];
 			data.jobs! = parsed;
-			loading.update((_) => false);
+			loading.update(() => false);
 		}
 	}
 	return data;
+};
+
+export const getJobById = async (id: string) => {
+	return await fetch('?/getJobById', {
+		method: 'POST',
+		body: JSON.stringify({ id })
+	});
 };

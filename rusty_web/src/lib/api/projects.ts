@@ -2,10 +2,10 @@ import { fetchPost } from '$lib/utils/api';
 import type { Project } from '$lib/domain/project';
 
 const getProjectsQuery = (page: number, group: string, name: string) => {
-	let groupMatch = group.match(/[a-z-]/gi);
-	let groupIdFilter = `group_id: ${groupMatch === null ? null : `{ equals: ${group} }`}`;
-	let filter = `filter: { ${groupIdFilter}, name: { contains: "${name}" } }, `;
-	let options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
+	const groupMatch = group.match(/[a-z-]/gi);
+	const groupIdFilter = `group_id: ${groupMatch === null ? null : `{ equals: ${group} }`}`;
+	const filter = `filter: { ${groupIdFilter}, name: { contains: "${name}" } }, `;
+	const options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
 
 	return `query {
 		projects {
@@ -52,14 +52,18 @@ export const fetchProjects = async (auth: string, page: number, group: string, n
 			} else if (data) {
 				const paged = data?.projects?.get;
 				const projects: Project[] = paged?.entries ?? [];
-				projects.forEach(p => {
-					let flattened = p.jobs.reduce((accumulator: any[], current: any) => {
-						current.pipelines.forEach((pp: any) => pp.jobName = current.name);
+				projects.forEach((p) => {
+					const flattened = p.jobs.reduce((accumulator: any[], current: any) => {
+						current.pipelines.forEach((pp: any) => (pp.jobName = current.name));
 						return accumulator.concat(current.pipelines);
 					}, []);
 					flattened.sort((a, b) => {
-						if (a.registerDate < b.registerDate) { return 1; }
-						if (a.registerDate > b.registerDate) { return -1; }
+						if (a.registerDate < b.registerDate) {
+							return 1;
+						}
+						if (a.registerDate > b.registerDate) {
+							return -1;
+						}
 						return 0;
 					});
 					if (flattened.length > 0) {

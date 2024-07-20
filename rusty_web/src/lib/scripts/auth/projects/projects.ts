@@ -7,7 +7,7 @@ export const groupClicked = async (entry: Group, loading: Writable<boolean>, dat
 	if (entry.id === data.groups?.active?.id) {
 		return;
 	}
-	loading.update((_) => true);
+	loading.update(() => true);
 	data.groups!.active = entry;
 	const response = await fetchProjects(entry.id, '', 1);
 
@@ -17,7 +17,7 @@ export const groupClicked = async (entry: Group, loading: Writable<boolean>, dat
 		const parsed = await parseResponse(response);
 		data.projects!.entries = parsed.entries;
 	}
-	loading.update((_) => false);
+	loading.update(() => false);
 	return data;
 };
 
@@ -27,14 +27,14 @@ export const projectsFilterKeyPressed = async (
 	filter: string,
 	data: any
 ) => {
-	loading.update((_) => true);
+	loading.update(() => true);
 	const response = await fetchProjects(groupId, filter, 1);
 
 	if (!response.ok) {
 		toastError('Error while fetching projects');
 	} else {
 		data.projects = await parseResponse(response);
-		loading.update((_) => false);
+		loading.update(() => false);
 	}
 	return data;
 };
@@ -51,7 +51,7 @@ export const projectsListScrolled = async (
 			return data;
 		}
 
-		loading.update((_) => true);
+		loading.update(() => true);
 		const response = await fetchProjects(groupId, filter, data.projects!.page + 1);
 
 		if (!response.ok) {
@@ -60,7 +60,7 @@ export const projectsListScrolled = async (
 			const parsed = await parseResponse(response);
 			parsed.entries = [...data.projects!.entries!, ...parsed.entries];
 			data.projects! = parsed;
-			loading.update((_) => false);
+			loading.update(() => false);
 		}
 	}
 	return data;

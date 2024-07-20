@@ -1,5 +1,5 @@
 <script lang="ts">
-	import moment from "moment";
+	import moment from 'moment';
 	import { tooltip } from '$lib/ui/tooltip';
 	import type { Job } from '$lib/domain/job';
 	import Card from 'src/components/auth/Card.svelte';
@@ -7,6 +7,7 @@
 	import { faArrowRight, faPencil } from '@fortawesome/free-solid-svg-icons';
 
 	export let entry: Job;
+	export let currentPath: string;
 	export let status = 'default';
 
 	$: status = entry.pipelines?.[0]?.status.toLowerCase() ?? 'default';
@@ -31,7 +32,7 @@
 			</div>
 			<div>
 				<a
-					href="/jobs/{entry.id}"
+					href="{currentPath}/jobs/{entry.id}"
 					use:tooltip={{
 						content: 'Edit job',
 						placement: 'bottom'
@@ -40,7 +41,7 @@
 					<FontAwesomeIcon icon={faPencil} />
 				</a>
 				<a
-					href="/jobs/{entry.id}"
+					href="{currentPath}/jobs/{entry.id}"
 					use:tooltip={{
 						content: 'Preview job',
 						placement: 'bottom'

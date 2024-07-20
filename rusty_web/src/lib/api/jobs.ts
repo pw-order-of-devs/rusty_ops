@@ -2,8 +2,8 @@ import { fetchPost } from '$lib/utils/api';
 import type { Job } from '$lib/domain/job';
 
 const getProjectJobsQuery = (page: number, id: string, name: string) => {
-	let filter = `filter: { project_id: { equals: "${id}" }, name: { contains: "${name}" } }, `;
-	let options = `options: { pageNumber: ${page}, pageSize: 50, sortMode: ASCENDING, sortField: "name" }`;
+	const filter = `filter: { project_id: { equals: "${id}" }, name: { contains: "${name}" } }, `;
+	const options = `options: { pageNumber: ${page}, pageSize: 50, sortMode: ASCENDING, sortField: "name" }`;
 
 	return `query {
 		jobs {
@@ -59,6 +59,44 @@ export const getProjectJobs = async (auth: string, page: number, id: string, nam
 	} catch (error) {
 		return {
 			errors: ['Fetch project jobs failed']
+		};
+	}
+};
+
+const getJobByIdQuery = (id: string) => {
+	return `query {
+		jobs {
+			getById(id: "${id}"){
+				id
+				name
+				description
+				template
+			}
+		}
+	}`;
+};
+
+export const getJobById = async (auth: string, id: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: getJobByIdQuery(id) }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Get job by id failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.jobs?.getById;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Get job by id failed']
 		};
 	}
 };

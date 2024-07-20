@@ -24,8 +24,10 @@
 
 	let pageData: ProjectData | undefined = undefined;
 	export let data;
+	let currentPath = '';
 
 	onMount(async () => {
+		currentPath = new URL(window.location.href).pathname;
 		loading.update(() => true);
 		let project = await parseResponse(await getProjectById(data['id']));
 		let jobs = await parseResponse(await getProjectJobs(data['id'], '', 1));
@@ -90,7 +92,7 @@
 
 				<div class="entries" bind:this={scrollableJobs} on:scroll={jobsListScrolled_}>
 					{#each pageData?.jobs?.entries ?? [] as entry (entry.id)}
-						<JobCard {entry} />
+						<JobCard {entry} {currentPath} />
 					{/each}
 				</div>
 			</div>

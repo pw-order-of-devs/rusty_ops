@@ -1,4 +1,5 @@
 @import 'src/styles/global';
+@import 'src/styles/wrapText';
 
 .project-page {
 	.jobs-filter {
@@ -52,10 +53,4 @@
 			}
 		}
 	}
-}
-
-.wrap-text {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }

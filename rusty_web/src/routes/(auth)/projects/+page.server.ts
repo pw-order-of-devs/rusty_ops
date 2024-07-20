@@ -6,13 +6,11 @@ export const actions = {
 	fetchGroups: async ({ request, cookies }) => {
 		const body = await request.json();
 		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');
-		let groups = await fetchGroups(jwtToken, body.pageNumber, body.groupName);
-		return JSON.stringify(groups);
+		return JSON.stringify(await fetchGroups(jwtToken, body.pageNumber, body.groupName));
 	},
 	fetchProjects: async ({ request, cookies }) => {
 		const body = await request.json();
 		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');
-		let projects = await fetchProjects(jwtToken, body.pageNumber, body.groupId, body.name);
-		return JSON.stringify(projects);
+		return JSON.stringify(await fetchProjects(jwtToken, body.pageNumber, body.groupId, body.name));
 	}
 };

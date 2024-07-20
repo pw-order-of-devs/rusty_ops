@@ -13,7 +13,7 @@ export const actions = {
 		const credentials = await request.formData();
 
 		try {
-			let response = await fetchPost(
+			const response = await fetchPost(
 				basicAuthHeader(credentials),
 				JSON.stringify({
 					query: `query { auth { login } }`
@@ -31,7 +31,7 @@ export const actions = {
 						errors: errors.map((error: { message: string }) => error.message)
 					};
 				} else if (data) {
-					let token = data?.auth?.login;
+					const token = data?.auth?.login;
 					if (token) {
 						return {
 							token

@@ -7,14 +7,14 @@ export const groupsFilterKeyPressed = async (
 	filter: string,
 	data: any
 ) => {
-	loading.update((_) => true);
+	loading.update(() => true);
 	const response = await fetchGroups(filter, 1);
 
 	if (!response.ok) {
 		toastError('Error while fetching groups');
 	} else {
 		data.groups = await parseResponse(response);
-		loading.update((_) => false);
+		loading.update(() => false);
 	}
 	return data;
 };
@@ -30,7 +30,7 @@ export const groupsListScrolled = async (
 			return data;
 		}
 
-		loading.update((_) => true);
+		loading.update(() => true);
 		const response = await fetchGroups(filter, data.groups!.page + 1);
 
 		if (!response.ok) {
@@ -39,7 +39,7 @@ export const groupsListScrolled = async (
 			const parsed = await parseResponse(response);
 			parsed.entries = [...data.groups!.entries!, ...parsed.entries];
 			data.groups! = parsed;
-			loading.update((_) => false);
+			loading.update(() => false);
 		}
 	}
 	return data;

@@ -11,4 +11,6 @@ export interface Pipeline {
 	number: number;
 	status: string;
 	registerDate: string;
+	startDate: string | undefined;
+	endDate: string | undefined;
 }

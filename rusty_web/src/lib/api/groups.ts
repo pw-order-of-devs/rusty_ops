@@ -2,8 +2,8 @@ import { fetchPost } from '$lib/utils/api';
 import type { Group } from '$lib/domain/group';
 
 const getGroupsQuery = (page: number, name: string) => {
-	let filter = `filter: { name: { contains: "${name}" } }, `;
-	let options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
+	const filter = `filter: { name: { contains: "${name}" } }, `;
+	const options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
 	return `query {
 		projectGroups {
 			get(${filter}${options}){
