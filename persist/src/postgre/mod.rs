@@ -1,8 +1,7 @@
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::tokio_postgres::{types::Type, NoTls, Row};
 use bb8_postgres::PostgresConnectionManager;
-use serde_json::{Map, Value};
-use std::pin::Pin;
+use serde_json::{json, Map, Value};
 use std::time::Duration;
 
 use commons::env::{var, var_or_default};
@@ -10,6 +9,7 @@ use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
+use crate::messaging::CHANNEL;
 use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
@@ -167,10 +167,16 @@ impl Persistence for PostgreSQLClient {
         item: &T,
     ) -> Result<String, RustyError> {
         let conn = self.client.get().await?;
-        let values = parse_filter(&Some(serde_json::to_value(item)?), false).join(", ");
+        let (id, item) = (item.get_id(), serde_json::to_value(item)?);
+        let values = parse_filter(&Some(item.clone()), false).join(", ");
         let statement = format!("insert into {}.{} values ({})", self.schema, index, values);
         let _ = conn.execute(&statement, &[]).await?;
-        Ok(item.get_id())
+        let _ = CHANNEL
+            .tx
+            .lock()
+            .await
+            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
+        Ok(id)
     }
 
     async fn update<T: RustyDomainItem>(
@@ -216,15 +222,6 @@ impl Persistence for PostgreSQLClient {
         let statement = format!("delete from {}.{}", self.schema, index);
         let deleted = conn.execute(&statement, &[]).await?;
         Ok(deleted)
-    }
-
-    fn change_stream<'a, T: RustyDomainItem + 'static>(
-        &'a self,
-        _index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
-        Box::pin(async_stream::stream! {
-            yield None
-        })
     }
 
     async fn purge(&self) -> Result<(), RustyError> {

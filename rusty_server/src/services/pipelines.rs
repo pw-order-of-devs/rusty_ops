@@ -1,4 +1,3 @@
-use async_graphql::futures_util::Stream;
 use serde_json::{json, Value};
 
 use commons::env::var_or_default;
@@ -239,9 +238,4 @@ pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
     shared::delete_all(db, PIPELINES_INDEX).await
-}
-
-// subscriptions
-pub fn inserted_stream(db: &DbClient) -> impl Stream<Item = Option<Pipeline>> + '_ {
-    db.change_stream(PIPELINES_INDEX)
 }

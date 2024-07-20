@@ -1,15 +1,15 @@
 use async_graphql::futures_util::Stream;
-use async_graphql::{Context, Object, Subscription};
+use async_graphql::{async_stream, Context, Object, Subscription};
 use serde_json::Value;
 
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
+use crate::services::pipelines as service;
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
-
-use crate::gql::{get_public_gql_endpoints, shared::paginate};
-use crate::services::pipelines as service;
+use persist::messaging::CHANNEL;
 
 pub struct PipelinesQuery;
 
@@ -158,16 +158,22 @@ pub struct PipelineSubscription;
 
 #[Subscription]
 impl PipelineSubscription {
-    async fn pipelines<'a>(
-        &'a self,
-        ctx: &Context<'a>,
-    ) -> Result<impl Stream<Item = Option<Pipeline>> + 'a, RustyError> {
+    async fn pipeline_created(&self) -> impl Stream<Item = Pipeline> {
         log::debug!("handling `pipelines::inserted` subscription");
-        let db = ctx.data::<DbClient>()?;
-        let cred = ctx.data::<Credential>()?;
-        if auth::authenticate(db, cred).await.is_err() {
-            return Err(RustyError::UnauthenticatedError);
+        let mut receiver = CHANNEL.rx.lock().await;
+        async_stream::stream! {
+            while let Some(message) = receiver.recv().await {
+                if let Ok(message) = serde_json::from_str::<Value>(&message) {
+                    let index = message.get("index").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                    let operation = message.get("op").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                    let item = message.get("item").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                    if index == "pipelines" && operation == "create" {
+                        if let Ok(pipeline) = serde_json::from_str::<Pipeline>(item) {
+                            yield pipeline;
+                        }
+                    }
+                }
+            }
         }
-        Ok(service::inserted_stream(db))
     }
 }

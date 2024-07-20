@@ -17,7 +17,6 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use std::future::Future;
-use std::pin::Pin;
 
 use serde_json::Value;
 
@@ -47,6 +46,9 @@ pub mod postgre;
 
 /// # `Redis` Module
 pub mod redis;
+
+/// # `Messaging` Module - sender/receiver channel
+pub mod messaging;
 
 /// # `Commons` Module - shared functions
 pub mod shared;
@@ -221,26 +223,6 @@ pub trait Persistence: Send + Sync {
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
     fn delete_all(&self, index: &str) -> impl Future<Output = Result<u64, RustyError>> + Send;
-
-    /// Fetches a change stream for a collection from the database.
-    ///
-    /// # Arguments
-    ///
-    /// * `index` - The index name of the item.
-    ///
-    /// # Returns
-    ///
-    /// A future that resolves to a `Result` indicating whether the operation was successful or returned an error.
-    ///
-    /// # Errors
-    ///
-    /// This function can generate the following errors:
-    ///
-    /// * `RustyError` - If there was an error during the creation of the item.
-    fn change_stream<'a, T: RustyDomainItem + 'static>(
-        &'a self,
-        index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>>;
 
     /// Purges all data in the selected database(s).
     ///

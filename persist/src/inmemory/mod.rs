@@ -9,6 +9,7 @@ use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
+use crate::messaging::CHANNEL;
 use crate::shared::{delete_one_filter, filter_results, sort_results};
 use crate::{Persistence, PersistenceBuilder};
 
@@ -91,17 +92,22 @@ impl Persistence for InMemoryClient {
         index: &str,
         item: &T,
     ) -> Result<String, RustyError> {
-        let id = item.get_id();
-        let mut guarded_store = self.store.lock().unwrap();
-        let item = serde_json::to_value(item)?;
-        if let Some(index) = guarded_store.get_mut(index) {
-            index.insert(id.clone(), item);
-        } else {
-            let mut map = HashMap::new();
-            map.insert(id.to_string(), item);
-            guarded_store.insert(index.to_string(), map);
-            drop(guarded_store);
+        let (id, item) = (item.get_id(), serde_json::to_value(item)?);
+        {
+            let mut guarded_store = self.store.lock().unwrap();
+            if let Some(index) = guarded_store.get_mut(index) {
+                index.insert(id.clone(), item.clone());
+            } else {
+                let mut map = HashMap::new();
+                map.insert(id.to_string(), item.clone());
+                guarded_store.insert(index.to_string(), map);
+            }
         }
+        let _ = CHANNEL
+            .tx
+            .lock()
+            .await
+            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
         Ok(id)
     }
 
@@ -153,15 +159,6 @@ impl Persistence for InMemoryClient {
         guarded_store
             .remove(index)
             .map_or(Ok(0), |index| Ok(index.len() as u64))
-    }
-
-    fn change_stream<'a, T: RustyDomainItem + 'static>(
-        &'a self,
-        _: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
-        Box::pin(async_stream::stream! {
-            yield None
-        })
     }
 
     async fn purge(&self) -> Result<(), RustyError> {

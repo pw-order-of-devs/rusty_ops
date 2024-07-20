@@ -1,9 +1,7 @@
-use std::pin::Pin;
 use std::time::Duration;
 
 use bb8_redis::redis::AsyncCommands;
 use bb8_redis::{bb8, RedisConnectionManager};
-use futures_util::StreamExt;
 use serde_json::{json, Value};
 
 use commons::env::{var, var_or_default};
@@ -11,17 +9,14 @@ use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
-use crate::redis::pubsub::RedisPubSubConnectionManager;
+use crate::messaging::CHANNEL;
 use crate::shared::{delete_one_filter, filter_results, sort_results};
 use crate::{Persistence, PersistenceBuilder};
-
-mod pubsub;
 
 /// Represents a `Redis` client.
 #[derive(Clone, Debug)]
 pub struct RedisClient {
     client: bb8::Pool<RedisConnectionManager>,
-    pubsub: bb8::Pool<RedisPubSubConnectionManager>,
 }
 
 impl RedisClient {
@@ -63,14 +58,7 @@ impl PersistenceBuilder for RedisClient {
             .await
             .expect("error while building redis client");
 
-        let pubsub_manager = RedisPubSubConnectionManager::new(Self::get_conn_string())
-            .expect("error while building redis pubsub client");
-        let pubsub = bb8::Pool::builder()
-            .build(pubsub_manager)
-            .await
-            .expect("error while building redis client");
-
-        Self { client, pubsub }
+        Self { client }
     }
 }
 
@@ -123,7 +111,11 @@ impl Persistence for RedisClient {
         let mut conn = self.client.get().await?;
         let item = serde_json::to_string(item)?;
         conn.set(format!("{index}_{id}"), &item).await?;
-        conn.publish(index, &item).await?;
+        let _ = CHANNEL
+            .tx
+            .lock()
+            .await
+            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
         Ok(id)
     }
 
@@ -171,33 +163,6 @@ impl Persistence for RedisClient {
             conn.del(key).await?;
         }
         Ok(keys.len() as u64)
-    }
-
-    fn change_stream<'a, T: RustyDomainItem + 'static>(
-        &'a self,
-        index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
-        Box::pin(async_stream::stream! {
-            let conn = self.pubsub.dedicated_connection().await;
-            if conn.is_err() {
-                log::error!("Error while obtaining redis connection");
-                yield None;
-            }
-
-            let mut conn = conn.unwrap();
-            if conn.subscribe(index).await.is_err() {
-                log::error!("Error while obtaining change stream for `{index}`");
-                yield None;
-            }
-
-            while let Some(msg) = conn.on_message().next().await {
-                if let Ok(payload) = msg.get_payload::<String>() {
-                    if let Ok(item) = serde_json::from_str::<T>(&payload) {
-                        yield Some(item)
-                    }
-                }
-            }
-        })
     }
 
     async fn purge(&self) -> Result<(), RustyError> {

@@ -7,7 +7,6 @@ use crate::api::{agents, auth, pipelines, JWT_TOKEN};
 use crate::resolver::execution::execute_pipeline;
 use crate::resolver::subscription::pipeline_created_subscription;
 
-pub mod assignment;
 pub mod execution;
 pub mod subscription;
 

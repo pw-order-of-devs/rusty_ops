@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use async_graphql::futures_util::StreamExt;
 use async_graphql::SimpleObject;
 use rstest::rstest;
 use serde::{Deserialize, Serialize};
@@ -192,31 +191,6 @@ where
     let result = db_client.purge().await;
     let _ = db.stop().await;
     assert!(result.is_ok());
-}
-
-#[rstest]
-#[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
-#[case(Postgres::default(), "postgres", 5432)]
-#[case(Redis, "redis", 6379)]
-#[tokio::test]
-async fn change_stream_test<I: Image + Default>(
-    #[case] image: I,
-    #[case] db_type: &str,
-    #[case] port: u16,
-) where
-    I: Image,
-{
-    let db = image
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, db_type, port).await;
-    let _ = create_test_entry(&db_client, "test", 0).await;
-
-    let result = db_client.change_stream::<TestEntry>("entries").next().await;
-    let _ = db.stop().await;
-    assert!(result.is_some());
 }
 
 fn format_timestamp(diff: i64) -> String {

@@ -678,15 +678,3 @@ async fn delete_all_test() {
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap());
 }
-
-#[tokio::test]
-async fn inserted_stream_test() {
-    let db = Redis
-        .start()
-        .await
-        .expect("initializing test container failed");
-    let db_client = db_connect(&db, "redis", 6379).await;
-
-    let _ = service::inserted_stream(&db_client);
-    let _ = db.stop().await;
-}

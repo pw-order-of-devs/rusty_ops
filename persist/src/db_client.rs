@@ -142,25 +142,6 @@ impl DbClient {
         }
     }
 
-    /// Wrapper for `change_stream` function
-    ///
-    /// # Errors
-    ///
-    /// This function can generate the following errors:
-    ///
-    /// * `RustyError` - If there was an error during the creation of the item.
-    pub fn change_stream<'a, T: RustyDomainItem + 'static>(
-        &'a self,
-        index: &'a str,
-    ) -> impl futures_util::Stream<Item = Option<T>> + 'a {
-        match self {
-            Self::InMemory(client) => client.change_stream(index),
-            Self::MongoDb(client) => client.change_stream(index),
-            Self::PostgreSql(client) => client.change_stream(index),
-            Self::Redis(client) => client.change_stream(index),
-        }
-    }
-
     /// Purges all data in the selected database(s).
     ///
     /// # Errors

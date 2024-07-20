@@ -1,9 +1,7 @@
-use std::pin::Pin;
 use std::time::Duration;
 
 use futures_util::StreamExt;
 use mongodb::bson::{doc, to_document, Document};
-use mongodb::change_stream::event::OperationType;
 use mongodb::options::Credential;
 use mongodb::{options::ClientOptions, Client};
 use serde_json::{json, Value};
@@ -13,6 +11,7 @@ use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
+use crate::messaging::CHANNEL;
 use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
@@ -118,13 +117,21 @@ impl Persistence for MongoDBClient {
         index: &str,
         item: &T,
     ) -> Result<String, RustyError> {
+        let id = item.get_id();
         self.client
             .database(&self.database)
             .collection::<T>(index)
             .insert_one(item)
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
-            .map(|_| item.get_id())
+            .map(|_| &id)?;
+        let item = serde_json::to_value(item)?;
+        let _ = CHANNEL
+            .tx
+            .lock()
+            .await
+            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
+        Ok(id)
     }
 
     async fn update<T: RustyDomainItem>(
@@ -173,32 +180,6 @@ impl Persistence for MongoDBClient {
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|res| res.deleted_count)
-    }
-
-    fn change_stream<'a, T: RustyDomainItem + 'static>(
-        &'a self,
-        index: &'a str,
-    ) -> Pin<Box<dyn futures_util::Stream<Item = Option<T>> + Send + 'a>> {
-        Box::pin(async_stream::stream! {
-            if let Ok(mut change_stream) = self.client
-                .database(&self.database)
-                .collection::<T>(index)
-                .watch()
-                .await {
-                while let Some(event) = change_stream.next().await {
-                    if let Ok(event) = event {
-                        if event.operation_type == OperationType::Insert {
-                            if let Some(document) = event.full_document {
-                                yield Some(document);
-                            }
-                        }
-                    }
-                }
-            } else {
-                log::trace!("Error while obtaining a change stream for `{index}`: not supported in current server configuration");
-                yield None;
-            }
-        })
     }
 
     async fn purge(&self) -> Result<(), RustyError> {

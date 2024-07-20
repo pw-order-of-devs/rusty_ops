@@ -9,7 +9,7 @@ use tokio_tungstenite::{connect_async, MaybeTlsStream};
 use commons::env::var_or_default;
 use commons::errors::RustyError;
 
-use crate::resolver::assignment::assign_pipeline;
+use crate::api::pipelines as api;
 
 pub async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError> {
     // Initialize subscription read channel
@@ -92,9 +92,25 @@ async fn initialize_connection(
     let subscribe_message = json!({
         "type": "start",
         "id": uuid,
-        "payload": { "query": "subscription { pipelines { id number status startDate registerDate jobId agentId } }" },
+        "payload": { "query": "subscription { pipelineCreated { id number status branch startDate registerDate jobId agentId } }" },
     })
         .to_string();
     write.send(Message::Text(subscribe_message)).await?;
     Ok(read)
+}
+
+async fn assign_pipeline(uuid: &str, text: &str) -> Result<(), RustyError> {
+    log::trace!("Obtained message: {text}");
+    let message = serde_json::from_str::<Value>(text)?;
+    if let Some(message) = message["payload"]["data"]["pipelineCreated"].as_object() {
+        if let Some(id) = message.get("id") {
+            let res = api::assign_pipeline(id.as_str().unwrap_or_default(), uuid).await;
+            log::trace!("assign pipeline result: {res:?}");
+        } else {
+            log::warn!("Error while parsing pipeline to assign - missing id");
+        };
+    } else {
+        log::warn!("Error while parsing pipeline to assign");
+    }
+    Ok(())
 }

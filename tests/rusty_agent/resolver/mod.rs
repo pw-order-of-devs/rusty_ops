@@ -6,7 +6,6 @@ use rusty_agent::resolver;
 
 use crate::utils::mockito_start_server;
 
-mod assignment;
 mod execution;
 
 #[tokio::test]
