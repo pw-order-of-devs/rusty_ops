@@ -17,21 +17,25 @@
 			moment(entry.endDate).valueOf() - moment(entry.startDate).valueOf()
 		);
 		if (duration.isValid()) {
-			executionTime = 'Ran for ';
-			if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
-			if (duration.hours() > 0) executionTime += duration.hours().toString() + 'h ';
-			if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
-			if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
-			executionTime += duration.milliseconds().toString() + 'ms';
+			executionTime = 'Executed in ';
+			buildRunTime(duration);
 		} else {
-			let duration = moment.duration(moment.now().valueOf() - moment(entry.startDate).valueOf());
-			executionTime = 'Running for ';
-			if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
-			if (duration.hours() > 0) executionTime += duration.hours().toString() + 'h ';
-			if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
-			if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
-			executionTime += duration.milliseconds().toString() + 'ms';
+			duration = moment.duration(moment.now().valueOf() - moment(entry.startDate).valueOf());
+			if (duration.isValid()) {
+				executionTime = 'Running for ';
+				buildRunTime(duration);
+			} else {
+				executionTime = 'Created ' + moment(entry.registerDate).fromNow();
+			}
 		}
+	}
+
+	const buildRunTime = (duration: moment.Duration) => {
+		if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
+		if (duration.hours() > 0) executionTime += duration.hours().toString() + 'h ';
+		if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
+		if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
+		executionTime += duration.milliseconds().toString() + 'ms';
 	}
 </script>
 
