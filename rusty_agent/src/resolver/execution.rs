@@ -16,7 +16,7 @@ use crate::api::projects::get_pipeline_project;
 
 pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
-    let (project_id, mut template) = get_pipeline_template(&pipeline.job_id).await?;
+    let (project_id, template) = get_pipeline_template(&pipeline.job_id).await?;
     let (default_branch, repo_url) = get_pipeline_project(&project_id).await?;
     let branch = if pipeline.branch.is_empty() {
         default_branch
@@ -29,12 +29,6 @@ pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), Rust
     std::fs::create_dir_all(&working_directory)?;
     clone_repository(&working_directory, uuid, &pipeline.id, &repo_url, &branch).await?;
     let project_directory = format!("{working_directory}/{}", &pipeline.id);
-    if let Ok(temp) = fetch_template_from_files(&project_directory) {
-        log::debug!("found template in project files.");
-        template = temp;
-    } else {
-        log::debug!("no template in project files, using default one.");
-    };
 
     execute_stage(
         &project_directory,
@@ -212,12 +206,6 @@ async fn clone_repository(
     } else {
         Ok(())
     }
-}
-
-fn fetch_template_from_files(dir: &str) -> Result<PipelineTemplate, RustyError> {
-    let file = std::fs::read_to_string(format!("{dir}/rusty_ci.yaml"))?;
-    let file = base64_url::encode(&file);
-    PipelineTemplate::from_yaml(&file)
 }
 
 async fn cleanup(dir: &str, pipe_id: &str, uuid: &str, status: PipelineStatus) {
