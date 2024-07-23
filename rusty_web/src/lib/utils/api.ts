@@ -1,8 +1,4 @@
-import { env } from '$env/dynamic/private';
-
-const apiUrl = () => {
-	return env.API_URL ?? 'http://localhost:8000/graphql';
-};
+const apiUrl = () => import.meta.env.VITE_API_URL ?? 'http://localhost:8000/graphql';
 
 export const basicAuthHeader = (data: FormData) => {
 	const credentials = data.get('login') + ':' + data.get('password');

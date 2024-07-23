@@ -5,6 +5,7 @@
 	import Card from 'src/components/auth/Card.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { faArrowRight, faArrowRightRotate } from '@fortawesome/free-solid-svg-icons';
+	import { onMount, onDestroy } from 'svelte';
 
 	export let entry: Pipeline;
 	export let currentPath: string;
@@ -12,13 +13,28 @@
 
 	let executionTime: string = '';
 
-	$: {
+	let interval: number;
+
+	onMount(() => {
+		updateRunTime();
+
+		interval = setInterval(() => {
+			updateRunTime();
+		}, 3000);
+	});
+
+	onDestroy(() => {
+		clearInterval(interval);
+	});
+
+	const updateRunTime = () => {
 		let duration = moment.duration(
 			moment(entry.endDate).valueOf() - moment(entry.startDate).valueOf()
 		);
 		if (duration.isValid()) {
 			executionTime = 'Executed in ';
 			buildRunTime(duration);
+			executionTime += ' @ ' + moment(entry.endDate).fromNow(false);
 		} else {
 			duration = moment.duration(moment.now().valueOf() - moment(entry.startDate).valueOf());
 			if (duration.isValid()) {
@@ -28,7 +44,7 @@
 				executionTime = 'Created ' + moment(entry.registerDate).fromNow();
 			}
 		}
-	}
+	};
 
 	const buildRunTime = (duration: moment.Duration) => {
 		if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
@@ -36,7 +52,7 @@
 		if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
 		if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
 		executionTime += duration.milliseconds().toString() + 'ms';
-	}
+	};
 </script>
 
 <Card classes="pipeline-card-wrapper">

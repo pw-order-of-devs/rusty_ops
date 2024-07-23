@@ -71,7 +71,7 @@ fn expand_fn(auth_type: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
                 }
                 let db = #ctx.data::<DbClient>()?;
                 match auth::authenticate(db, cred).await {
-                    Ok(username) => log::info!("authenticated user `{cred}` for endpoint `{endpoint}`: success"),
+                    Ok(username) => log::debug!("authenticated user `{cred}` for endpoint `{endpoint}`: success"),
                     Err(err) => {
                         log::error!("authenticated user `{cred}` for endpoint `{endpoint}`: {}", err.to_string());
                         return Err(err)

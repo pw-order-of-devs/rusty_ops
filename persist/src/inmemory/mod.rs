@@ -107,7 +107,7 @@ impl Persistence for InMemoryClient {
             .tx
             .lock()
             .await
-            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
+            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
         Ok(id)
     }
 
@@ -121,7 +121,12 @@ impl Persistence for InMemoryClient {
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            self.create(id, item).await
+            let id = self.create(id, item).await?;
+            let _ = CHANNEL.tx.lock().await.send(
+                json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
+                    .to_string(),
+            );
+            Ok(id)
         } else {
             Err(RustyError::RedisError(format!(
                 "Item not found: `{index}`.`{id}`"

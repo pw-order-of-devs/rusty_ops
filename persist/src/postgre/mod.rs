@@ -175,7 +175,7 @@ impl Persistence for PostgreSQLClient {
             .tx
             .lock()
             .await
-            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
+            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
         Ok(id)
     }
 
@@ -192,6 +192,10 @@ impl Persistence for PostgreSQLClient {
             self.schema, index, values, id
         );
         let _ = conn.execute(&statement, &[]).await?;
+        let _ = CHANNEL.tx.lock().await.send(
+            json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
+                .to_string(),
+        );
         Ok(id.to_string())
     }
 

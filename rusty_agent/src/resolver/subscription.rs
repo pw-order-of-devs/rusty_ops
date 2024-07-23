@@ -81,10 +81,19 @@ async fn initialize_connection(
             log::debug!("Connection error: no ack response");
         }
         Some(res) => match res {
-            Ok(resp) => assert_eq!(
-                resp,
-                Message::Text("{\"type\":\"connection_ack\"}".to_string())
-            ),
+            Ok(resp) => {
+                let value = serde_json::from_str::<Value>(&resp.to_string())?;
+                if value
+                    .get("type")
+                    .unwrap_or(&Value::Null)
+                    .as_str()
+                    .unwrap_or_default()
+                    == "connection_error"
+                {
+                    let message = value["payload"]["message"].as_str().unwrap_or_default();
+                    return Err(RustyError::AsyncGraphqlError(message.to_string()));
+                }
+            }
             Err(err) => return Err(RustyError::AsyncGraphqlError(err.to_string())),
         },
     };
@@ -92,7 +101,7 @@ async fn initialize_connection(
     let subscribe_message = json!({
         "type": "start",
         "id": uuid,
-        "payload": { "query": "subscription { pipelineCreated { id number status branch startDate registerDate jobId agentId } }" },
+        "payload": { "query": "subscription { pipelineInserted { id number status branch startDate registerDate jobId agentId } }" },
     })
         .to_string();
     write.send(Message::Text(subscribe_message)).await?;
@@ -102,7 +111,7 @@ async fn initialize_connection(
 async fn assign_pipeline(uuid: &str, text: &str) -> Result<(), RustyError> {
     log::trace!("Obtained message: {text}");
     let message = serde_json::from_str::<Value>(text)?;
-    if let Some(message) = message["payload"]["data"]["pipelineCreated"].as_object() {
+    if let Some(message) = message["payload"]["data"]["pipelineInserted"].as_object() {
         if let Some(id) = message.get("id") {
             let res = api::assign_pipeline(id.as_str().unwrap_or_default(), uuid).await;
             log::trace!("assign pipeline result: {res:?}");

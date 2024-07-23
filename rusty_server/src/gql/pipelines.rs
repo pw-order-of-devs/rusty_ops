@@ -2,14 +2,17 @@ use async_graphql::futures_util::Stream;
 use async_graphql::{async_stream, Context, Object, Subscription};
 use serde_json::Value;
 
-use crate::gql::{get_public_gql_endpoints, shared::paginate};
-use crate::services::pipelines as service;
+use auth::{authenticate, authorize};
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
+use domain::commons::ws::ExtraWSData;
 use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
 use persist::messaging::CHANNEL;
+
+use crate::gql::{get_public_gql_endpoints, shared::paginate};
+use crate::services::{jobs, pipelines as service};
 
 pub struct PipelinesQuery;
 
@@ -158,17 +161,28 @@ pub struct PipelineSubscription;
 
 #[Subscription]
 impl PipelineSubscription {
-    async fn pipeline_created(&self) -> impl Stream<Item = Pipeline> {
+    async fn pipeline_inserted(&self, ctx: &Context<'_>) -> impl Stream<Item = Pipeline> {
         log::debug!("handling `pipelines::inserted` subscription");
-        let mut receiver = CHANNEL.rx.lock().await;
-        async_stream::stream! {
-            while let Some(message) = receiver.recv().await {
-                if let Ok(message) = serde_json::from_str::<Value>(&message) {
-                    let index = message.get("index").unwrap_or(&Value::Null).as_str().unwrap_or_default();
-                    let operation = message.get("op").unwrap_or(&Value::Null).as_str().unwrap_or_default();
-                    let item = message.get("item").unwrap_or(&Value::Null).as_str().unwrap_or_default();
-                    if index == "pipelines" && operation == "create" {
-                        if let Ok(pipeline) = serde_json::from_str::<Pipeline>(item) {
+        yield_pipeline(validate_subscription(ctx).await, "create").await
+    }
+
+    async fn pipeline_updated(&self, ctx: &Context<'_>) -> impl Stream<Item = Pipeline> {
+        log::debug!("handling `pipelines::updated` subscription");
+        yield_pipeline(validate_subscription(ctx).await, "update").await
+    }
+}
+
+async fn yield_pipeline(extras: ExtraWSData, op: &str) -> impl Stream<Item = Pipeline> + '_ {
+    let mut receiver = CHANNEL.rx.lock().await.resubscribe();
+    async_stream::stream! {
+        while let Ok(message) = receiver.recv().await {
+            if let Ok(message) = serde_json::from_str::<Value>(&message) {
+                let index = message.get("index").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                let operation = message.get("op").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                let item = message.get("item").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                if index == "pipelines" && operation == op {
+                    if let Ok(pipeline) = serde_json::from_str::<Pipeline>(item) {
+                        if extras.job_id.is_none() || extras.clone().job_id.unwrap() == pipeline.job_id {
                             yield pipeline;
                         }
                     }
@@ -176,4 +190,38 @@ impl PipelineSubscription {
             }
         }
     }
+}
+
+async fn project_id_subscription(db: &DbClient, cred: &Credential, extra: &ExtraWSData) -> String {
+    if let Some(job_id) = extra.clone().job_id {
+        if let Some(job) = jobs::get_by_id(db, cred, &job_id, &None, &[])
+            .await
+            .expect("job not found")
+        {
+            return job.project_id;
+        }
+    }
+
+    "ALL".to_string()
+}
+
+async fn validate_subscription(ctx: &Context<'_>) -> ExtraWSData {
+    let db = ctx
+        .data::<DbClient>()
+        .expect("failed to extract database client");
+    let cred = ctx
+        .data::<Credential>()
+        .expect("failed to extract user credential");
+    let username = authenticate(db, cred)
+        .await
+        .expect("failed to authenticate user");
+    let extras = ctx.data::<ExtraWSData>().cloned().unwrap_or_default();
+    let project_id = project_id_subscription(db, cred, &extras).await;
+    authorize(db, &username, &format!("PROJECTS:READ:{project_id}"))
+        .await
+        .expect("failed to authorize user");
+    authorize(db, &username, &format!("PROJECTS:WRITE:{project_id}"))
+        .await
+        .expect("failed to authorize user");
+    extras
 }

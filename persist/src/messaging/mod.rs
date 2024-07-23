@@ -1,6 +1,6 @@
 use once_cell::sync::Lazy;
 use tokio::sync::{
-    mpsc::{self, Receiver, Sender},
+    broadcast::{self, Receiver, Sender},
     Mutex,
 };
 
@@ -15,7 +15,7 @@ pub struct RustyChannel {
 
 /// Static wrapper for global pub/sub channel
 pub static CHANNEL: Lazy<RustyChannel> = Lazy::new(|| {
-    let (tx, rx) = mpsc::channel::<String>(100);
+    let (tx, rx) = broadcast::channel::<String>(100);
     RustyChannel {
         tx: Mutex::new(tx),
         rx: Mutex::new(rx),

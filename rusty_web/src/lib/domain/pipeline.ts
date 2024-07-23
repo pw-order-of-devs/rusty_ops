@@ -16,3 +16,12 @@ export interface Pipeline {
 	endDate: string | undefined;
 	jobId: string;
 }
+
+export interface PipelineSubscription {
+	payload: {
+		data: {
+			pipelineInserted: Pipeline | undefined;
+			pipelineUpdated: Pipeline | undefined;
+		};
+	};
+}

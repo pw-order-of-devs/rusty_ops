@@ -2,8 +2,11 @@ import { bearerAuthHeader } from '$lib/utils/api';
 import { getJobById } from '$lib/api/jobs';
 import { getJobPipelines, registerPipeline } from '$lib/api/pipelines';
 
-export function load({ params }) {
-	return { id: params.id };
+export function load({ params, cookies }) {
+	return {
+		id: params.id,
+		jwtToken: bearerAuthHeader(cookies.get('rustyToken') ?? '')
+	};
 }
 
 export const actions = {

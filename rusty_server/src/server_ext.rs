@@ -4,10 +4,11 @@ use async_graphql_axum::{GraphQLProtocol, GraphQLRequest, GraphQLResponse, Graph
 use axum::extract::{State, WebSocketUpgrade};
 use axum::http::HeaderMap;
 use axum::response::Response;
+use serde_json::Value;
 
 use auth::parse_auth_header;
 use domain::auth::credentials::Credential;
-use serde_json::Value;
+use domain::commons::ws::ExtraWSData;
 
 use crate::gql::RustySchema;
 
@@ -65,14 +66,18 @@ pub async fn on_connection_init(value: Value) -> async_graphql::Result<Data> {
     value.as_object().map_or_else(
         || Err("Invalid payload".into()),
         |payload| {
-            payload["auth"].as_str().map_or_else(
-                || Err("Auth data missing from payload".into()),
-                |auth| {
-                    let mut data = Data::default();
-                    data.insert(parse_auth_header(auth));
-                    Ok(data)
-                },
-            )
+            let mut data = Data::default();
+            if let Some(auth) = payload.get("auth").unwrap_or(&Value::Null).as_str() {
+                data.insert(parse_auth_header(auth));
+            } else {
+                return Err("Auth data missing from payload".into());
+            }
+            if let Some(extra) = payload.get("extra") {
+                if let Ok(extra) = serde_json::from_value::<ExtraWSData>(extra.clone()) {
+                    data.insert(extra);
+                }
+            }
+            Ok(data)
         },
     )
 }

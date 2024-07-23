@@ -130,7 +130,7 @@ impl Persistence for MongoDBClient {
             .tx
             .lock()
             .await
-            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
+            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
         Ok(id)
     }
 
@@ -144,13 +144,19 @@ impl Persistence for MongoDBClient {
             .get_one::<T>(index, json!({ "id": { "equals": id } }))
             .await?
         {
-            self.client
+            let id = self
+                .client
                 .database(&self.database)
                 .collection::<T>(index)
                 .update_one(to_document(&original)?, doc! { "$set": to_document(item)? })
                 .await
                 .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
-                .map(|_| item.get_id())
+                .map(|_| item.get_id())?;
+            let _ = CHANNEL.tx.lock().await.send(
+                json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
+                    .to_string(),
+            );
+            Ok(id)
         } else {
             Err(RustyError::MongoDBError(format!(
                 "Item not found: `{index}`.`{id}`"

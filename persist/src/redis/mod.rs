@@ -115,7 +115,7 @@ impl Persistence for RedisClient {
             .tx
             .lock()
             .await
-            .try_send(json!({ "index": index, "op": "create", "item": item }).to_string());
+            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
         Ok(id)
     }
 
@@ -130,8 +130,13 @@ impl Persistence for RedisClient {
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            conn.set(format!("{index}_{id}"), serde_json::to_string(item)?)
-                .await?;
+            let item = serde_json::to_string(item)?;
+            conn.set(format!("{index}_{id}"), item.clone()).await?;
+            let _ = CHANNEL
+                .tx
+                .lock()
+                .await
+                .send(json!({ "index": index, "op": "update", "item": item }).to_string());
             Ok(id.to_string())
         } else {
             Err(RustyError::RedisError(format!(

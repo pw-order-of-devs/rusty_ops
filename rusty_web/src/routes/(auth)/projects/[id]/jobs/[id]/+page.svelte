@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
-	import type { Pipeline } from '$lib/domain/pipeline';
+	import type { Pipeline, PipelineSubscription } from '$lib/domain/pipeline';
 	import type { JobData } from '$lib/scripts/auth/projects/data';
 	import { getJobById } from '$lib/scripts/auth/projects/jobs';
 	import {
@@ -10,6 +10,7 @@
 		registerPipeline
 	} from '$lib/scripts/auth/projects/pipelines';
 	import { parseResponse } from '$lib/scripts/utils/parse';
+	import { subscribe } from '$lib/ws/pipelines';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import HighlightSvelte, { LineNumbers } from 'svelte-highlight';
@@ -28,6 +29,24 @@
 	let currentPath = '';
 
 	onMount(async () => {
+		subscribe(
+			data.jwtToken,
+			data['id'],
+			(message: PipelineSubscription) => {
+				if (pageData !== undefined && message.payload.data.pipelineInserted !== undefined) {
+					pageData!.pipelines.entries.unshift(message.payload.data.pipelineInserted);
+					pageData = pageData;
+				}
+			},
+			(message: PipelineSubscription) => {
+				if (pageData !== undefined && message.payload.data.pipelineUpdated !== undefined) {
+					let pipeline = message.payload.data.pipelineUpdated!;
+					let index = pageData!.pipelines.entries.findIndex((item) => item.id == pipeline.id);
+					pageData!.pipelines.entries[index] = pipeline;
+				}
+			}
+		);
+
 		currentPath = new URL(window.location.href).pathname;
 		loading.update(() => true);
 		let job = await parseResponse(await getJobById(data['id']));
