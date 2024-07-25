@@ -28,9 +28,9 @@ export const subscribe = (
 					type: 'start',
 					payload: {
 						query: `subscription {
-					pipelineInserted { id number status branch registerDate startDate endDate jobId }
-					pipelineUpdated { id number status branch registerDate startDate endDate jobId }
-				}`
+							pipelineInserted { id number status branch registerDate startDate endDate jobId }
+							pipelineUpdated { id number status branch registerDate startDate endDate jobId }
+						}`
 					}
 				})
 			);
