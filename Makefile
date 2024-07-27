@@ -4,7 +4,6 @@ prepare_env:
 	rustup component add llvm-tools-preview
 	cargo install cargo-audit
 	cargo install cargo-machete
-	cargo install cargo-tarpaulin
 	cargo install grcov
 
 audit:

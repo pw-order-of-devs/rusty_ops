@@ -9,7 +9,6 @@ mod authenticate;
 #[cfg(test)]
 mod authorize;
 
-#[cfg(not(tarpaulin_include))]
 pub mod utils;
 
 #[rstest]

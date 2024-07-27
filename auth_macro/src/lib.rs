@@ -3,7 +3,6 @@ use quote::quote;
 use syn::{parse_macro_input, ItemFn, PatIdent};
 
 #[proc_macro_attribute]
-#[cfg(not(tarpaulin_include))]
 pub fn authenticate(args: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as ItemFn);
 
@@ -15,7 +14,6 @@ pub fn authenticate(args: TokenStream, input: TokenStream) -> TokenStream {
     expand_fn(&auth_type, &input, &ctx)
 }
 
-#[cfg(not(tarpaulin_include))]
 fn extract_ctx(input: &ItemFn) -> PatIdent {
     // Extract the components of the function
     let sig = input.clone().sig;
@@ -40,7 +38,6 @@ fn extract_ctx(input: &ItemFn) -> PatIdent {
     }
 }
 
-#[cfg(not(tarpaulin_include))]
 fn expand_fn(auth_type: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
     let sig = input.clone().sig;
     let name = sig.clone().ident;
@@ -84,7 +81,6 @@ fn expand_fn(auth_type: &str, input: &ItemFn, ctx: &PatIdent) -> TokenStream {
     expanded.into()
 }
 
-#[cfg(not(tarpaulin_include))]
 fn extract_auth_type(args: &TokenStream) -> String {
     match args.clone().into_iter().next() {
         Some(item) => item.to_string(),

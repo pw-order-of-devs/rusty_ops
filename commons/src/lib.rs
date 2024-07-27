@@ -21,7 +21,6 @@ pub mod env;
 
 /// crate errors
 #[cfg(feature = "errors")]
-#[cfg(not(tarpaulin_include))]
 pub mod errors;
 
 /// hashing functions
@@ -29,5 +28,4 @@ pub mod hashing;
 
 /// logging configuration
 #[cfg(feature = "logging")]
-#[cfg(not(tarpaulin_include))]
 pub mod logger;
