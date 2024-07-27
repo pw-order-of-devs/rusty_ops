@@ -1,8 +1,9 @@
+use axum::http::header;
 use futures_util::stream::SplitStream;
 use futures_util::{SinkExt, StreamExt};
 use serde_json::{json, Value};
+use std::time::Duration;
 use tokio::net::TcpStream;
-use tokio_tungstenite::tungstenite::http::header;
 use tokio_tungstenite::tungstenite::Message;
 use tokio_tungstenite::{connect_async, MaybeTlsStream};
 
@@ -11,9 +12,20 @@ use commons::errors::RustyError;
 
 use crate::api::pipelines as api;
 
-pub async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError> {
+pub async fn subscribe(uuid: &str) {
+    loop {
+        log::trace!("connecting to subscription for newly created pipelines");
+        match handler(uuid).await {
+            Ok(()) => log::warn!("Connection was closed. Attempting to reconnect..."),
+            Err(err) => log::warn!("An error occurred: {err}. Attempting to reconnect..."),
+        }
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    }
+}
+
+async fn handler(uuid: &str) -> Result<(), RustyError> {
     // Initialize subscription read channel
-    let mut read = initialize_connection(uuid).await?;
+    let mut read = ws_initialize(uuid).await?;
 
     // Process incoming messages
     while let Some(message) = read.next().await {
@@ -23,7 +35,7 @@ pub async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError>
                 match value["payload"].as_object() {
                     Some(payload) => {
                         if payload["data"].as_object().is_some() {
-                            assign_pipeline(uuid, &text).await?;
+                            assign(uuid, &text).await?;
                         } else if payload["errors"].as_array().is_some() {
                             let errors = payload["errors"]
                                 .as_array()
@@ -46,7 +58,7 @@ pub async fn pipeline_created_subscription(uuid: &str) -> Result<(), RustyError>
     Ok(())
 }
 
-async fn initialize_connection(
+async fn ws_initialize(
     uuid: &str,
 ) -> Result<SplitStream<tokio_tungstenite::WebSocketStream<MaybeTlsStream<TcpStream>>>, RustyError>
 {
@@ -108,7 +120,7 @@ async fn initialize_connection(
     Ok(read)
 }
 
-async fn assign_pipeline(uuid: &str, text: &str) -> Result<(), RustyError> {
+async fn assign(uuid: &str, text: &str) -> Result<(), RustyError> {
     log::trace!("Obtained message: {text}");
     let message = serde_json::from_str::<Value>(text)?;
     if let Some(message) = message["payload"]["data"]["pipelineInserted"].as_object() {

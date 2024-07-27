@@ -20,7 +20,7 @@ use axum::{routing, Router};
 use tokio::net::TcpListener;
 
 use commons::env::var_or_default;
-use rusty_agent::{api, resolver};
+use rusty_agent::{api, schedulers};
 
 #[tokio::main]
 async fn main() {
@@ -57,7 +57,7 @@ async fn init() -> String {
     api::agents::register(&uuid)
         .await
         .expect("Error while registering the agent");
-    resolver::init(&uuid);
+    schedulers::init(&uuid);
     log::debug!("Initialized with id: `{uuid}`");
     uuid
 }

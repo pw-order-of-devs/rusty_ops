@@ -14,7 +14,7 @@ use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
 use crate::api::projects::get_pipeline_project;
 
-pub async fn execute_pipeline(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
+pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
     let (project_id, template) = get_pipeline_template(&pipeline.job_id).await?;
     let (default_branch, repo_url) = get_pipeline_project(&project_id).await?;

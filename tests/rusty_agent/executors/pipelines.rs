@@ -1,19 +1,19 @@
 use mockito::{Mock, ServerGuard};
 
 use domain::pipelines::{Pipeline, RegisterPipeline};
-use rusty_agent::resolver::execution;
+use rusty_agent::runners;
 
 use crate::utils::mockito_start_server;
 
 #[tokio::test]
-async fn execute_pipeline_test() {
+async fn execute_test() {
     let pipeline = Pipeline::from(&RegisterPipeline {
         job_id: "dummy".to_string(),
         branch: Some("master".to_string()),
     });
     let mut server = mockito_start_server().await;
     let _ = mock_server_request(&mut server).await;
-    let result = execution::execute_pipeline(pipeline, "uuid").await;
+    let result = runners::pipelines::execute(pipeline, "uuid").await;
     assert!(result.is_ok());
 }
 

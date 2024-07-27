@@ -1,49 +1,48 @@
 use mockito::{Mock, ServerGuard};
-use tokio::time::{timeout, Duration};
+use std::time::Duration;
+use tokio::time::timeout;
 
 use rusty_agent::api::JWT_TOKEN;
-use rusty_agent::resolver;
+use rusty_agent::schedulers;
 
 use crate::utils::mockito_start_server;
 
-mod execution;
-
 #[tokio::test]
 async fn resolver_init_test() {
-    let _ = resolver::init("uuid");
+    let _ = schedulers::init("uuid");
 }
 
 #[tokio::test]
 async fn created_pipelines_subscribe_test() {
-    let handle = tokio::spawn(resolver::created_pipelines_subscribe("ok"));
+    let handle = tokio::spawn(schedulers::pipeline_created::subscribe("ok"));
     let result = timeout(Duration::from_secs(1), handle).await;
     assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn fetch_unassigned_pipeline_schedule_test() {
-    let handle = tokio::spawn(resolver::fetch_unassigned_pipeline_schedule("ok"));
+    let handle = tokio::spawn(schedulers::pipeline_fetch_unassigned::schedule("ok"));
     let result = timeout(Duration::from_secs(1), handle).await;
     assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn fetch_and_run_assigned_pipeline_schedule_test() {
-    let handle = tokio::spawn(resolver::fetch_and_run_assigned_pipeline_schedule("ok"));
+    let handle = tokio::spawn(schedulers::pipeline_fetch_assigned::schedule("ok"));
     let result = timeout(Duration::from_secs(1), handle).await;
     assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn healthcheck_schedule_test() {
-    let handle = tokio::spawn(resolver::healthcheck_schedule("ok"));
+    let handle = tokio::spawn(schedulers::healthcheck::schedule("ok"));
     let result = timeout(Duration::from_secs(1), handle).await;
     assert!(result.is_err());
 }
 
 #[tokio::test]
 async fn renew_token_schedule_invalid_token_test() {
-    let handle = tokio::spawn(resolver::renew_token_schedule(60));
+    let handle = tokio::spawn(schedulers::renew_token::schedule(60));
     let result = timeout(Duration::from_secs(1), handle).await;
     assert!(result.is_err());
 }
@@ -54,7 +53,7 @@ async fn renew_token_schedule_valid_token_test() {
     let mock = mock_server_request(&mut server).await;
 
     *JWT_TOKEN.lock().unwrap() = "eyJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJSdXN0eU9wcyIsInN1YiI6InVzZXIiLCJhdWQiOiJ1c2VyIiwiZXhwIjoxNjE3MDEwNDg4LCJuYmYiOjE2MTcwMTA0ODgsImlhdCI6MTYxNzAxMDQ4OCwianRpIjoiYTQyZDYyN2YtYTEwMC00OWViLTg0MDYtMWZkMWMzMmI2MDMxIn0.".to_string();
-    let handle = tokio::spawn(resolver::renew_token_schedule(3));
+    let handle = tokio::spawn(schedulers::renew_token::schedule(3));
     let result = timeout(Duration::from_secs(5), handle).await;
     assert!(result.is_err());
     mock.assert();
