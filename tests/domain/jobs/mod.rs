@@ -2,7 +2,6 @@ use rstest::rstest;
 use serde_valid::Validate;
 
 use domain::jobs::{Job, RegisterJob};
-use domain::RustyDomainItem;
 
 #[test]
 fn from_register_job_test() {
@@ -17,7 +16,7 @@ fn from_register_job_test() {
     "#;
     let input = RegisterJob::new(name, description, template, &project_id);
     let job = Job::from(&input);
-    assert_eq!(36, job.get_id().len());
+    assert_eq!(36, job.id.len());
     assert_eq!(name.to_string(), job.name);
     assert!(job.description.is_some());
     assert_eq!(description.to_string(), job.description.unwrap());

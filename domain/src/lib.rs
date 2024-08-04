@@ -60,9 +60,6 @@ pub trait RustyDomainItem:
     + for<'de> serde::de::Deserialize<'de>
     + OutputType
 {
-    /// Returns the identifier of an object.
-    fn get_id(&self) -> String;
-
     /// Generate a unique identifier using UUID.
     #[must_use]
     fn generate_id() -> String {

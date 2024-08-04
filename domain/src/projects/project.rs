@@ -109,17 +109,9 @@ impl From<&RegisterProject> for Project {
     }
 }
 
-impl RustyDomainItem for ProjectModel {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for ProjectModel {}
 
-impl RustyDomainItem for Project {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for Project {}
 
 /// A struct representing a paged result Projects.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]

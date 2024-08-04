@@ -92,11 +92,7 @@ impl From<&RegisterPipeline> for Pipeline {
     }
 }
 
-impl RustyDomainItem for Pipeline {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for Pipeline {}
 
 /// A struct representing a paged result Pipelines.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]

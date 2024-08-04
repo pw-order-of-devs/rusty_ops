@@ -63,17 +63,9 @@ impl From<&RegisterGroup> for Group {
     }
 }
 
-impl RustyDomainItem for GroupModel {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for GroupModel {}
 
-impl RustyDomainItem for Group {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for Group {}
 
 /// A struct representing a paged result Projects.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]

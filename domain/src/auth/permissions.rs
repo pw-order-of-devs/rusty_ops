@@ -54,15 +54,4 @@ impl Permission {
     }
 }
 
-impl RustyDomainItem for Permission {
-    fn get_id(&self) -> String {
-        format!(
-            "{}:{}:{}:{}:{}",
-            self.clone().user_id.unwrap_or_default(),
-            self.clone().role_id.unwrap_or_default(),
-            self.resource,
-            self.right,
-            self.item,
-        )
-    }
-}
+impl RustyDomainItem for Permission {}

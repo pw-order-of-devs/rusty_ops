@@ -40,11 +40,7 @@ pub struct RegisterAgent {
     pub id: String,
 }
 
-impl RustyDomainItem for Agent {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for Agent {}
 
 /// A struct representing a paged result Agents.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]

@@ -14,8 +14,4 @@ pub struct Resource {
     pub rights: Vec<String>,
 }
 
-impl RustyDomainItem for Resource {
-    fn get_id(&self) -> String {
-        self.clone().name
-    }
-}
+impl RustyDomainItem for Resource {}

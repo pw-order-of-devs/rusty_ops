@@ -16,8 +16,4 @@ pub struct Role {
     pub users: Vec<String>,
 }
 
-impl RustyDomainItem for Role {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for Role {}

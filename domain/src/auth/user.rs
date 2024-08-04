@@ -90,17 +90,9 @@ impl From<&RegisterUser> for User {
     }
 }
 
-impl RustyDomainItem for UserModel {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for UserModel {}
 
-impl RustyDomainItem for User {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for User {}
 
 /// A struct representing a paged result Users.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]

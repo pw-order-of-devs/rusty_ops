@@ -399,11 +399,7 @@ struct TestEntry {
     number: u64,
 }
 
-impl RustyDomainItem for TestEntry {
-    fn get_id(&self) -> String {
-        self.name.clone()
-    }
-}
+impl RustyDomainItem for TestEntry {}
 
 async fn create_test_entry(
     db_client: &DbClient,

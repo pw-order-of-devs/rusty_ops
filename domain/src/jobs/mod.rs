@@ -111,17 +111,9 @@ impl From<&RegisterJob> for Job {
     }
 }
 
-impl RustyDomainItem for JobModel {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for JobModel {}
 
-impl RustyDomainItem for Job {
-    fn get_id(&self) -> String {
-        self.clone().id
-    }
-}
+impl RustyDomainItem for Job {}
 
 /// A struct representing a paged result Jobs.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]

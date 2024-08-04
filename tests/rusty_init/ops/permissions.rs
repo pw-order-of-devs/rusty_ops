@@ -50,6 +50,10 @@ async fn assign_permission_role_test<I: Image + Default>(
         .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await;
-    let role_id = create_role(&db_client, "role_1", "", &[USER_ID]).await.unwrap();
-    let _ = permissions::assign_permission(&db_client, "DUMMY", "DOIT", "ALL", None, Some(&role_id)).await;
+    let role_id = create_role(&db_client, "role_1", "", &[USER_ID])
+        .await
+        .unwrap();
+    let _ =
+        permissions::assign_permission(&db_client, "DUMMY", "DOIT", "ALL", None, Some(&role_id))
+            .await;
 }
