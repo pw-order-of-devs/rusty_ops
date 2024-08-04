@@ -7,7 +7,6 @@ use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 use auth::token::build_jwt_token;
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
-use domain::auth::user::User;
 
 use crate::utils::{create_user, db_connect, USERS_INDEX, USER_ID, USER_NAME};
 
@@ -108,10 +107,11 @@ async fn bearer_auth_positive_test<I: Image + Default>(
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let user = db_client
-        .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
+        .get_one(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
         .await
         .unwrap()
         .unwrap();
+    let user = serde_json::from_value(user).unwrap();
     let token = build_jwt_token(&user, 300);
     assert!(token.is_ok());
     let credential = Credential::Bearer(token.unwrap());
@@ -143,7 +143,7 @@ async fn bearer_auth_expired_token_test<I: Image + Default>(
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let _ = db_client
-        .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
+        .get_one(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
         .await;
     let credential = Credential::Bearer(JWT_TOKEN_EXPIRED.to_string());
     let authenticated = auth::authenticate(&db_client, &credential).await;
@@ -172,10 +172,11 @@ async fn bearer_auth_invalid_signature_test<I: Image + Default>(
     let db_client = db_connect(&db, db_type, port).await;
     let _ = create_user(&db_client).await.unwrap();
     let user = db_client
-        .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
+        .get_one(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
         .await
         .unwrap()
         .unwrap();
+    let user = serde_json::from_value(user).unwrap();
     let token = build_jwt_token(&user, 300);
     assert!(token.is_ok());
     let token = token

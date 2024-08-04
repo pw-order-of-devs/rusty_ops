@@ -5,3 +5,5 @@ mod project_groups;
 mod projects;
 mod roles;
 mod users;
+
+mod shared;

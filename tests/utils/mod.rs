@@ -4,6 +4,7 @@ use testcontainers::{ContainerAsync, Image};
 use commons::errors::RustyError;
 use commons::hashing::bcrypt;
 use domain::auth::user::User;
+use domain::RustyDomainItem;
 use messaging::mq_client::MqClient;
 use messaging::rabbitmq::RabbitMQClient;
 use messaging::MessagingBuilder;
@@ -78,7 +79,9 @@ pub async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
                 id: USER_ID.to_string(),
                 username: USER_NAME.to_string(),
                 password: bcrypt::encode(USER_PASS).unwrap(),
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await
 }

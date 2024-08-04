@@ -7,9 +7,8 @@ use serde_json::{json, Value};
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
-use domain::RustyDomainItem;
 
-use crate::shared::{delete_one_filter, filter_results, sort_results};
+use crate::shared::{delete_one_filter, filter_results, get_value_id, sort_results};
 use crate::{Persistence, PersistenceBuilder};
 
 /// Represents a `Redis` client.
@@ -62,12 +61,12 @@ impl PersistenceBuilder for RedisClient {
 }
 
 impl Persistence for RedisClient {
-    async fn get_all<T: RustyDomainItem>(
+    async fn get_all(
         &self,
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-    ) -> Result<Vec<T>, RustyError> {
+    ) -> Result<Vec<Value>, RustyError> {
         let mut conn = self.client.get().await?;
         let keys: Vec<String> = conn.keys(format!("{index}_*")).await?;
 
@@ -81,24 +80,7 @@ impl Persistence for RedisClient {
         let options = options.clone().unwrap_or_default();
         sort_results(&options, &mut filtered);
 
-        let filtered = filtered
-            .into_iter()
-            .map(|value| serde_json::from_value(value))
-            .collect::<Result<Vec<T>, _>>()?;
         Ok(filtered)
-    }
-
-    async fn get_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, &Some(filter), &None).await?;
-        if values.len() == 1 {
-            Ok(Some(values[0].clone()))
-        } else {
-            Ok(None)
-        }
     }
 
     async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
@@ -107,15 +89,11 @@ impl Persistence for RedisClient {
         Ok(entries)
     }
 
-    async fn create<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
-        let id = item.get_id();
+    async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
+        let id = get_value_id(item);
         let mut conn = self.client.get().await?;
-        let item = serde_json::to_string(item)?;
-        conn.set(format!("{index}_{id}"), &item).await?;
+        conn.set(format!("{index}_{id}"), &serde_json::to_string(item)?)
+            .await?;
         let _ = messaging::internal::send(
             &json!({ "index": index, "op": "create", "item": item }).to_string(),
         )
@@ -123,19 +101,14 @@ impl Persistence for RedisClient {
         Ok(id)
     }
 
-    async fn update<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        id: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
+    async fn update(&self, index: &str, id: &str, item: &Value) -> Result<String, RustyError> {
         let mut conn = self.client.get().await?;
-        let found: Option<T> = self
+        let found = self
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            let item = serde_json::to_string(item)?;
-            conn.set(format!("{index}_{id}"), item.clone()).await?;
+            conn.set(format!("{index}_{id}"), &serde_json::to_string(item)?)
+                .await?;
             let _ = messaging::internal::send(
                 &json!({ "index": index, "op": "update", "item": item }).to_string(),
             )
@@ -154,16 +127,12 @@ impl Persistence for RedisClient {
         Ok(1)
     }
 
-    async fn delete_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<u64, RustyError> {
+    async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
         let mut conn = self.client.get().await?;
         let filter = delete_one_filter(&filter);
-        let item: Option<T> = self.get_one(index, filter).await?;
+        let item: Option<Value> = self.get_one(index, filter).await?;
         if let Some(item) = item {
-            conn.del(format!("{index}_{}", item.get_id())).await?;
+            conn.del(format!("{index}_{}", get_value_id(&item))).await?;
             Ok(1)
         } else {
             Ok(0)

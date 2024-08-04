@@ -6,6 +6,7 @@ use tokio::time::timeout;
 
 use domain::agents::Agent;
 use domain::pipelines::{Pipeline, PipelineStatus};
+use domain::RustyDomainItem;
 use rusty_server::schedulers;
 
 use crate::utils::{db_connect, mq_connect};
@@ -38,7 +39,9 @@ async fn scheduler_agent_ttl_test() {
             &Agent {
                 id: "uuid".to_string(),
                 expiry: 0,
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
 
@@ -69,7 +72,9 @@ async fn scheduler_pipelines_cleanup_test() {
                 status: PipelineStatus::Assigned,
                 job_id: "uuid".to_string(),
                 agent_id: Some("uuid".to_string()),
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
 

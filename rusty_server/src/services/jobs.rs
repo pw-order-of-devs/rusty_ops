@@ -124,7 +124,7 @@ pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<
     if let Some(job) = get_by_id(db, cred, id, &None, &[]).await? {
         shared::check_project_write_permission(db, cred, &job.project_id).await?;
     }
-    shared::delete_by_id::<Job>(db, JOBS_INDEX, id).await
+    shared::delete_by_id(db, JOBS_INDEX, id).await
 }
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {

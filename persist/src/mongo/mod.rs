@@ -9,9 +9,8 @@ use serde_json::{json, Value};
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
-use domain::RustyDomainItem;
 
-use crate::shared::filter_results;
+use crate::shared::{filter_results, get_value_id};
 use crate::{Persistence, PersistenceBuilder};
 
 /// Represents a `MongoDB` client.
@@ -73,12 +72,12 @@ impl PersistenceBuilder for MongoDBClient {
 }
 
 impl Persistence for MongoDBClient {
-    async fn get_all<T: RustyDomainItem>(
+    async fn get_all(
         &self,
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-    ) -> Result<Vec<T>, RustyError> {
+    ) -> Result<Vec<Value>, RustyError> {
         let mut cursor = self
             .client
             .database(&self.database)
@@ -91,24 +90,7 @@ impl Persistence for MongoDBClient {
             result.push(doc?);
         }
 
-        let result = filter_results(filter, &result)
-            .into_iter()
-            .map(|value| serde_json::from_value(value))
-            .collect::<Result<Vec<T>, _>>()?;
-        Ok(result)
-    }
-
-    async fn get_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, &Some(filter), &None).await?;
-        if values.len() == 1 {
-            Ok(Some(values[0].clone()))
-        } else {
-            Ok(None)
-        }
+        Ok(filter_results(filter, &result))
     }
 
     async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
@@ -131,51 +113,44 @@ impl Persistence for MongoDBClient {
         Ok(entries)
     }
 
-    async fn create<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
-        let id = item.get_id();
+    async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
         self.client
             .database(&self.database)
-            .collection::<T>(index)
+            .collection::<Value>(index)
             .insert_one(item)
             .await
-            .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
-            .map(|_| &id)?;
-        let item = serde_json::to_value(item)?;
+            .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))?;
         let _ = messaging::internal::send(
             &json!({ "index": index, "op": "create", "item": item }).to_string(),
         )
         .await;
-        Ok(id)
+        Ok(get_value_id(item))
     }
 
-    async fn update<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        id: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
+    async fn update(&self, index: &str, id: &str, item: &Value) -> Result<String, RustyError> {
         if let Some(original) = self
-            .get_one::<T>(index, json!({ "id": { "equals": id } }))
+            .get_one(index, json!({ "id": { "equals": id } }))
             .await?
         {
             let id = self
                 .client
                 .database(&self.database)
-                .collection::<T>(index)
+                .collection::<Value>(index)
                 .update_one(to_document(&original)?, doc! { "$set": to_document(item)? })
                 .await
                 .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
-                .map(|_| item.get_id())?;
+                .map(|_| {
+                    item.get("id")
+                        .unwrap_or(&Value::Null)
+                        .as_str()
+                        .unwrap_or_default()
+                })?;
             let _ = messaging::internal::send(
                 &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
                     .to_string(),
             )
             .await;
-            Ok(id)
+            Ok(id.to_string())
         } else {
             Err(RustyError::MongoDBError(format!(
                 "Item not found: `{index}`.`{id}`"
@@ -201,11 +176,7 @@ impl Persistence for MongoDBClient {
         Ok(1)
     }
 
-    async fn delete_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<u64, RustyError> {
+    async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
         self.client
             .database(&self.database)
             .collection::<Document>(index)

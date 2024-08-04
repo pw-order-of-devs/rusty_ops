@@ -22,7 +22,6 @@ use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
-use domain::RustyDomainItem;
 
 use crate::db_client::DbClient;
 use crate::db_type::DbType;
@@ -103,12 +102,12 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn get_all<T: RustyDomainItem>(
+    fn get_all(
         &self,
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-    ) -> impl Future<Output = Result<Vec<T>, RustyError>> + Send;
+    ) -> impl Future<Output = Result<Vec<Value>, RustyError>> + Send;
 
     /// Retrieves an item by index and filter document.
     ///
@@ -128,11 +127,16 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn get_one<T: RustyDomainItem>(
+    fn get_one(
         &self,
         index: &str,
         filter: Value,
-    ) -> impl Future<Output = Result<Option<T>, RustyError>> + Send;
+    ) -> impl Future<Output = Result<Option<Value>, RustyError>> + Send
+    where
+        Self: Sized,
+    {
+        shared::get_one(self, index, filter)
+    }
 
     /// Retrieves a list item by index and filter document.
     ///
@@ -174,10 +178,10 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn create<T: RustyDomainItem>(
+    fn create(
         &self,
         index: &str,
-        item: &T,
+        item: &Value,
     ) -> impl Future<Output = Result<String, RustyError>> + Send;
 
     /// Updates an item in the specified index.
@@ -197,11 +201,11 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn update<T: RustyDomainItem>(
+    fn update(
         &self,
         index: &str,
         id: &str,
-        item: &T,
+        item: &Value,
     ) -> impl Future<Output = Result<String, RustyError>> + Send;
 
     /// Appends a list in the specified index. Works with strings
@@ -245,7 +249,7 @@ pub trait Persistence: Send + Sync {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    fn delete_one<T: RustyDomainItem>(
+    fn delete_one(
         &self,
         index: &str,
         filter: Value,

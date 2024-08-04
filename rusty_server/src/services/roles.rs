@@ -3,6 +3,7 @@ use serde_json::{json, Value};
 use commons::errors::RustyError;
 use domain::auth::credentials::Credential;
 use domain::auth::roles::Role;
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 use crate::services::{shared, users};
@@ -38,7 +39,7 @@ pub async fn assign(
 
         if let Some(mut role) = get_one(db, &doc).await? {
             role.users.push(user_id.to_string());
-            let _ = db.update(ROLES_INDEX, &role.id, &role).await?;
+            let _ = db.update(ROLES_INDEX, &role.id, &role.to_value()?).await?;
             Ok(role.id)
         } else {
             let message = "`roles::assign` - role not found".to_string();

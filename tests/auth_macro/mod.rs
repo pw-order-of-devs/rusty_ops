@@ -27,7 +27,6 @@ impl Query {
 mod tests {
     use async_graphql::{EmptyMutation, EmptySubscription, Schema};
     use auth::token::build_jwt_token;
-    use domain::auth::user::User;
     use serde_json::json;
     use testcontainers::runners::AsyncRunner;
     use testcontainers_modules::redis::Redis;
@@ -66,10 +65,11 @@ mod tests {
         let db_client = db_connect(&db, "redis", 6379).await;
         let _ = create_user(&db_client).await;
         let user = db_client
-            .get_one::<User>(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
+            .get_one(USERS_INDEX, json!({ "id": { "equals": USER_ID } }))
             .await
             .unwrap()
             .unwrap();
+        let user = serde_json::from_value(user).unwrap();
         let token = build_jwt_token(&user, 300);
         assert!(token.is_ok());
 

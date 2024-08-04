@@ -1,7 +1,32 @@
 use serde_json::{json, Value};
 use std::cmp::Ordering;
 
+use commons::errors::RustyError;
 use domain::commons::search::{SearchFilter, SearchOptions, SortOptions};
+
+use crate::Persistence;
+
+pub(crate) async fn get_one(
+    p: &impl Persistence,
+    index: &str,
+    filter: Value,
+) -> Result<Option<Value>, RustyError> {
+    let values = p.get_all(index, &Some(filter), &None).await?;
+    if values.len() == 1 {
+        Ok(Some(values[0].clone()))
+    } else {
+        Ok(None)
+    }
+}
+
+pub(crate) fn get_value_id(value: &Value) -> String {
+    value
+        .get("id")
+        .unwrap_or(&Value::Null)
+        .as_str()
+        .unwrap_or_default()
+        .to_string()
+}
 
 fn compare_strings(item: &Value, f: &Value, comparison: fn(&String, &String) -> bool) -> bool {
     if item.is_string() && f.is_string() {

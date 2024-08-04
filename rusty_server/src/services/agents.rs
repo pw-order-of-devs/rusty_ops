@@ -5,6 +5,7 @@ use commons::errors::RustyError;
 use domain::agents::{Agent, RegisterAgent};
 use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 use crate::services::shared;
@@ -80,7 +81,7 @@ pub async fn create(
 pub async fn healthcheck(db: &DbClient, cred: &Credential, id: &str) -> Result<String, RustyError> {
     if let Some(mut agent) = get_by_id(db, cred, id).await? {
         agent.update_expiry(var_or_default("AGENT_TTL", 300));
-        db.update(AGENTS_INDEX, id, &agent).await
+        db.update(AGENTS_INDEX, id, &agent.to_value()?).await
     } else {
         let message = "`agent::healthcheck` - agent not found".to_string();
         log::debug!("{message}");
@@ -90,7 +91,7 @@ pub async fn healthcheck(db: &DbClient, cred: &Credential, id: &str) -> Result<S
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
     auth::authorize(db, &get_username_claim(cred)?, "AGENTS:WRITE").await?;
-    shared::delete_by_id::<Agent>(db, AGENTS_INDEX, id).await
+    shared::delete_by_id(db, AGENTS_INDEX, id).await
 }
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {

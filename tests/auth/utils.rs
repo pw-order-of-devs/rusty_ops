@@ -1,6 +1,7 @@
 use commons::errors::RustyError;
 use domain::auth::permissions::Permission;
 use domain::auth::roles::Role;
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 use crate::utils::USER_ID;
@@ -21,7 +22,9 @@ pub(crate) async fn create_role(db_client: &DbClient) -> Result<String, RustyErr
                 name: "role".to_string(),
                 description: None,
                 users: vec![USER_ID.to_string()],
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await
 }
@@ -30,7 +33,9 @@ pub(crate) async fn create_permission_user(db_client: &DbClient) -> Result<Strin
     db_client
         .create(
             PERMISSIONS_INDEX,
-            &Permission::new(Some(USER_ID.to_string()), None, "RESOURCE", "RIGHT", "ALL"),
+            &Permission::new(Some(USER_ID.to_string()), None, "RESOURCE", "RIGHT", "ALL")
+                .to_value()
+                .unwrap(),
         )
         .await
 }
@@ -39,7 +44,9 @@ pub(crate) async fn create_permission_role(db_client: &DbClient) -> Result<Strin
     db_client
         .create(
             PERMISSIONS_INDEX,
-            &Permission::new(None, Some(ROLE_ID.to_string()), "RESOURCE", "RIGHT", "ALL"),
+            &Permission::new(None, Some(ROLE_ID.to_string()), "RESOURCE", "RIGHT", "ALL")
+                .to_value()
+                .unwrap(),
         )
         .await
 }

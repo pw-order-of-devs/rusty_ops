@@ -8,9 +8,8 @@ use std::task::{Context, Poll};
 
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
-use domain::RustyDomainItem;
 
-use crate::shared::{delete_one_filter, filter_results, sort_results};
+use crate::shared::{delete_one_filter, filter_results, get_value_id, sort_results};
 use crate::{Persistence, PersistenceBuilder};
 
 type Store = Arc<Mutex<HashMap<String, HashMap<String, Value>>>>;
@@ -47,44 +46,28 @@ impl PersistenceBuilder for InMemoryClient {
 }
 
 impl Persistence for InMemoryClient {
-    async fn get_all<T: RustyDomainItem>(
+    async fn get_all(
         &self,
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-    ) -> Result<Vec<T>, RustyError> {
+    ) -> Result<Vec<Value>, RustyError> {
         let guarded_store = self.store.lock().unwrap();
-        if let Some(values) = guarded_store.get(index) {
-            let values = values
-                .iter()
-                .map(|item| item.1)
-                .cloned()
-                .collect::<Vec<Value>>();
-            let mut filtered = filter_results(filter, &values);
-            let options = options.clone().unwrap_or_default();
-            sort_results(&options, &mut filtered);
+        guarded_store.get(index).map_or_else(
+            || Ok(vec![]),
+            |values| {
+                let values = values
+                    .iter()
+                    .map(|item| item.1)
+                    .cloned()
+                    .collect::<Vec<Value>>();
+                let mut filtered = filter_results(filter, &values);
+                let options = options.clone().unwrap_or_default();
+                sort_results(&options, &mut filtered);
 
-            let filtered = filtered
-                .into_iter()
-                .map(|value| serde_json::from_value(value))
-                .collect::<Result<Vec<T>, _>>()?;
-            Ok(filtered)
-        } else {
-            Ok(vec![])
-        }
-    }
-
-    async fn get_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, &Some(filter), &None).await?;
-        if values.len() == 1 {
-            Ok(Some(values[0].clone()))
-        } else {
-            Ok(None)
-        }
+                Ok(filtered)
+            },
+        )
     }
 
     #[allow(clippy::significant_drop_tightening)]
@@ -101,12 +84,8 @@ impl Persistence for InMemoryClient {
         Ok(entries)
     }
 
-    async fn create<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
-        let (id, item) = (item.get_id(), serde_json::to_value(item)?);
+    async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
+        let id = get_value_id(item);
         {
             let mut guarded_store = self.store.lock().unwrap();
             guarded_store
@@ -121,13 +100,8 @@ impl Persistence for InMemoryClient {
         Ok(id)
     }
 
-    async fn update<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        id: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
-        let found: Option<T> = self
+    async fn update(&self, index: &str, id: &str, item: &Value) -> Result<String, RustyError> {
+        let found: Option<Value> = self
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
@@ -163,29 +137,29 @@ impl Persistence for InMemoryClient {
         Ok(1)
     }
 
-    async fn delete_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<u64, RustyError> {
+    async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
         let filter = delete_one_filter(&filter);
-        self.get_one::<T>(index, filter)
-            .await?
-            .map_or(Ok(0), |found| {
-                if self
-                    .store
-                    .lock()
-                    .unwrap()
-                    .get_mut(index)
-                    .unwrap()
-                    .remove(&found.get_id())
-                    .is_some()
-                {
-                    Ok(1)
-                } else {
-                    Ok(0)
-                }
-            })
+        self.get_one(index, filter).await?.map_or(Ok(0), |found| {
+            if self
+                .store
+                .lock()
+                .unwrap()
+                .get_mut(index)
+                .unwrap()
+                .remove(
+                    found
+                        .get("id")
+                        .unwrap_or(&Value::Null)
+                        .as_str()
+                        .unwrap_or_default(),
+                )
+                .is_some()
+            {
+                Ok(1)
+            } else {
+                Ok(0)
+            }
+        })
     }
 
     async fn delete_all(&self, index: &str) -> Result<u64, RustyError> {

@@ -108,7 +108,7 @@ pub async fn create(
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
     let username = get_username_claim(cred)?;
     auth::authorize(db, &username, &format!("PROJECT_GROUPS:WRITE:ID[{id}]")).await?;
-    shared::delete_by_id::<Group>(db, GROUPS_INDEX, id).await
+    shared::delete_by_id(db, GROUPS_INDEX, id).await
 }
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {

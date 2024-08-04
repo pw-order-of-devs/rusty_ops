@@ -13,28 +13,26 @@ pub(crate) async fn basic_auth(
     user: &str,
     password: &str,
 ) -> Result<String, RustyError> {
-    match db
-        .get_one::<User>("users", json!({ "username": { "equals": user } }))
+    db.get_one("users", json!({ "username": { "equals": user } }))
         .await?
-    {
-        Some(user) => {
+        .and_then(|value| serde_json::from_value::<User>(value).ok())
+        .ok_or(RustyError::UnauthenticatedError)
+        .and_then(|user| {
             if bcrypt::validate(password, &user.password)? {
                 Ok(user.username)
             } else {
                 Err(RustyError::UnauthenticatedError)
             }
-        }
-        None => Err(RustyError::UnauthenticatedError),
-    }
+        })
 }
 
 pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, RustyError> {
     let user = get_token_claim_str(token, "sub");
-    match db
-        .get_one::<User>("users", json!({ "username": { "equals": user } }))
+    db.get_one("users", json!({ "username": { "equals": user } }))
         .await?
-    {
-        Some(user) => {
+        .and_then(|value| serde_json::from_value::<User>(value).ok())
+        .ok_or(RustyError::UnauthenticatedError)
+        .and_then(|user| {
             let claims: Result<Claims, _> = token.verify_with_key(&hmac512(&user.password)?);
             let now: u64 = chrono::Utc::now()
                 .timestamp()
@@ -52,7 +50,5 @@ pub(crate) async fn bearer_auth(db: &DbClient, token: &str) -> Result<String, Ru
                     Err(RustyError::UnauthenticatedError)
                 }
             }
-        }
-        None => Err(RustyError::UnauthenticatedError),
-    }
+        })
 }

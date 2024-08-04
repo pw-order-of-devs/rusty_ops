@@ -3,6 +3,7 @@ use serde_valid::Validate;
 
 use commons::env::var_or_default;
 use domain::auth::user::{RegisterUser, User};
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 const USERS_INDEX: &str = "users";
@@ -23,7 +24,9 @@ pub async fn create_user(db: &DbClient, user_type: &str) -> String {
     };
     user.validate()
         .unwrap_or_else(|_| panic!("error while creating user `{username}`: `validation error`"));
-    let user = User::from(&user);
+    let user = User::from(&user)
+        .to_value()
+        .unwrap_or_else(|_| panic!("error while creating user `{username}`: `validation error`"));
     match db.create(USERS_INDEX, &user).await {
         Ok(id) => {
             log::info!("creating `{user_type}` user: done\n\nusername: {username}\npassword: {password}\nyou should consider changing it!\n");

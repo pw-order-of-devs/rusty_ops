@@ -7,9 +7,8 @@ use std::time::Duration;
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
-use domain::RustyDomainItem;
 
-use crate::shared::filter_results;
+use crate::shared::{filter_results, get_value_id};
 use crate::{Persistence, PersistenceBuilder};
 
 /// Represents a `PostgreSQL` client.
@@ -119,12 +118,12 @@ impl PersistenceBuilder for PostgreSQLClient {
 }
 
 impl Persistence for PostgreSQLClient {
-    async fn get_all<T: RustyDomainItem>(
+    async fn get_all(
         &self,
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-    ) -> Result<Vec<T>, RustyError> {
+    ) -> Result<Vec<Value>, RustyError> {
         let conn = self.client.get().await?;
 
         let statement = format!(
@@ -139,24 +138,7 @@ impl Persistence for PostgreSQLClient {
             .map(parse_row)
             .collect::<Vec<Value>>();
 
-        let result = filter_results(filter, &rows)
-            .into_iter()
-            .map(|value| serde_json::from_value(value))
-            .collect::<Result<Vec<T>, _>>()?;
-        Ok(result)
-    }
-
-    async fn get_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<Option<T>, RustyError> {
-        let values: Vec<T> = self.get_all(index, &Some(filter), &None).await?;
-        if values.len() == 1 {
-            Ok(Some(values[0].clone()))
-        } else {
-            Ok(None)
-        }
+        Ok(filter_results(filter, &rows))
     }
 
     async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
@@ -174,13 +156,8 @@ impl Persistence for PostgreSQLClient {
         Ok(entries)
     }
 
-    async fn create<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
+    async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
         let conn = self.client.get().await?;
-        let (id, item) = (item.get_id(), serde_json::to_value(item)?);
         let values = parse_filter(&Some(item.clone()), false).join(", ");
         let statement = format!("insert into {}.{index} values ({values})", self.schema);
         let _ = conn.execute(&statement, &[]).await?;
@@ -188,25 +165,19 @@ impl Persistence for PostgreSQLClient {
             &json!({ "index": index, "op": "create", "item": item }).to_string(),
         )
         .await;
-        Ok(id)
+        Ok(get_value_id(item))
     }
 
-    async fn update<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        id: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
+    async fn update(&self, index: &str, id: &str, item: &Value) -> Result<String, RustyError> {
         let conn = self.client.get().await?;
-        let values = parse_filter(&Some(serde_json::to_value(item)?), true).join(", ");
+        let values = parse_filter(&Some(item.clone()), true).join(", ");
         let statement = format!(
             "update {}.{index} set {values} where id = '{id}'",
             self.schema
         );
         let _ = conn.execute(&statement, &[]).await?;
         let _ = messaging::internal::send(
-            &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
-                .to_string(),
+            &json!({ "index": index, "op": "update", "item": item }).to_string(),
         )
         .await;
         Ok(id.to_string())
@@ -235,11 +206,7 @@ impl Persistence for PostgreSQLClient {
         Ok(1)
     }
 
-    async fn delete_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<u64, RustyError> {
+    async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
         let conn = self.client.get().await?;
         if filter.as_object().unwrap_or(&Map::new()).is_empty() {
             log::debug!("Expecting a filter - skipping");

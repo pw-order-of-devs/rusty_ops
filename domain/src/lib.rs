@@ -16,7 +16,9 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
+use ::commons::errors::RustyError;
 use async_graphql::OutputType;
+use serde_json::Value;
 
 /// # Agents Module
 pub mod agents;
@@ -65,5 +67,16 @@ pub trait RustyDomainItem:
     #[must_use]
     fn generate_id() -> String {
         uuid::Uuid::new_v4().to_string()
+    }
+
+    /// Converts domain object to `serde_json::Value`
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    fn to_value(&self) -> Result<Value, RustyError> {
+        Ok(serde_json::to_value(self)?)
     }
 }

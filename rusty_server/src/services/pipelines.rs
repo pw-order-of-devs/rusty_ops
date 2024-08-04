@@ -6,6 +6,7 @@ use domain::auth::credentials::Credential;
 use domain::commons::search::SearchOptions;
 use domain::jobs::Job;
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 use crate::services::shared::get_username_claim;
@@ -108,7 +109,8 @@ pub async fn assign(
                 let limit = var_or_default("AGENT_MAX_ASSIGNED_JOBS", 1);
                 let condition = json!({ "status": { "equals": "ASSIGNED" }, "agent_id": { "equals": agent_id } });
                 if get_all(db, cred, &Some(condition), &None).await?.len() < limit {
-                    db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+                    db.update(PIPELINES_INDEX, pipeline_id, &pipe.to_value()?)
+                        .await
                 } else {
                     let message = format!(
                         "`pipelines::assign` - exceeded {limit} pipeline(s) assigned to agent"
@@ -146,7 +148,8 @@ pub async fn reset(
             {
                 pipe.status = PipelineStatus::Defined;
                 pipe.agent_id = None;
-                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe.to_value()?)
+                    .await
             } else {
                 let message = "`pipelines::reset` - cannot update".to_string();
                 log::debug!("{message}");
@@ -176,7 +179,8 @@ pub async fn set_running(
             {
                 pipe.status = PipelineStatus::InProgress;
                 pipe.start_date = Some(chrono::Utc::now().to_rfc3339());
-                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe.to_value()?)
+                    .await
             } else {
                 let message = "`pipelines::setRunning` - cannot update".to_string();
                 log::debug!("{message}");
@@ -207,7 +211,8 @@ pub async fn finalize(
             {
                 pipe.status = status;
                 pipe.end_date = Some(chrono::Utc::now().to_rfc3339());
-                db.update(PIPELINES_INDEX, pipeline_id, &pipe).await
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe.to_value()?)
+                    .await
             } else {
                 let message = "`pipelines::finalize` - cannot update".to_string();
                 log::debug!("{message}");
@@ -227,7 +232,7 @@ pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<
     if let Some(pipe) = get_by_id(db, cred, id).await? {
         if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &None, &[]).await? {
             shared::check_project_write_permission(db, cred, &job.project_id).await?;
-            shared::delete_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await
+            shared::delete_by_id(db, PIPELINES_INDEX, id).await
         } else {
             Ok(0)
         }

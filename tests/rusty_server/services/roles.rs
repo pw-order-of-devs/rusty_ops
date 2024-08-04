@@ -1,9 +1,10 @@
-use domain::auth::credentials::Credential;
-use domain::auth::roles::Role;
-use domain::auth::user::User;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
+use domain::auth::credentials::Credential;
+use domain::auth::roles::Role;
+use domain::auth::user::User;
+use domain::RustyDomainItem;
 use rusty_server::services::roles as service;
 
 use crate::utils::db_connect;
@@ -22,7 +23,9 @@ async fn assign_by_id_test() {
                 id: "uuid".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
     let _ = db_client
@@ -33,7 +36,9 @@ async fn assign_by_id_test() {
                 name: "sample".to_string(),
                 description: None,
                 users: vec![],
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
 
@@ -56,7 +61,9 @@ async fn assign_by_name_test() {
                 id: "uuid".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
     let _ = db_client
@@ -67,7 +74,9 @@ async fn assign_by_name_test() {
                 name: "sample".to_string(),
                 description: None,
                 users: vec![],
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
 
@@ -117,7 +126,9 @@ async fn assign_no_role_test() {
                 id: "uuid".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
-            },
+            }
+            .to_value()
+            .unwrap(),
         )
         .await;
 

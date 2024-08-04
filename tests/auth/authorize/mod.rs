@@ -6,8 +6,8 @@ use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 use commons::errors::RustyError;
 
 use crate::auth::utils::{
-    create_permission_role, create_permission_user, create_role,
-    PERMISSION, PERMISSION_ALL, PERMISSION_ERR,
+    create_permission_role, create_permission_user, create_role, PERMISSION, PERMISSION_ALL,
+    PERMISSION_ERR,
 };
 use crate::utils::{create_user, db_connect, USER_NAME};
 

@@ -14,10 +14,16 @@ pub async fn get_all<T: RustyDomainItem>(
     filter: &Option<Value>,
     options: &Option<SearchOptions>,
 ) -> Result<Vec<T>, RustyError> {
-    db.get_all(index, filter, options).await.map_err(|err| {
-        log::error!("`{index}::get`: {err}");
-        err
-    })
+    let values = db
+        .get_all(index, filter, options)
+        .await?
+        .into_iter()
+        .filter_map(|v| match serde_json::from_value(v) {
+            Ok(v) => Some(v),
+            Err(_) => None,
+        })
+        .collect();
+    Ok(values)
 }
 
 pub async fn get_by_id<T: RustyDomainItem>(
@@ -25,12 +31,11 @@ pub async fn get_by_id<T: RustyDomainItem>(
     index: &str,
     id: &str,
 ) -> Result<Option<T>, RustyError> {
-    db.get_one(index, json!({ "id": { "equals": id } }))
-        .await
-        .map_err(|err| {
-            log::error!("`{index}::get`: {err}");
-            err
-        })
+    let value = db
+        .get_one(index, json!({ "id": { "equals": id } }))
+        .await?
+        .unwrap_or(Value::Null);
+    Ok(serde_json::from_value(value)?)
 }
 
 pub async fn get_one<T: RustyDomainItem>(
@@ -38,10 +43,11 @@ pub async fn get_one<T: RustyDomainItem>(
     index: &str,
     filter: &Value,
 ) -> Result<Option<T>, RustyError> {
-    db.get_one(index, filter.clone()).await.map_err(|err| {
-        log::error!("`{index}::get`: {err}");
-        err
-    })
+    let value = db
+        .get_one(index, filter.clone())
+        .await?
+        .unwrap_or(Value::Null);
+    Ok(serde_json::from_value(value)?)
 }
 
 pub async fn create<S, T, F>(
@@ -61,7 +67,7 @@ where
     })?;
 
     let id = db
-        .create(index, &parse(item.clone()))
+        .create(index, &parse(item.clone()).to_value()?)
         .await
         .map_err(|err| {
             log::error!("`{index}::create`: {err}");
@@ -70,12 +76,8 @@ where
     Ok(id)
 }
 
-pub async fn delete_by_id<T: RustyDomainItem>(
-    db: &DbClient,
-    index: &str,
-    id: &str,
-) -> Result<u64, RustyError> {
-    db.delete_one::<T>(index, json!({ "id": id }))
+pub async fn delete_by_id(db: &DbClient, index: &str, id: &str) -> Result<u64, RustyError> {
+    db.delete_one(index, json!({ "id": id }))
         .await
         .map_err(|err| {
             log::error!("`{index}::deleteById`: {err}");

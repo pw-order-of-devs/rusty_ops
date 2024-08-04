@@ -118,7 +118,7 @@ pub async fn create(
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
     shared::check_project_write_permission(db, cred, id).await?;
-    shared::delete_by_id::<Project>(db, PROJECTS_INDEX, id).await
+    shared::delete_by_id(db, PROJECTS_INDEX, id).await
 }
 
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {

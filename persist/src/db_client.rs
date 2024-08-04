@@ -2,7 +2,6 @@ use serde_json::Value;
 
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
-use domain::RustyDomainItem;
 
 use crate::inmemory::InMemoryClient;
 use crate::mongo::MongoDBClient;
@@ -31,12 +30,12 @@ impl DbClient {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    pub async fn get_all<T: RustyDomainItem>(
+    pub async fn get_all(
         &self,
         index: &str,
         filter: &Option<Value>,
         options: &Option<SearchOptions>,
-    ) -> Result<Vec<T>, RustyError> {
+    ) -> Result<Vec<Value>, RustyError> {
         match self {
             Self::InMemory(client) => client.get_all(index, filter, options).await,
             Self::MongoDb(client) => client.get_all(index, filter, options).await,
@@ -52,11 +51,7 @@ impl DbClient {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    pub async fn get_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<Option<T>, RustyError> {
+    pub async fn get_one(&self, index: &str, filter: Value) -> Result<Option<Value>, RustyError> {
         match self {
             Self::InMemory(client) => client.get_one(index, filter).await,
             Self::MongoDb(client) => client.get_one(index, filter).await,
@@ -88,11 +83,7 @@ impl DbClient {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    pub async fn create<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
+    pub async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
         match self {
             Self::InMemory(client) => client.create(index, item).await,
             Self::MongoDb(client) => client.create(index, item).await,
@@ -108,12 +99,7 @@ impl DbClient {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    pub async fn update<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        id: &str,
-        item: &T,
-    ) -> Result<String, RustyError> {
+    pub async fn update(&self, index: &str, id: &str, item: &Value) -> Result<String, RustyError> {
         match self {
             Self::InMemory(client) => client.update(index, id, item).await,
             Self::MongoDb(client) => client.update(index, id, item).await,
@@ -145,16 +131,12 @@ impl DbClient {
     /// This function can generate the following errors:
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
-    pub async fn delete_one<T: RustyDomainItem>(
-        &self,
-        index: &str,
-        filter: Value,
-    ) -> Result<u64, RustyError> {
+    pub async fn delete_one(&self, index: &str, filter: Value) -> Result<u64, RustyError> {
         match self {
-            Self::InMemory(client) => client.delete_one::<T>(index, filter).await,
-            Self::MongoDb(client) => client.delete_one::<T>(index, filter).await,
-            Self::PostgreSql(client) => client.delete_one::<T>(index, filter).await,
-            Self::Redis(client) => client.delete_one::<T>(index, filter).await,
+            Self::InMemory(client) => client.delete_one(index, filter).await,
+            Self::MongoDb(client) => client.delete_one(index, filter).await,
+            Self::PostgreSql(client) => client.delete_one(index, filter).await,
+            Self::Redis(client) => client.delete_one(index, filter).await,
         }
     }
 

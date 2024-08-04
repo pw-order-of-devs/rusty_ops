@@ -22,7 +22,6 @@ use commons::errors::RustyError;
 use domain::auth::credentials::{parse_credential, Credential};
 use domain::auth::permissions::Permission;
 use domain::auth::roles::Role;
-use domain::auth::user::User;
 use persist::db_client::DbClient;
 
 /// authenticate user
@@ -102,20 +101,27 @@ pub async fn get_user_permissions(
 }
 
 async fn get_user_id(db: &DbClient, username: &str) -> Result<String, RustyError> {
-    match db
-        .get_one::<User>("users", json!({ "username": { "equals": username } }))
+    db.get_one("users", json!({ "username": { "equals": username } }))
         .await?
-    {
-        Some(user) => Ok(user.id),
-        None => Err(RustyError::RequestError("User was not found".to_string())),
-    }
+        .map_or_else(
+            || Err(RustyError::RequestError("User was not found".to_string())),
+            |user| {
+                Ok(user
+                    .get("id")
+                    .unwrap_or(&Value::Null)
+                    .as_str()
+                    .unwrap_or_default()
+                    .to_string())
+            },
+        )
 }
 
 async fn get_user_roles_id(db: &DbClient, user_id: &str) -> Result<Vec<String>, RustyError> {
     let roles = db
-        .get_all::<Role>("roles", &None, &None)
+        .get_all("roles", &None, &None)
         .await?
         .into_iter()
+        .filter_map(|v| serde_json::from_value::<Role>(v).ok())
         .filter(|role| role.users.contains(&user_id.to_string()))
         .map(|role| role.id)
         .collect::<Vec<String>>();
@@ -123,6 +129,11 @@ async fn get_user_roles_id(db: &DbClient, user_id: &str) -> Result<Vec<String>, 
 }
 
 async fn get_permissions(db: &DbClient, filter: &Value) -> Result<Vec<Permission>, RustyError> {
-    db.get_all("permissions", &Some(filter.clone()), &None)
-        .await
+    let values = db
+        .get_all("permissions", &Some(filter.clone()), &None)
+        .await?
+        .into_iter()
+        .filter_map(|v| serde_json::from_value::<Permission>(v).ok())
+        .collect();
+    Ok(values)
 }
