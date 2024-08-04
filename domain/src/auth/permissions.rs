@@ -7,6 +7,8 @@ use crate::RustyDomainItem;
 /// A struct representing a Permission.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize, Validate)]
 pub struct Permission {
+    /// permission id
+    pub id: String,
     /// user assigned to permission
     pub user_id: Option<String>,
     /// role assigned to permission
@@ -42,6 +44,7 @@ impl Permission {
         item: &str,
     ) -> Self {
         Self {
+            id: uuid::Uuid::new_v4().to_string(),
             user_id,
             role_id,
             resource: resource.to_string(),

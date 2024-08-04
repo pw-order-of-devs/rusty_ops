@@ -6,6 +6,8 @@ use crate::RustyDomainItem;
 /// A struct representing a Permission.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct Resource {
+    /// resource id
+    pub id: String,
     /// resource name
     pub name: String,
     /// resource rights

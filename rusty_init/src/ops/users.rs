@@ -1,4 +1,5 @@
 use rand::Rng;
+use serde_valid::json::json;
 use serde_valid::Validate;
 
 use commons::env::var_or_default;
@@ -8,7 +9,7 @@ use persist::db_client::DbClient;
 
 const USERS_INDEX: &str = "users";
 
-pub async fn create_user(db: &DbClient, user_type: &str) -> String {
+pub async fn create_user(db: &DbClient, user_type: &str) -> Option<String> {
     log::info!("creating `{user_type}` user: start");
     let username = var_or_default(
         &format!("{}_USERNAME", user_type.to_uppercase()),
@@ -24,15 +25,23 @@ pub async fn create_user(db: &DbClient, user_type: &str) -> String {
     };
     user.validate()
         .unwrap_or_else(|_| panic!("error while creating user `{username}`: `validation error`"));
-    let user = User::from(&user)
-        .to_value()
-        .unwrap_or_else(|_| panic!("error while creating user `{username}`: `validation error`"));
-    match db.create(USERS_INDEX, &user).await {
-        Ok(id) => {
-            log::info!("creating `{user_type}` user: done\n\nusername: {username}\npassword: {password}\nyou should consider changing it!\n");
-            id
+    if let Ok(Some(_)) = db
+        .get_one(USERS_INDEX, json!({ "username": { "equals": username } }))
+        .await
+    {
+        log::warn!("user `{user_type}` already exists - skipping");
+        None
+    } else {
+        let user = User::from(&user).to_value().unwrap_or_else(|_| {
+            panic!("error while creating user `{username}`: `validation error`")
+        });
+        match db.create(USERS_INDEX, &user).await {
+            Ok(id) => {
+                log::info!("creating `{user_type}` user: done\n\nusername: {username}\npassword: {password}\nyou should consider changing it!\n");
+                Some(id)
+            }
+            Err(err) => panic!("error while creating user `{username}`: `{err}`"),
         }
-        Err(err) => panic!("error while creating user `{username}`: `{err}`"),
     }
 }
 

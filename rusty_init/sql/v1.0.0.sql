@@ -1,6 +1,11 @@
 drop schema if exists rusty cascade;
 create schema rusty;
 
+create table if not exists rusty.versions (
+    id varchar(36) primary key,
+    version varchar(32) unique not null
+);
+
 create table if not exists rusty.users (
     id varchar(36) primary key,
     username varchar(128) unique not null,
@@ -15,11 +20,13 @@ create table if not exists rusty.roles (
 );
 
 create table if not exists rusty.resources (
-    name varchar(36) primary key,
+    id varchar(36) primary key,
+    name varchar(36) not null unique,
     rights text[]
 );
 
 create table if not exists rusty.permissions (
+    id varchar(36) primary key,
     user_id varchar(36),
     role_id varchar(36),
     resource varchar(256) not null,

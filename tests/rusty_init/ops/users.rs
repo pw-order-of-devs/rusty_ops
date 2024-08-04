@@ -24,5 +24,6 @@ async fn create_user_test<I: Image + Default>(
         .expect("initializing test container failed");
     let db_client = db_connect(&db, db_type, port).await;
     let user_id = users::create_user(&db_client, "admin").await;
-    assert_eq!(36, user_id.len());
+    assert!(user_id.is_some());
+    assert_eq!(36, user_id.unwrap().len());
 }
