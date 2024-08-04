@@ -11,6 +11,7 @@
 - [auth](auth.md)
 - [commons](commons.md)
 - [domain](domain.md)
+- [messaging](messaging.md)
 - [persist](persist.md)
 
 ### Macros:

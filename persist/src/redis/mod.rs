@@ -9,7 +9,6 @@ use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
-use crate::messaging::CHANNEL;
 use crate::shared::{delete_one_filter, filter_results, sort_results};
 use crate::{Persistence, PersistenceBuilder};
 
@@ -102,6 +101,12 @@ impl Persistence for RedisClient {
         }
     }
 
+    async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
+        let mut conn = self.client.get().await?;
+        let entries: Vec<String> = conn.lrange(format!("{index}_{id}"), 0, -1).await?;
+        Ok(entries)
+    }
+
     async fn create<T: RustyDomainItem>(
         &self,
         index: &str,
@@ -111,11 +116,10 @@ impl Persistence for RedisClient {
         let mut conn = self.client.get().await?;
         let item = serde_json::to_string(item)?;
         conn.set(format!("{index}_{id}"), &item).await?;
-        let _ = CHANNEL
-            .tx
-            .lock()
-            .await
-            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
+        let _ = messaging::internal::send(
+            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+        )
+        .await;
         Ok(id)
     }
 
@@ -132,17 +136,22 @@ impl Persistence for RedisClient {
         if found.is_some() {
             let item = serde_json::to_string(item)?;
             conn.set(format!("{index}_{id}"), item.clone()).await?;
-            let _ = CHANNEL
-                .tx
-                .lock()
-                .await
-                .send(json!({ "index": index, "op": "update", "item": item }).to_string());
+            let _ = messaging::internal::send(
+                &json!({ "index": index, "op": "update", "item": item }).to_string(),
+            )
+            .await;
             Ok(id.to_string())
         } else {
             Err(RustyError::RedisError(format!(
                 "Item not found: `{index}`.`{id}`"
             )))
         }
+    }
+
+    async fn append(&self, index: &str, id: &str, entry: &str) -> Result<u64, RustyError> {
+        let mut conn = self.client.get().await?;
+        conn.rpush(format!("{index}_{id}"), entry).await?;
+        Ok(1)
     }
 
     async fn delete_one<T: RustyDomainItem>(

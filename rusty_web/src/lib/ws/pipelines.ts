@@ -4,8 +4,8 @@ import { generateUUID } from '$lib/utils/uuid';
 export const subscribe = (
 	jwtToken: string,
 	jobId: string,
-	onCreated: (msg: PipelineSubscription) => void,
-	onUpdated: (msg: PipelineSubscription) => void
+	query: string,
+	action: (msg: PipelineSubscription) => void
 ) => {
 	const ws = new WebSocket(import.meta.env.VITE_WS_URL ?? 'ws://localhost:8000/ws', 'graphql-ws');
 
@@ -28,18 +28,13 @@ export const subscribe = (
 					type: 'start',
 					payload: {
 						query: `subscription {
-							pipelineInserted { id number status branch registerDate startDate endDate jobId }
-							pipelineUpdated { id number status branch registerDate startDate endDate jobId }
+							${query}
 						}`
 					}
 				})
 			);
 		} else if (receivedData.type === 'data') {
-			if (receivedData.payload.data.pipelineInserted !== undefined) {
-				onCreated(receivedData);
-			} else if (receivedData.payload.data.pipelineUpdated !== undefined) {
-				onUpdated(receivedData);
-			}
+			action(receivedData);
 		}
 	};
 

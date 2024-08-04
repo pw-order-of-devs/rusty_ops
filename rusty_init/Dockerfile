@@ -12,6 +12,7 @@ COPY auth/ auth/
 COPY auth_macro/ auth_macro/
 COPY commons/ commons/
 COPY domain/ domain/
+COPY messaging/ messaging/
 COPY persist/ persist/
 COPY rusty_agent/ rusty_agent/
 COPY rusty_init/ rusty_init/

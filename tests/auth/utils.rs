@@ -7,6 +7,8 @@ use crate::utils::USER_ID;
 
 pub const PERMISSIONS_INDEX: &str = "permissions";
 pub const PERMISSION: &str = "RESOURCE:RIGHT";
+pub const PERMISSION_ALL: &str = "RESOURCE:RIGHT:ALL";
+pub const PERMISSION_ERR: &str = "INVALID";
 pub const ROLE_ID: &str = "86ee6a82-cbec-4008-837f-d777ead0477b";
 pub const ROLES_INDEX: &str = "roles";
 

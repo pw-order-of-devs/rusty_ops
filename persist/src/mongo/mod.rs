@@ -11,7 +11,6 @@ use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
-use crate::messaging::CHANNEL;
 use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
@@ -112,6 +111,26 @@ impl Persistence for MongoDBClient {
         }
     }
 
+    async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
+        let collection = self
+            .client
+            .database(&self.database)
+            .collection::<Value>(index);
+        let value = collection
+            .find_one(doc! { "id": id })
+            .await?
+            .unwrap_or_default();
+        let entries = value
+            .get("entries")
+            .unwrap_or(&Value::Array(vec![]))
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .map(|v| v.as_str().unwrap_or_default().to_string())
+            .collect();
+        Ok(entries)
+    }
+
     async fn create<T: RustyDomainItem>(
         &self,
         index: &str,
@@ -126,11 +145,10 @@ impl Persistence for MongoDBClient {
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
             .map(|_| &id)?;
         let item = serde_json::to_value(item)?;
-        let _ = CHANNEL
-            .tx
-            .lock()
-            .await
-            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
+        let _ = messaging::internal::send(
+            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+        )
+        .await;
         Ok(id)
     }
 
@@ -152,16 +170,35 @@ impl Persistence for MongoDBClient {
                 .await
                 .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))
                 .map(|_| item.get_id())?;
-            let _ = CHANNEL.tx.lock().await.send(
-                json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
+            let _ = messaging::internal::send(
+                &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
                     .to_string(),
-            );
+            )
+            .await;
             Ok(id)
         } else {
             Err(RustyError::MongoDBError(format!(
                 "Item not found: `{index}`.`{id}`"
             )))
         }
+    }
+
+    async fn append(&self, index: &str, id: &str, entry: &str) -> Result<u64, RustyError> {
+        let collection = self
+            .client
+            .database(&self.database)
+            .collection::<Document>(index);
+
+        if collection
+            .find_one_and_update(doc! { "id": id }, doc! { "$push": { "entries": entry } })
+            .await?
+            .is_none()
+        {
+            collection
+                .insert_one(doc! { "id": id, "entries": [entry] })
+                .await?;
+        }
+        Ok(1)
     }
 
     async fn delete_one<T: RustyDomainItem>(

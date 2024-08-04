@@ -27,6 +27,8 @@ pub enum RustyError {
     IoError(String),
     /// JWT error
     JwtError(String),
+    /// Messaging error
+    MessagingError(String),
     /// `MongoDb` operation related error
     MongoDBError(String),
     /// `PostgresSQL` operation related error
@@ -88,6 +90,9 @@ impl Display for RustyError {
             Self::JwtError(message) => {
                 write!(f, "JWT error: {message}")
             }
+            Self::MessagingError(message) => {
+                write!(f, "Messaging error: {message}")
+            }
             Self::MongoDBError(message) => {
                 write!(f, "MongoDB error: {message}")
             }
@@ -127,6 +132,26 @@ impl From<async_graphql::Error> for RustyError {
 impl From<reqwest::Error> for RustyError {
     fn from(err: reqwest::Error) -> Self {
         Self::RequestError(err.to_string())
+    }
+}
+
+impl<T: Send> From<tokio::sync::broadcast::error::SendError<T>> for RustyError {
+    fn from(err: tokio::sync::broadcast::error::SendError<T>) -> Self {
+        Self::MessagingError(err.to_string())
+    }
+}
+
+#[cfg(feature = "bb8-lapin")]
+impl From<bb8_lapin::lapin::Error> for RustyError {
+    fn from(err: bb8_lapin::lapin::Error) -> Self {
+        Self::MessagingError(err.to_string())
+    }
+}
+
+#[cfg(feature = "bb8-lapin")]
+impl From<bb8_lapin::bb8::RunError<bb8_lapin::lapin::Error>> for RustyError {
+    fn from(err: bb8_lapin::bb8::RunError<bb8_lapin::lapin::Error>) -> Self {
+        Self::MessagingError(err.to_string())
     }
 }
 

@@ -1,5 +1,6 @@
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
@@ -9,7 +10,6 @@ use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 
-use crate::messaging::CHANNEL;
 use crate::shared::{delete_one_filter, filter_results, sort_results};
 use crate::{Persistence, PersistenceBuilder};
 
@@ -87,6 +87,20 @@ impl Persistence for InMemoryClient {
         }
     }
 
+    #[allow(clippy::significant_drop_tightening)]
+    async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
+        let mut guarded_store = self.store.lock().unwrap();
+        let index = guarded_store.entry(index.to_string()).or_default();
+        let value = index.entry(id.to_string()).or_default();
+        let entries = value
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .map(|v| v.as_str().unwrap_or_default().to_string())
+            .collect();
+        Ok(entries)
+    }
+
     async fn create<T: RustyDomainItem>(
         &self,
         index: &str,
@@ -95,19 +109,15 @@ impl Persistence for InMemoryClient {
         let (id, item) = (item.get_id(), serde_json::to_value(item)?);
         {
             let mut guarded_store = self.store.lock().unwrap();
-            if let Some(index) = guarded_store.get_mut(index) {
-                index.insert(id.clone(), item.clone());
-            } else {
-                let mut map = HashMap::new();
-                map.insert(id.to_string(), item.clone());
-                guarded_store.insert(index.to_string(), map);
-            }
+            guarded_store
+                .entry(index.to_string())
+                .or_default()
+                .insert(id.clone(), item.clone());
         }
-        let _ = CHANNEL
-            .tx
-            .lock()
-            .await
-            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
+        let _ = messaging::internal::send(
+            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+        )
+        .await;
         Ok(id)
     }
 
@@ -121,17 +131,36 @@ impl Persistence for InMemoryClient {
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            let id = self.create(id, item).await?;
-            let _ = CHANNEL.tx.lock().await.send(
-                json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
-                    .to_string(),
-            );
+            let id = self.create(index, item).await?;
+            let _ = messaging::internal::send(
+                &json!({
+                    "index": index,
+                    "op": "update",
+                    "item": serde_json::to_string(item)?
+                })
+                .to_string(),
+            )
+            .await;
             Ok(id)
         } else {
             Err(RustyError::RedisError(format!(
                 "Item not found: `{index}`.`{id}`"
             )))
         }
+    }
+
+    #[allow(clippy::significant_drop_tightening)]
+    async fn append(&self, index: &str, id: &str, entry: &str) -> Result<u64, RustyError> {
+        let mut guarded_store = self.store.lock().unwrap();
+        let value_array = guarded_store
+            .entry(index.to_string())
+            .or_default()
+            .entry(id.to_string())
+            .or_insert_with(|| Value::Array(vec![]));
+        if let Value::Array(array) = value_array {
+            array.push(Value::String(entry.to_string()));
+        }
+        Ok(1)
     }
 
     async fn delete_one<T: RustyDomainItem>(

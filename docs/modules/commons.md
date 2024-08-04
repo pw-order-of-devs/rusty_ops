@@ -18,6 +18,7 @@ Future features:
 - `errors`: custom error handling
 - `logging`: logging configuration
 - `persist`: error handling for persistence module
+- `messaging`: error handling for messaging module
 - `ws`: error handling for websockets
 
 ## Environment variables:

@@ -26,7 +26,8 @@ use rusty_server::{gql, middleware, schedulers, server_ext};
 async fn main() {
     commons::logger::init();
     let db = persist::init().await;
-    schedulers::init(&db);
+    let mq = messaging::init().await;
+    schedulers::init(&db, &mq);
     gql::public_gql_endpoints_init();
     let schema = gql::build_schema(&db);
 

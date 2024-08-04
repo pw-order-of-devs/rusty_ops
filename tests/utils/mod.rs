@@ -4,6 +4,9 @@ use testcontainers::{ContainerAsync, Image};
 use commons::errors::RustyError;
 use commons::hashing::bcrypt;
 use domain::auth::user::User;
+use messaging::mq_client::MqClient;
+use messaging::rabbitmq::RabbitMQClient;
+use messaging::MessagingBuilder;
 use persist::db_client::DbClient;
 use persist::inmemory::InMemoryClient;
 use persist::mongo::MongoDBClient;
@@ -51,6 +54,18 @@ pub async fn db_connect(db: &ContainerAsync<impl Image>, db_type: &str, port: u1
             DbClient::PostgreSql(client)
         }
         "redis" => DbClient::Redis(RedisClient::from_string(connection).await),
+        _ => panic!("not supported db type"),
+    }
+}
+
+pub async fn mq_connect(mq: &ContainerAsync<impl Image>, mq_type: &str, port: u16) -> MqClient {
+    let port = mq
+        .get_host_port_ipv4(port)
+        .await
+        .expect("failed to obtain container port");
+    let connection = &format!("amqp://localhost:{}", port);
+    match mq_type {
+        "rabbit" => MqClient::RabbitMQ(RabbitMQClient::from_string(connection).await),
         _ => panic!("not supported db type"),
     }
 }

@@ -22,6 +22,7 @@ path = "src/lib.rs"
 [dependencies]
 commons = { path = "../commons", features = ["errors", "logging", "ws"] }
 domain = { path = "../domain" }
+messaging = { path = "../messaging", features = ["external"] }
 
 axum.workspace = true
 base64.workspace = true

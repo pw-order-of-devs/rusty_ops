@@ -18,20 +18,22 @@ path = "src/lib.rs"
 [features]
 errors = []
 logging = ["log4rs"]
+messaging = ["bb8-lapin"]
 persist = ["mongodb", "bb8-postgres", "bb8-redis"]
 ws = ["tokio-tungstenite"]
 
 [dependencies]
 async-graphql.workspace = true
 base64-url.workspace = true
+bb8-lapin = { workspace = true, optional = true }
+bb8-postgres = { workspace = true, optional = true }
+bb8-redis = { workspace = true, optional = true }
 bcrypt.workspace = true
 hmac.workspace = true
 jwt.workspace = true
 log.workspace = true
 log4rs = { workspace = true, features = ["gzip", "all_components"], optional = true }
 mongodb = { workspace = true, optional = true }
-bb8-postgres = { workspace = true, optional = true }
-bb8-redis = { workspace = true, optional = true }
 reqwest.workspace = true
 serde.workspace = true
 serde_json.workspace = true

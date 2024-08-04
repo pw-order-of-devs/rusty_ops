@@ -5,7 +5,7 @@
 ## Design Purpose:
 
 `persist` is a shared library providing the database communication layer for the `RustyOps` system.\
-Currently, it supports:
+Currently, it provides support for:
 - MongoDB
 - PostgreSQL
 - Redis [not recommended for production]
@@ -16,7 +16,7 @@ In the future, more databases may be supported
 ## Crate features:
 
 Currently, this crate does not define features.\
-In the future, specific databases might be stored behind features, if specific components required it.
+In the future, specific databases might be guarded by features, if specific components required it.
 
 ## Environment variables:
 

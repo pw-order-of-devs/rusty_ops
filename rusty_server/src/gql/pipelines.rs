@@ -9,7 +9,6 @@ use domain::commons::search::SearchOptions;
 use domain::commons::ws::ExtraWSData;
 use domain::pipelines::{PagedPipelines, Pipeline, PipelineStatus, RegisterPipeline};
 use persist::db_client::DbClient;
-use persist::messaging::CHANNEL;
 
 use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::{jobs, pipelines as service};
@@ -170,10 +169,15 @@ impl PipelineSubscription {
         log::debug!("handling `pipelines::updated` subscription");
         yield_pipeline(validate_subscription(ctx).await, "update").await
     }
+
+    async fn pipeline_logs(&self, ctx: &Context<'_>) -> impl Stream<Item = String> {
+        log::debug!("handling `pipelines::logs` subscription");
+        yield_logs(validate_subscription(ctx).await).await
+    }
 }
 
 async fn yield_pipeline(extras: ExtraWSData, op: &str) -> impl Stream<Item = Pipeline> + '_ {
-    let mut receiver = CHANNEL.rx.lock().await.resubscribe();
+    let mut receiver = messaging::internal::resubscribe().await;
     async_stream::stream! {
         while let Ok(message) = receiver.recv().await {
             if let Ok(message) = serde_json::from_str::<Value>(&message) {
@@ -186,6 +190,24 @@ async fn yield_pipeline(extras: ExtraWSData, op: &str) -> impl Stream<Item = Pip
                             yield pipeline;
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+async fn yield_logs(extras: ExtraWSData) -> impl Stream<Item = String> + 'static {
+    let mut receiver = messaging::internal::resubscribe().await;
+    async_stream::stream! {
+        while let Ok(message) = receiver.recv().await {
+            if let Ok(message) = serde_json::from_str::<Value>(&message) {
+                let index = message.get("index").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                let operation = message.get("op").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                let id = message.get("id").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                let entry = message.get("entry").unwrap_or(&Value::Null).as_str().unwrap_or_default();
+                if index == "pipelineLogs" && operation == "append"
+                    && (extras.pipeline_id.is_none() || extras.clone().pipeline_id.unwrap() == id) {
+                    yield entry.to_string();
                 }
             }
         }

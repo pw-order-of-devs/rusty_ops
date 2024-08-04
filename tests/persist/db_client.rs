@@ -9,6 +9,8 @@ use testcontainers::Image;
 use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 
 use commons::errors::RustyError;
+use domain::jobs::Job;
+use domain::pipelines::{Pipeline, PipelineStatus};
 use domain::projects::Project;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
@@ -16,10 +18,12 @@ use persist::db_client::DbClient;
 use crate::utils::db_connect;
 
 const PROJECTS_INDEX: &str = "projects";
+const JOBS_INDEX: &str = "jobs";
+const PIPELINES_INDEX: &str = "pipelines";
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -51,7 +55,75 @@ async fn get_all_test<I: Image + Default>(
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
+async fn get_one_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    I: Image,
+{
+    let db = image
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, db_type, port).await;
+    let _ = create_project(&db_client, "project_1").await;
+    let _ = create_project(&db_client, "project_2").await;
+
+    let results = db_client
+        .get_one::<Project>(PROJECTS_INDEX, json!({ "name": { "equals": "project_1" } }))
+        .await;
+    let _ = db.stop().await;
+    assert!(results.is_ok());
+    let result = results.unwrap();
+    assert!(result.is_some());
+    assert_eq!("project_1", result.unwrap().name);
+}
+
+#[rstest]
+#[case(Redis, "internal", 0)]
+#[case(Mongo::default(), "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
+async fn get_list_test<I: Image + Default>(
+    #[case] image: I,
+    #[case] db_type: &str,
+    #[case] port: u16,
+) where
+    I: Image,
+{
+    let db = image
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, db_type, port).await;
+    let id = create_project(&db_client, "dummy").await.unwrap();
+    let id = create_job(&db_client, &id).await.unwrap();
+    let id = create_pipeline(&db_client, &id).await.unwrap();
+    let _ = db_client
+        .append("pipelineLogs", &id, "{\"line\": \"test-entry 1\"}")
+        .await;
+    let _ = db_client
+        .append("pipelineLogs", &id, "{\"line\": \"test-entry 2\"}")
+        .await;
+    let _ = db_client
+        .append("pipelineLogs", &id, "{\"line\": \"test-entry 3\"}")
+        .await;
+
+    let results = db_client.get_list("pipelineLogs", &id).await;
+    let _ = db.stop().await;
+    assert!(results.is_ok());
+    assert_eq!(3, results.unwrap().len());
+}
+
+#[rstest]
+#[case(Redis, "internal", 0)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -73,7 +145,7 @@ where
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -112,7 +184,31 @@ where
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
+#[case(Postgres::default(), "postgres", 5432)]
+#[case(Redis, "redis", 6379)]
+#[tokio::test]
+async fn append_test<I: Image + Default>(#[case] image: I, #[case] db_type: &str, #[case] port: u16)
+where
+    I: Image,
+{
+    let db = image
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, db_type, port).await;
+    let id = create_project(&db_client, "dummy").await.unwrap();
+    let id = create_job(&db_client, &id).await.unwrap();
+    let id = create_pipeline(&db_client, &id).await.unwrap();
+    let result = db_client
+        .append("pipelineLogs", &id, "{\"line\": \"test-entry\"}")
+        .await;
+    assert!(result.is_ok());
+}
+
+#[rstest]
+#[case(Redis, "internal", 0)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -144,7 +240,7 @@ async fn delete_one_test<I: Image + Default>(
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -174,7 +270,7 @@ async fn delete_all_test<I: Image + Default>(
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -250,6 +346,40 @@ async fn create_project(db_client: &DbClient, name: &str) -> Result<String, Rust
                 url: Some(format!("url://{name}.ext")),
                 main_branch: "master".to_string(),
                 group_id: None,
+            },
+        )
+        .await
+}
+
+async fn create_job(db_client: &DbClient, id: &str) -> Result<String, RustyError> {
+    db_client
+        .create(
+            JOBS_INDEX,
+            &Job {
+                id: uuid::Uuid::new_v4().to_string(),
+                name: "dummy".to_string(),
+                description: None,
+                template: "dummy".to_string(),
+                project_id: id.to_string(),
+            },
+        )
+        .await
+}
+
+async fn create_pipeline(db_client: &DbClient, id: &str) -> Result<String, RustyError> {
+    db_client
+        .create(
+            PIPELINES_INDEX,
+            &Pipeline {
+                id: uuid::Uuid::new_v4().to_string(),
+                number: 0,
+                branch: "master".to_string(),
+                register_date: chrono::Utc::now().to_rfc3339(),
+                start_date: None,
+                end_date: None,
+                status: PipelineStatus::Defined,
+                job_id: id.to_string(),
+                agent_id: None,
             },
         )
         .await

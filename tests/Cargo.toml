@@ -20,6 +20,7 @@ auth = { path = "../auth" }
 auth_macro = { path = "../auth_macro" }
 commons = { path = "../commons", features = ["errors", "logging", "persist"] }
 domain = { path = "../domain" }
+messaging = { path = "../messaging" }
 persist = { path = "../persist" }
 rusty_agent = { path = "../rusty_agent" }
 rusty_init = { path = "../rusty_init" }
@@ -35,7 +36,7 @@ serde.workspace = true
 serde_json.workspace = true
 serde_valid.workspace = true
 testcontainers.workspace = true
-testcontainers-modules = { workspace = true, features = ["mongo", "postgres", "redis"] }
+testcontainers-modules = { workspace = true, features = ["mongo", "postgres", "rabbitmq", "redis"] }
 tokio.workspace = true
 uuid.workspace = true
 

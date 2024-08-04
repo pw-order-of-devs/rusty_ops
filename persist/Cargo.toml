@@ -18,6 +18,7 @@ path = "src/lib.rs"
 [dependencies]
 commons = { path = "../commons", features = ["errors", "logging", "persist"] }
 domain = { path = "../domain" }
+messaging = { path = "../messaging", features = ["internal"] }
 
 bb8-postgres = { workspace = true, features = ["with-serde_json-1"] }
 bb8-redis.workspace = true

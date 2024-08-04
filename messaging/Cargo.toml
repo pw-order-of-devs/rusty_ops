@@ -1,0 +1,30 @@
+[package]
+version.workspace = true
+rust-version.workspace = true
+edition.workspace = true
+authors.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+license.workspace = true
+readme.workspace = true
+name = "messaging"
+description = "rusty_ops - messaging module"
+
+[lib]
+name = "messaging"
+path = "src/lib.rs"
+
+[features]
+default = ["external", "internal"]
+external = ["bb8-lapin"]
+internal = ["once_cell"]
+
+[dependencies]
+commons = { path = "../commons", features = ["errors", "logging", "messaging"] }
+
+bb8-lapin = { workspace = true, optional = true }
+futures-lite.workspace = true
+once_cell = { workspace = true, optional = true }
+tokio.workspace = true
+uuid.workspace = true

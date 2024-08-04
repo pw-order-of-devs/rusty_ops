@@ -4,7 +4,7 @@
 
 ## Design Purpose:
 
-`rusty_agent` is a main backend server application for `RustyOps`.\
+`rusty_server` is a main backend server application for `RustyOps`.\
 It exposes `graphql` and `websocket` endpoints for data access for agents and web ui.
 
 It contains scheduler-based functionalities:
@@ -67,6 +67,7 @@ For complete configuration, refer to application dependencies environment variab
 - [auth_macro](auth_macro.md)
 - [commons](commons.md)
 - [domain](domain.md)
+- [messaging](messaging.md)
 - [persist](persist.md)
 
 ## Example configuration:

@@ -32,12 +32,31 @@
 		subscribe(
 			data.jwtToken,
 			data['id'],
+			"pipelineInserted { id number status branch registerDate startDate endDate jobId }",
 			(message: PipelineSubscription) => {
 				if (pageData !== undefined && message.payload.data.pipelineInserted !== undefined) {
 					pageData!.pipelines.entries.unshift(message.payload.data.pipelineInserted);
 					pageData = pageData;
+
+					subscribe(
+						data.jwtToken,
+						message.payload.data.pipelineInserted.id,
+						"pipelineLogs",
+						(message: PipelineSubscription) => {
+							console.log(message)
+							if (pageData !== undefined && message.payload.data.pipelineLogs !== undefined) {
+								console.log(message.payload.data.pipelineLogs)
+							}
+						}
+					);
 				}
-			},
+			}
+		);
+
+		subscribe(
+			data.jwtToken,
+			data['id'],
+			"pipelineUpdated { id number status branch registerDate startDate endDate jobId }",
 			(message: PipelineSubscription) => {
 				if (pageData !== undefined && message.payload.data.pipelineUpdated !== undefined) {
 					let pipeline = message.payload.data.pipelineUpdated!;
@@ -83,7 +102,7 @@
 				{pageData?.job?.name}
 			</div>
 			<div class="job-description wrap-text">
-				{pageData?.job?.description}
+				{pageData?.job?.description ?? "No description"}
 			</div>
 		</Card>
 	</div>

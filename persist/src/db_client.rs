@@ -65,6 +65,22 @@ impl DbClient {
         }
     }
 
+    /// Wrapper for `get_list` function
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    pub async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
+        match self {
+            Self::InMemory(client) => client.get_list(index, id).await,
+            Self::MongoDb(client) => client.get_list(index, id).await,
+            Self::PostgreSql(client) => client.get_list(index, id).await,
+            Self::Redis(client) => client.get_list(index, id).await,
+        }
+    }
+
     /// Wrapper for `create` function
     ///
     /// # Errors
@@ -103,6 +119,22 @@ impl DbClient {
             Self::MongoDb(client) => client.update(index, id, item).await,
             Self::PostgreSql(client) => client.update(index, id, item).await,
             Self::Redis(client) => client.update(index, id, item).await,
+        }
+    }
+
+    /// Wrapper for `append` function
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    pub async fn append(&self, index: &str, id: &str, entry: &str) -> Result<u64, RustyError> {
+        match self {
+            Self::InMemory(client) => client.append(index, id, entry).await,
+            Self::MongoDb(client) => client.append(index, id, entry).await,
+            Self::PostgreSql(client) => client.append(index, id, entry).await,
+            Self::Redis(client) => client.append(index, id, entry).await,
         }
     }
 

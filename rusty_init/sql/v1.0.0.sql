@@ -70,3 +70,11 @@ create table if not exists rusty.pipelines (
         foreign key(job_id)
             references rusty.jobs(id)
 );
+
+create table if not exists rusty.pipelineLogs (
+    id varchar(36) primary key,
+    entries jsonb not null,
+    constraint fk_pipeline_id
+        foreign key(id)
+            references rusty.pipelines(id)
+);

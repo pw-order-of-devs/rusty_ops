@@ -10,7 +10,7 @@ use crate::utils::{create_user, db_connect, USER_ID};
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]
@@ -33,7 +33,7 @@ async fn assign_permission_user_test<I: Image + Default>(
 
 #[rstest]
 #[case(Redis, "internal", 0)]
-#[case(Mongo, "mongodb", 27017)]
+#[case(Mongo::default(), "mongodb", 27017)]
 #[case(Postgres::default(), "postgres", 5432)]
 #[case(Redis, "redis", 6379)]
 #[tokio::test]

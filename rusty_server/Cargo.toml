@@ -24,6 +24,7 @@ auth = { path = "../auth" }
 auth_macro = { path = "../auth_macro" }
 commons = { path = "../commons", features = ["errors", "logging"] }
 domain = { path = "../domain" }
+messaging = { path = "../messaging", features = ["external", "internal"] }
 persist = { path = "../persist" }
 
 async-graphql.workspace = true

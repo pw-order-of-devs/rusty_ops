@@ -9,7 +9,6 @@ use commons::errors::RustyError;
 use domain::commons::search::{SearchOptions, SortOptions};
 use domain::RustyDomainItem;
 
-use crate::messaging::CHANNEL;
 use crate::shared::filter_results;
 use crate::{Persistence, PersistenceBuilder};
 
@@ -129,9 +128,8 @@ impl Persistence for PostgreSQLClient {
         let conn = self.client.get().await?;
 
         let statement = format!(
-            "select * from {}.{}{}",
+            "select * from {}.{index}{}",
             self.schema,
-            index,
             parse_options(options)
         );
         let rows = conn
@@ -161,6 +159,21 @@ impl Persistence for PostgreSQLClient {
         }
     }
 
+    async fn get_list(&self, index: &str, id: &str) -> Result<Vec<String>, RustyError> {
+        let conn = self.client.get().await?;
+        let statement = format!("select * from {}.{index} where id = $1", self.schema);
+        let row = conn.query_one(&statement, &[&id]).await?;
+        let entries = parse_row(&row)
+            .get("entries")
+            .unwrap_or(&Value::Array(vec![]))
+            .as_array()
+            .unwrap_or(&vec![])
+            .iter()
+            .map(|v| v.as_str().unwrap_or_default().to_string())
+            .collect();
+        Ok(entries)
+    }
+
     async fn create<T: RustyDomainItem>(
         &self,
         index: &str,
@@ -169,13 +182,12 @@ impl Persistence for PostgreSQLClient {
         let conn = self.client.get().await?;
         let (id, item) = (item.get_id(), serde_json::to_value(item)?);
         let values = parse_filter(&Some(item.clone()), false).join(", ");
-        let statement = format!("insert into {}.{} values ({})", self.schema, index, values);
+        let statement = format!("insert into {}.{index} values ({values})", self.schema);
         let _ = conn.execute(&statement, &[]).await?;
-        let _ = CHANNEL
-            .tx
-            .lock()
-            .await
-            .send(json!({ "index": index, "op": "create", "item": item }).to_string());
+        let _ = messaging::internal::send(
+            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+        )
+        .await;
         Ok(id)
     }
 
@@ -188,15 +200,39 @@ impl Persistence for PostgreSQLClient {
         let conn = self.client.get().await?;
         let values = parse_filter(&Some(serde_json::to_value(item)?), true).join(", ");
         let statement = format!(
-            "update {}.{} set {} where id = '{}'",
-            self.schema, index, values, id
+            "update {}.{index} set {values} where id = '{id}'",
+            self.schema
         );
         let _ = conn.execute(&statement, &[]).await?;
-        let _ = CHANNEL.tx.lock().await.send(
-            json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
+        let _ = messaging::internal::send(
+            &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
                 .to_string(),
-        );
+        )
+        .await;
         Ok(id.to_string())
+    }
+
+    async fn append(&self, index: &str, id: &str, entry: &str) -> Result<u64, RustyError> {
+        let conn = self.client.get().await?;
+        let statement = format!(
+            "select exists (select 1 from {}.{index} where id = '{id}')",
+            self.schema,
+        );
+        let entry: Value = serde_json::from_str(&format!("[{entry}]"))?;
+        if conn.query_one(&statement, &[]).await?.get(0) {
+            let statement = format!(
+                "update {}.{index} set entries = entries || $1::jsonb where id = $2",
+                self.schema,
+            );
+            let _ = conn.execute(&statement, &[&entry, &id]).await?;
+        } else {
+            let statement = format!(
+                "insert into {}.{index} (id, entries) values ($1, $2::jsonb)",
+                self.schema,
+            );
+            let _ = conn.execute(&statement, &[&id, &entry]).await?;
+        }
+        Ok(1)
     }
 
     async fn delete_one<T: RustyDomainItem>(
@@ -277,16 +313,19 @@ fn parse_row(row: &Row) -> Value {
         let column_name = column.name().to_string();
         let entry = match column.type_() {
             // add other types
+            &Type::INT4 => Value::Number(row.get::<&str, i32>(&column_name).into()),
             &Type::VARCHAR | &Type::TEXT => row
                 .get::<&str, Option<String>>(&column_name)
                 .map_or_else(|| Value::Null, Value::String),
-            &Type::INT4 => Value::Number(row.get::<&str, i32>(&column_name).into()),
             &Type::VARCHAR_ARRAY | &Type::TEXT_ARRAY => row
                 .get::<&str, Option<Vec<String>>>(&column_name)
                 .map_or_else(
                     || Value::Null,
                     |value_vec| Value::Array(value_vec.into_iter().map(Value::String).collect()),
                 ),
+            &Type::JSONB => row
+                .get::<&str, Option<Value>>(&column_name)
+                .unwrap_or(Value::Null),
             &_ => Value::Null,
         };
         value.insert(column_name.clone(), entry);

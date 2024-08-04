@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::time::Instant;
 
 use futures_util::future::try_join_all;
+use serde_json::json;
 use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
 use tokio::process::Command;
 use tokio::spawn;
@@ -9,13 +10,21 @@ use tokio::spawn;
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
 use domain::templates::pipeline::{PipelineTemplate, Script, Stage};
+use messaging::mq_client::MqClient;
 
 use crate::api::jobs::get_pipeline_template;
 use crate::api::pipelines::finalize;
 use crate::api::projects::get_pipeline_project;
+use crate::messaging::get_messaging;
 
 pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     log::debug!("running pipeline {}", pipeline.id);
+
+    let messaging = get_messaging().await?.lock().await;
+    let _ = messaging
+        .create_queue(&format!("pipeline-logs-{}", pipeline.id))
+        .await;
+
     let (project_id, template) = get_pipeline_template(&pipeline.job_id).await?;
     let (default_branch, repo_url) = get_pipeline_project(&project_id).await?;
     let branch = if pipeline.branch.is_empty() {
@@ -27,16 +36,26 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
 
     let working_directory = format!("/tmp/rusty/{}", uuid::Uuid::new_v4());
     std::fs::create_dir_all(&working_directory)?;
-    clone_repository(&working_directory, uuid, &pipeline.id, &repo_url, &branch).await?;
+    clone_repository(
+        &working_directory,
+        uuid,
+        &pipeline.id,
+        &repo_url,
+        &branch,
+        &messaging,
+    )
+    .await?;
     let project_directory = format!("{working_directory}/{}", &pipeline.id);
 
     execute_stage(
+        &messaging,
         &project_directory,
         &working_directory,
         &pipeline.id,
         uuid,
         &template.before,
         &prepare_env(&template, &None),
+        "rusty-before",
     )
     .await?;
 
@@ -50,6 +69,7 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
             let project_directory = project_directory.to_string();
             let working_directory = working_directory.to_string();
             let pipeline = pipeline.clone();
+            let messaging = messaging.clone();
 
             let task = spawn(async move {
                 let start = Instant::now();
@@ -57,12 +77,14 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
                 log::debug!("running stage: {name}");
                 // if image: run in docker
                 if let Err(err) = execute_stage(
+                    &messaging,
                     &project_directory,
                     &working_directory,
                     &pipeline.id,
                     &uuid,
                     &Some(Script::new(&stage.script)),
                     &prepare_env(&template, &Some(stage.clone())),
+                    name,
                 )
                 .await
                 {
@@ -81,19 +103,22 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     }
 
     execute_stage(
+        &messaging,
         &project_directory,
         &working_directory,
         &pipeline.id,
         uuid,
         &template.after,
         &prepare_env(&template, &None),
+        "rusty-after",
     )
     .await?;
 
     cleanup(
+        &messaging,
         &working_directory,
-        &pipeline.id,
         uuid,
+        &pipeline.id,
         PipelineStatus::Success,
     )
     .await;
@@ -101,28 +126,40 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn execute_stage(
+    messaging: &MqClient,
     project_directory: &str,
     working_directory: &str,
     pipeline_id: &str,
     uuid: &str,
     script: &Option<Script>,
     env: &HashMap<String, String>,
+    name: &str,
 ) -> Result<(), RustyError> {
     if let Some(script) = &script {
         for command in &script.script {
-            if let Err(err) = run_bash_command(project_directory, command, env).await {
+            if let Err(err) = run_bash_command(
+                project_directory,
+                command,
+                env,
+                messaging,
+                pipeline_id,
+                name,
+            )
+            .await
+            {
                 log::error!("Error in pipeline {}: {}", pipeline_id, err);
                 cleanup(
+                    messaging,
                     working_directory,
-                    pipeline_id,
                     uuid,
+                    pipeline_id,
                     PipelineStatus::Failure,
                 )
                 .await;
                 return Err(RustyError::IoError(format!(
-                    "`before` stage failed for pipeline `{}`",
-                    pipeline_id
+                    "`{name}` stage failed for pipeline `{pipeline_id}`"
                 )));
             }
         }
@@ -152,6 +189,9 @@ async fn run_bash_command(
     dir: &str,
     command: &str,
     env: &HashMap<String, String>,
+    messaging: &MqClient,
+    pipeline_id: &str,
+    stage: &str,
 ) -> Result<(), RustyError> {
     let mut process = Command::new("sh")
         .current_dir(dir)
@@ -164,14 +204,19 @@ async fn run_bash_command(
         .spawn()?;
 
     let stdout = process.stdout.take().unwrap();
-
+    let mq_out = messaging.clone();
+    let id_out = pipeline_id.to_string();
+    let stage_out = stage.to_string();
     let stdout_handle = spawn(async move {
-        print_line(stdout).await;
+        print_line(stdout, &mq_out, &id_out, &stage_out).await;
     });
 
     let stderr = process.stderr.take().unwrap();
+    let mq_err = messaging.clone();
+    let id_err = pipeline_id.to_string();
+    let stage_err = stage.to_string();
     let stderr_handle = spawn(async move {
-        print_line(stderr).await;
+        print_line(stderr, &mq_err, &id_err, &stage_err).await;
     });
 
     let status = process.wait().await?;
@@ -191,33 +236,57 @@ async fn clone_repository(
     pipeline_id: &str,
     repo_url: &str,
     branch: &str,
+    messaging: &MqClient,
 ) -> Result<(), RustyError> {
     log::debug!("cloning repository: {repo_url} -b {branch}");
     if let Err(err) = run_bash_command(
         dir,
         &format!("git clone {repo_url} -b {branch} {pipeline_id}"),
         &HashMap::new(),
+        messaging,
+        pipeline_id,
+        "rusty-before",
     )
     .await
     {
         log::error!("Error in pipeline {}: {}", &pipeline_id, err);
-        cleanup(dir, pipeline_id, uuid, PipelineStatus::Failure).await;
+        cleanup(messaging, dir, uuid, pipeline_id, PipelineStatus::Failure).await;
         Err(err)
     } else {
         Ok(())
     }
 }
 
-async fn cleanup(dir: &str, pipe_id: &str, uuid: &str, status: PipelineStatus) {
+async fn cleanup(
+    messaging: &MqClient,
+    dir: &str,
+    uuid: &str,
+    pipeline_id: &str,
+    status: PipelineStatus,
+) {
     let _ = std::fs::remove_dir_all(dir);
-    let _ = finalize(pipe_id, uuid, status).await;
+    let _ = finalize(pipeline_id, uuid, status).await;
+    let _ = messaging
+        .publish(&format!("pipeline-logs-{pipeline_id}"), "EOF")
+        .await;
 }
 
-async fn print_line(writer: impl AsyncRead + Unpin + Send) {
+async fn print_line(
+    writer: impl AsyncRead + Unpin + Send,
+    messaging: &MqClient,
+    pipeline_id: &str,
+    stage: &str,
+) {
     let reader = BufReader::new(writer);
     let mut lines = reader.lines();
 
     while let Some(line) = lines.next_line().await.unwrap() {
-        eprintln!("{line}");
+        let _ = messaging
+            .publish(
+                &format!("pipeline-logs-{pipeline_id}"),
+                &json!({ "stage": stage, "line": line }).to_string(),
+            )
+            .await;
+        log::debug!("{line}");
     }
 }

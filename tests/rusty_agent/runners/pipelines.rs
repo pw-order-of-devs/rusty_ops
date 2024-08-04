@@ -7,6 +7,7 @@ use crate::utils::mockito_start_server;
 
 #[tokio::test]
 async fn execute_test() {
+    std::env::set_var("RUSTY_MESSAGING", "rabbit");
     let pipeline = Pipeline::from(&RegisterPipeline {
         job_id: "dummy".to_string(),
         branch: Some("master".to_string()),
