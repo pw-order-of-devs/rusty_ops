@@ -1,3 +1,4 @@
+use serde_json::json;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
@@ -98,6 +99,29 @@ async fn delete_by_id_test() {
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert_eq!(1, result.unwrap());
+}
+
+#[tokio::test]
+async fn delete_many_test() {
+    let db = Redis
+        .start()
+        .await
+        .expect("initializing test container failed");
+    let db_client = db_connect(&db, "redis", 6379).await;
+    let id = shared::create_project_group(&db_client).await;
+    let _ = shared::create_project_in_group(&db_client, &id).await;
+    let _ = shared::create_project_in_group(&db_client, &id).await;
+    let _ = shared::create_project_in_group(&db_client, &id).await;
+
+    let result = service::delete_many(
+        &db_client,
+        &Credential::System,
+        &json!({ "group_id": { "equals": &id } }),
+    )
+    .await;
+    let _ = db.stop().await;
+    assert!(result.is_ok());
+    assert_eq!(3, result.unwrap());
 }
 
 #[tokio::test]

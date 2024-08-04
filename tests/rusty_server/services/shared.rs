@@ -38,6 +38,24 @@ pub(crate) async fn create_project(db_client: &DbClient) -> String {
         .unwrap()
 }
 
+pub(crate) async fn create_project_in_group(db_client: &DbClient, id: &str) -> String {
+    db_client
+        .create(
+            "projects",
+            &Project {
+                id: uuid::Uuid::new_v4().to_string(),
+                name: "sample".to_string(),
+                url: None,
+                main_branch: "master".to_string(),
+                group_id: Some(id.to_string()),
+            }
+            .to_value()
+            .unwrap(),
+        )
+        .await
+        .unwrap()
+}
+
 pub(crate) async fn create_project_group(db_client: &DbClient) -> String {
     db_client
         .create(

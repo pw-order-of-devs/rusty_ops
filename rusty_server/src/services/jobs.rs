@@ -124,9 +124,30 @@ pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<
     if let Some(job) = get_by_id(db, cred, id, &None, &[]).await? {
         shared::check_project_write_permission(db, cred, &job.project_id).await?;
     }
+    pipelines::delete_many(db, cred, &json!({ "job_id": { "equals": id } })).await?;
     shared::delete_by_id(db, JOBS_INDEX, id).await
 }
 
+pub async fn delete_many(
+    db: &DbClient,
+    cred: &Credential,
+    filter: &Value,
+) -> Result<u64, RustyError> {
+    let jobs = get_all(db, cred, &Some(filter.clone()), &None, &[]).await?;
+    for job in &jobs {
+        delete_by_id(db, cred, &job.id).await?;
+    }
+    Ok(jobs.len() as u64)
+}
+
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
+    for job in get_all(db, &Credential::System, &None, &None, &[]).await? {
+        pipelines::delete_many(
+            db,
+            &Credential::System,
+            &json!({ "job_id": { "equals": job.id } }),
+        )
+        .await?;
+    }
     shared::delete_all(db, JOBS_INDEX).await
 }

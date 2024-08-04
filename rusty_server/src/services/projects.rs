@@ -118,9 +118,30 @@ pub async fn create(
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {
     shared::check_project_write_permission(db, cred, id).await?;
+    jobs::delete_many(db, cred, &json!({ "project_id": { "equals": id } })).await?;
     shared::delete_by_id(db, PROJECTS_INDEX, id).await
 }
 
+pub async fn delete_many(
+    db: &DbClient,
+    cred: &Credential,
+    filter: &Value,
+) -> Result<u64, RustyError> {
+    let projects = get_all(db, cred, &Some(filter.clone()), &None, &[]).await?;
+    for project in &projects {
+        delete_by_id(db, cred, &project.id).await?;
+    }
+    Ok(projects.len() as u64)
+}
+
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
+    for project in get_all(db, &Credential::System, &None, &None, &[]).await? {
+        jobs::delete_many(
+            db,
+            &Credential::System,
+            &json!({ "project_id": { "equals": project.id } }),
+        )
+        .await?;
+    }
     shared::delete_all(db, PROJECTS_INDEX).await
 }
