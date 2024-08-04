@@ -11,6 +11,9 @@ mod commons;
 mod domain;
 
 #[cfg(test)]
+mod messaging;
+
+#[cfg(test)]
 mod persist;
 
 #[cfg(test)]
