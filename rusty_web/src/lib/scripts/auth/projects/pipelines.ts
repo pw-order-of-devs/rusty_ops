@@ -41,3 +41,17 @@ export const registerPipeline = async (jobId: string, branch: string) => {
 		body: JSON.stringify({ jobId, branch })
 	});
 };
+
+export const getPipelineById = async (id: string) => {
+	return await fetch('?/getPipelineById', {
+		method: 'POST',
+		body: JSON.stringify({ id })
+	});
+};
+
+export const getPipelineLogs = async (id: string) => {
+	return await fetch('?/getPipelineLogs', {
+		method: 'POST',
+		body: JSON.stringify({ id })
+	});
+};

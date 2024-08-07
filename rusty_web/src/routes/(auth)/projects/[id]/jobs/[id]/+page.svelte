@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
+	import PipelineCard from 'src/components/auth/projects/PipelineCard.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
 	import type { Pipeline, PipelineSubscription } from '$lib/domain/pipeline';
 	import type { JobData } from '$lib/scripts/auth/projects/data';
@@ -16,7 +17,6 @@
 	import HighlightSvelte, { LineNumbers } from 'svelte-highlight';
 	import yaml from 'svelte-highlight/languages/yaml';
 	import 'svelte-highlight/styles/atom-one-dark.css';
-	import PipelineCard from 'src/components/auth/projects/PipelineCard.svelte';
 
 	let loading = writable(false);
 	let loadingPipelines = writable(false);
@@ -29,10 +29,31 @@
 	let currentPath = '';
 
 	onMount(async () => {
+		currentPath = new URL(window.location.href).pathname;
+		loading.update(() => true);
+		let job = await parseResponse(await getJobById(data['id']));
+		let pipelines = await parseResponse(await getJobPipelines(data['id'], 1));
+		pageData = { job, template: atob(job.template), pipelines };
+		let element = document.getElementsByClassName('job-template')[0].children[0];
+		element.setAttribute('style', 'overflow: auto; height: calc(100vh - 13rem)');
+		loading.update(() => false);
+		subscribe();
+	});
+
+	const pipelinesListScrolled_ = async () => {
+		pageData = await pipelinesListScrolled(
+			scrollablePipelines,
+			loadingPipelines,
+			data['id'],
+			pageData
+		);
+	};
+
+	const subscribe = () => {
 		new WebsocketClient(
 			data.jwtToken,
 			data['id'],
-			"pipelineInserted { id number status branch registerDate startDate endDate jobId }",
+			'pipelineInserted { id number status branch registerDate startDate endDate jobId }',
 			(message: PipelineSubscription) => {
 				if (pageData !== undefined && message.payload.data.pipelineInserted !== undefined) {
 					pageData!.pipelines.entries.unshift(message.payload.data.pipelineInserted);
@@ -43,7 +64,7 @@
 		new WebsocketClient(
 			data.jwtToken,
 			data['id'],
-			"pipelineUpdated { id number status branch registerDate startDate endDate jobId }",
+			'pipelineUpdated { id number status branch registerDate startDate endDate jobId }',
 			(message: PipelineSubscription) => {
 				if (pageData !== undefined && message.payload.data.pipelineUpdated !== undefined) {
 					let pipeline = message.payload.data.pipelineUpdated!;
@@ -52,25 +73,6 @@
 				}
 			}
 		).connect();
-
-		currentPath = new URL(window.location.href).pathname;
-		loading.update(() => true);
-		let job = await parseResponse(await getJobById(data['id']));
-		let pipelines = await parseResponse(await getJobPipelines(data['id'], 1));
-		pageData = { job, template: atob(job.template), pipelines };
-
-		let element = document.getElementsByClassName('job-template')[0].children[0];
-		element.setAttribute('style', 'overflow: auto; height: calc(100vh - 13rem)');
-		loading.update(() => false);
-	});
-
-	const pipelinesListScrolled_ = async () => {
-		pageData = await pipelinesListScrolled(
-			scrollablePipelines,
-			loadingPipelines,
-			data['id'],
-			pageData
-		);
 	};
 
 	const rerunPipeline = async (entry: Pipeline) => {
@@ -89,7 +91,7 @@
 				{pageData?.job?.name}
 			</div>
 			<div class="job-description wrap-text">
-				{pageData?.job?.description ?? "No description"}
+				{pageData?.job?.description ?? 'No description'}
 			</div>
 		</Card>
 	</div>

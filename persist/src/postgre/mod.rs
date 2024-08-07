@@ -178,7 +178,8 @@ impl Persistence for PostgreSQLClient {
         );
         let _ = conn.execute(&statement, &[]).await?;
         let _ = messaging::internal::send(
-            &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? }).to_string(),
+            &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? })
+                .to_string(),
         )
         .await;
         Ok(id.to_string())

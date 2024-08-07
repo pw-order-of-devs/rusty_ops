@@ -54,6 +54,19 @@ impl PipelinesQuery {
         log::debug!("`pipelines::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
+
+    #[auth_macro::authenticate(bearer)]
+    async fn get_logs(
+        &self,
+        ctx: &Context<'_>,
+        id: String,
+    ) -> async_graphql::Result<Vec<String>, RustyError> {
+        log::debug!("handling `pipelines::logs` request");
+        let entry =
+            service::get_logs(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, &id).await?;
+        log::debug!("`pipelines::logs`: fetched logs for id: `{}`", id);
+        Ok(entry)
+    }
 }
 
 pub struct PipelinesMutation;

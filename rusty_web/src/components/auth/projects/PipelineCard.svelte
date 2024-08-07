@@ -1,6 +1,6 @@
 <script lang="ts">
-	import moment from 'moment';
 	import { tooltip } from '$lib/ui/tooltip';
+	import { updateRunTime } from '$lib/utils/pipeline-run-time';
 	import type { Pipeline } from '$lib/domain/pipeline';
 	import Card from 'src/components/auth/Card.svelte';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
@@ -12,47 +12,19 @@
 	export let rerunPipeline: any;
 
 	let executionTime: string = '';
-
 	let interval: number;
 
 	onMount(() => {
-		updateRunTime();
+		executionTime = updateRunTime(entry);
 
 		interval = setInterval(() => {
-			updateRunTime();
+			executionTime = updateRunTime(entry);
 		}, 3000);
 	});
 
 	onDestroy(() => {
 		clearInterval(interval);
 	});
-
-	const updateRunTime = () => {
-		let duration = moment.duration(
-			moment(entry.endDate).valueOf() - moment(entry.startDate).valueOf()
-		);
-		if (duration.isValid()) {
-			executionTime = 'Executed in ';
-			buildRunTime(duration);
-			executionTime += ' @ ' + moment(entry.endDate).fromNow(false);
-		} else {
-			duration = moment.duration(moment.now().valueOf() - moment(entry.startDate).valueOf());
-			if (duration.isValid()) {
-				executionTime = 'Running for ';
-				buildRunTime(duration);
-			} else {
-				executionTime = 'Created ' + moment(entry.registerDate).fromNow();
-			}
-		}
-	};
-
-	const buildRunTime = (duration: moment.Duration) => {
-		if (duration.days() > 0) executionTime += duration.days().toString() + 'd ';
-		if (duration.hours() > 0) executionTime += duration.hours().toString() + 'h ';
-		if (duration.minutes() > 0) executionTime += duration.minutes().toString() + 'd ';
-		if (duration.seconds() > 0) executionTime += duration.seconds().toString() + 's ';
-		executionTime += duration.milliseconds().toString() + 'ms';
-	};
 </script>
 
 <Card classes="pipeline-card-wrapper">

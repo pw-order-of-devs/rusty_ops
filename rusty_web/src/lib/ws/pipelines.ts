@@ -72,5 +72,5 @@ export class WebsocketClient {
 				this.connect();
 			}, 1000);
 		};
-	};
+	}
 }

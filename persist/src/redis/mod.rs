@@ -107,8 +107,7 @@ impl Persistence for RedisClient {
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            conn.set(format!("{index}_{id}"), &item)
-                .await?;
+            conn.set(format!("{index}_{id}"), &item).await?;
             let _ = messaging::internal::send(
                 &json!({ "index": index, "op": "update", "item": item }).to_string(),
             )

@@ -13,6 +13,7 @@ use crate::services::shared::get_username_claim;
 use crate::services::{agents, jobs, projects, shared};
 
 const PIPELINES_INDEX: &str = "pipelines";
+const PIPELINE_LOGS_INDEX: &str = "pipelineLogs";
 
 // query
 
@@ -49,10 +50,9 @@ pub async fn get_by_id(
 ) -> Result<Option<Pipeline>, RustyError> {
     if let Some(pipeline) = shared::get_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await? {
         if let Some(job) = shared::get_by_id::<Job>(db, "jobs", &pipeline.job_id).await? {
-            let username = get_username_claim(cred)?;
             auth::authorize(
                 db,
-                &username,
+                &get_username_claim(cred)?,
                 &format!("PROJECTS:READ:ID[{}]", job.project_id),
             )
             .await?;
@@ -62,6 +62,28 @@ pub async fn get_by_id(
         }
     } else {
         Ok(None)
+    }
+}
+
+pub async fn get_logs(
+    db: &DbClient,
+    cred: &Credential,
+    id: &str,
+) -> Result<Vec<String>, RustyError> {
+    if let Some(pipeline) = shared::get_by_id::<Pipeline>(db, PIPELINES_INDEX, id).await? {
+        if let Some(job) = shared::get_by_id::<Job>(db, "jobs", &pipeline.job_id).await? {
+            auth::authorize(
+                db,
+                &get_username_claim(cred)?,
+                &format!("PROJECTS:READ:ID[{}]", job.project_id),
+            )
+            .await?;
+            db.get_list(PIPELINE_LOGS_INDEX, id).await
+        } else {
+            Ok(vec![])
+        }
+    } else {
+        Ok(vec![])
     }
 }
 

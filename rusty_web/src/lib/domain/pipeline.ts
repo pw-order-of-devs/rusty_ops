@@ -22,7 +22,7 @@ export interface PipelineSubscription {
 		data: {
 			pipelineInserted: Pipeline | undefined;
 			pipelineUpdated: Pipeline | undefined;
-			pipelineLogs: String | undefined;
+			pipelineLogs: string | undefined;
 		};
 	};
 }

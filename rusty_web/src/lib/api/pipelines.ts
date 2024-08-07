@@ -99,3 +99,87 @@ export const registerPipeline = async (auth: string, jobId: string, branch: stri
 		};
 	}
 };
+
+const getPipelineByIdQuery = (id: string) => {
+	return `query {
+		pipelines {
+			getById(id: "${id}"){
+        id
+        number
+        branch
+        status
+        registerDate
+        startDate
+        endDate
+        jobId
+        agentId
+			}
+		}
+	}`;
+};
+
+export const getPipelineById = async (auth: string, id: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: getPipelineByIdQuery(id) }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Get pipeline by id failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.pipelines?.getById;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Get pipeline by id failed']
+		};
+	}
+};
+
+const getPipelineByLogsQuery = (id: string) => {
+	return `query { pipelines { getLogs(id: "${id}") } }`;
+};
+
+export const getPipelineLogs = async (auth: string, id: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: getPipelineByLogsQuery(id) }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Get pipeline logs failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.pipelines?.getLogs
+					.map((value: string) => JSON.parse(value))
+					.reduce((rv: any, x: any) => {
+						let key = x['stage'];
+						if (key == 'rusty-before') {
+							key = 'before';
+						}
+						if (key == 'rusty-after') {
+							key = 'after';
+						}
+						(rv[key] = rv[key] || []).push(x);
+						return rv;
+					}, {});
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Get pipeline logs failed']
+		};
+	}
+};

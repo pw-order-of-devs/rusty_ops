@@ -31,3 +31,9 @@ export interface JobData {
 		entries: Pipeline[];
 	};
 }
+
+export interface PipelineData {
+	pipeline: Pipeline;
+	template: any;
+	logs: any;
+}
