@@ -1,7 +1,7 @@
 use rstest::rstest;
 use testcontainers::runners::AsyncRunner;
 use testcontainers::Image;
-use testcontainers_modules::{rabbitmq::RabbitMq};
+use testcontainers_modules::rabbitmq::RabbitMq;
 
 use crate::utils::mq_connect;
 
@@ -89,6 +89,9 @@ async fn get_consumer_test<I: Image + Default>(
     let message = result.unwrap().next().await;
     assert!(message.is_some());
     assert!(message.clone().unwrap().is_ok());
-    assert_eq!("test_message", String::from_utf8(message.unwrap().unwrap()).unwrap());
+    assert_eq!(
+        "test_message",
+        String::from_utf8(message.unwrap().unwrap()).unwrap()
+    );
     let _ = mq.stop().await;
 }

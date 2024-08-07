@@ -185,6 +185,7 @@ async fn yield_pipeline(extras: ExtraWSData, op: &str) -> impl Stream<Item = Pip
                 let operation = message.get("op").unwrap_or(&Value::Null).as_str().unwrap_or_default();
                 let item = message.get("item").unwrap_or(&Value::Null).as_str().unwrap_or_default();
                 if index == "pipelines" && operation == op {
+                    println!("{:?}", item);
                     if let Ok(pipeline) = serde_json::from_str::<Pipeline>(item) {
                         if extras.job_id.is_none() || extras.clone().job_id.unwrap() == pipeline.job_id {
                             yield pipeline;

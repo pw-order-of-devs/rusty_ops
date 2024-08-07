@@ -90,10 +90,9 @@ impl Persistence for RedisClient {
     }
 
     async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
-        let id = get_value_id(item);
+        let (id, item) = (get_value_id(item), serde_json::to_string(item)?);
         let mut conn = self.client.get().await?;
-        conn.set(format!("{index}_{id}"), &serde_json::to_string(item)?)
-            .await?;
+        conn.set(format!("{index}_{id}"), &item).await?;
         let _ = messaging::internal::send(
             &json!({ "index": index, "op": "create", "item": item }).to_string(),
         )
@@ -102,12 +101,13 @@ impl Persistence for RedisClient {
     }
 
     async fn update(&self, index: &str, id: &str, item: &Value) -> Result<String, RustyError> {
+        let item = serde_json::to_string(item)?;
         let mut conn = self.client.get().await?;
         let found = self
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            conn.set(format!("{index}_{id}"), &serde_json::to_string(item)?)
+            conn.set(format!("{index}_{id}"), &item)
                 .await?;
             let _ = messaging::internal::send(
                 &json!({ "index": index, "op": "update", "item": item }).to_string(),

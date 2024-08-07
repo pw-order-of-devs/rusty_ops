@@ -10,7 +10,7 @@
 		registerPipeline
 	} from '$lib/scripts/auth/projects/pipelines';
 	import { parseResponse } from '$lib/scripts/utils/parse';
-	import { subscribe } from '$lib/ws/pipelines';
+	import { WebsocketClient } from '$lib/ws/pipelines';
 	import { writable } from 'svelte/store';
 	import { onMount } from 'svelte';
 	import HighlightSvelte, { LineNumbers } from 'svelte-highlight';
@@ -29,7 +29,7 @@
 	let currentPath = '';
 
 	onMount(async () => {
-		subscribe(
+		new WebsocketClient(
 			data.jwtToken,
 			data['id'],
 			"pipelineInserted { id number status branch registerDate startDate endDate jobId }",
@@ -37,23 +37,10 @@
 				if (pageData !== undefined && message.payload.data.pipelineInserted !== undefined) {
 					pageData!.pipelines.entries.unshift(message.payload.data.pipelineInserted);
 					pageData = pageData;
-
-					subscribe(
-						data.jwtToken,
-						message.payload.data.pipelineInserted.id,
-						"pipelineLogs",
-						(message: PipelineSubscription) => {
-							console.log(message)
-							if (pageData !== undefined && message.payload.data.pipelineLogs !== undefined) {
-								console.log(message.payload.data.pipelineLogs)
-							}
-						}
-					);
 				}
 			}
-		);
-
-		subscribe(
+		).connect();
+		new WebsocketClient(
 			data.jwtToken,
 			data['id'],
 			"pipelineUpdated { id number status branch registerDate startDate endDate jobId }",
@@ -64,7 +51,7 @@
 					pageData!.pipelines.entries[index] = pipeline;
 				}
 			}
-		);
+		).connect();
 
 		currentPath = new URL(window.location.href).pathname;
 		loading.update(() => true);

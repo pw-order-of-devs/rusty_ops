@@ -121,7 +121,8 @@ impl Persistence for MongoDBClient {
             .await
             .map_err(|err| RustyError::MongoDBError(err.kind.to_string()))?;
         let _ = messaging::internal::send(
-            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+            &json!({ "index": index, "op": "create", "item": serde_json::to_string(item)? })
+                .to_string(),
         )
         .await;
         Ok(get_value_id(item))

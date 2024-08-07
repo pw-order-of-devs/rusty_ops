@@ -10,7 +10,7 @@ use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 use crate::services::shared::get_username_claim;
-use crate::services::{agents, jobs, shared};
+use crate::services::{agents, jobs, projects, shared};
 
 const PIPELINES_INDEX: &str = "pipelines";
 
@@ -73,21 +73,28 @@ pub async fn create(
     pipeline: RegisterPipeline,
 ) -> Result<String, RustyError> {
     if let Some(job) = jobs::get_by_id(db, cred, &pipeline.job_id, &None, &[]).await? {
-        shared::check_project_write_permission(db, cred, &job.project_id).await?;
-        let pipelines_count = get_all(
-            db,
-            cred,
-            &Some(json!({ "job_id": { "equals": pipeline.job_id } })),
-            &None,
-        )
-        .await?
-        .len() as u64;
+        if let Some(project) = projects::get_by_id(db, cred, &job.project_id, &None, &[]).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            let pipelines_count = get_all(
+                db,
+                cred,
+                &Some(json!({ "job_id": { "equals": pipeline.job_id } })),
+                &None,
+            )
+            .await?
+            .len() as u64;
 
-        let register = pipeline.clone();
-        let mut pipeline = Pipeline::from(&pipeline);
-        pipeline.number = pipelines_count + 1;
-        pipeline.register_date = chrono::Utc::now().to_rfc3339();
-        shared::create(db, PIPELINES_INDEX, register, |_| pipeline).await
+            let register = pipeline.clone();
+            let mut pipeline = Pipeline::from(&pipeline);
+            pipeline.number = pipelines_count + 1;
+            pipeline.register_date = chrono::Utc::now().to_rfc3339();
+            if pipeline.branch.is_empty() {
+                pipeline.branch = project.main_branch;
+            }
+            shared::create(db, PIPELINES_INDEX, register, |_| pipeline).await
+        } else {
+            Err(RustyError::ValidationError("project not found".to_string()))
+        }
     } else {
         Err(RustyError::ValidationError("job not found".to_string()))
     }

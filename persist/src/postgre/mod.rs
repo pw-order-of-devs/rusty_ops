@@ -162,7 +162,8 @@ impl Persistence for PostgreSQLClient {
         let statement = format!("insert into {}.{index} values ({values})", self.schema);
         let _ = conn.execute(&statement, &[]).await?;
         let _ = messaging::internal::send(
-            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+            &json!({ "index": index, "op": "create", "item": serde_json::to_string(item)? })
+                .to_string(),
         )
         .await;
         Ok(get_value_id(item))
@@ -177,7 +178,7 @@ impl Persistence for PostgreSQLClient {
         );
         let _ = conn.execute(&statement, &[]).await?;
         let _ = messaging::internal::send(
-            &json!({ "index": index, "op": "update", "item": item }).to_string(),
+            &json!({ "index": index, "op": "update", "item": serde_json::to_string(item)? }).to_string(),
         )
         .await;
         Ok(id.to_string())

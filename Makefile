@@ -10,7 +10,10 @@ audit:
 	cargo audit
 
 build:
-	cargo build
+	cargo build --all-features
+
+check:
+	cargo check --all-features
 
 release:
 	cargo build --release --all-features

@@ -94,7 +94,8 @@ impl Persistence for InMemoryClient {
                 .insert(id.clone(), item.clone());
         }
         let _ = messaging::internal::send(
-            &json!({ "index": index, "op": "create", "item": item }).to_string(),
+            &json!({ "index": index, "op": "create", "item": serde_json::to_string(item)? })
+                .to_string(),
         )
         .await;
         Ok(id)
