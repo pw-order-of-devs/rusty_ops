@@ -28,7 +28,9 @@
 		<div class="job-card-meta">
 			<div>
 				<div class="wrap-text">{entry.name}</div>
-				<div>@ {moment(entry.pipelines?.[0].registerDate ?? '').fromNow()}</div>
+				{#if (entry.pipelines ?? []).length > 0}
+					<div>@ {moment(entry.pipelines?.[0].registerDate ?? '').fromNow()}</div>
+				{/if}
 			</div>
 			<div>
 				<a

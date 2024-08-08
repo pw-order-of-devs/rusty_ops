@@ -35,6 +35,7 @@
 		loading.update(() => true);
 		let groups = await parseResponse(await fetchGroups('', 1));
 		let projects = await parseResponse(await fetchProjects('', '', 1));
+		console.log(projects);
 		pageData = { groups, projects };
 		loading.update(() => false);
 	});

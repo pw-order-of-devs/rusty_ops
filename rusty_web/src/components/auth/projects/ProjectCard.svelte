@@ -16,22 +16,26 @@
 	<div class="project-card">
 		<div class="project-name">{entry.name}</div>
 		<div class="project-card-bottom-row">
-			<div class="project-last-pipeline">
-				<div class="project-last-pipeline-status">
-					<div>#{entry.lastPipeline?.number ?? '0'}</div>
-					<div
-						class="circle circle-{status}"
-						use:tooltip={{
-							content: status,
-							placement: 'bottom'
-						}}
-					/>
+			{#if entry.lastPipeline !== undefined}
+				<div class="project-last-pipeline">
+					<div class="project-last-pipeline-status">
+						<div>#{entry.lastPipeline?.number ?? '0'}</div>
+						<div
+							class="circle circle-{status}"
+							use:tooltip={{
+								content: status,
+								placement: 'bottom'
+							}}
+						/>
+					</div>
+					<div class="project-last-pipeline-build">
+						<div>{entry.lastPipeline?.jobName ?? ''}</div>
+						<div>@ {moment(entry.lastPipeline?.registerDate ?? '').fromNow()}</div>
+					</div>
 				</div>
-				<div class="project-last-pipeline-build">
-					<div>{entry.lastPipeline?.jobName ?? ''}</div>
-					<div>@ {moment(entry.lastPipeline?.registerDate ?? '').fromNow()}</div>
-				</div>
-			</div>
+			{:else}
+				<div />
+			{/if}
 			<div class="project-buttons">
 				<a
 					href={entry.url}
