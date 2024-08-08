@@ -127,6 +127,29 @@ impl PipelinesMutation {
     }
 
     #[auth_macro::authenticate(bearer)]
+    async fn update_stage(
+        &self,
+        ctx: &Context<'_>,
+        pipeline_id: String,
+        agent_id: String,
+        stage: String,
+        status: PipelineStatus,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `pipelines::updateStage` request");
+        let id = service::update_stage(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &pipeline_id,
+            &agent_id,
+            &stage,
+            status,
+        )
+        .await?;
+        log::debug!("`pipelines::updateStage`: updated pipeline stage `{stage}` with id `{id}` as `{status:?}`");
+        Ok(id)
+    }
+
+    #[auth_macro::authenticate(bearer)]
     async fn finalize(
         &self,
         ctx: &Context<'_>,
@@ -198,7 +221,6 @@ async fn yield_pipeline(extras: ExtraWSData, op: &str) -> impl Stream<Item = Pip
                 let operation = message.get("op").unwrap_or(&Value::Null).as_str().unwrap_or_default();
                 let item = message.get("item").unwrap_or(&Value::Null).as_str().unwrap_or_default();
                 if index == "pipelines" && operation == op {
-                    println!("{:?}", item);
                     if let Ok(pipeline) = serde_json::from_str::<Pipeline>(item) {
                         if extras.job_id.is_none() || extras.clone().job_id.unwrap() == pipeline.job_id {
                             yield pipeline;

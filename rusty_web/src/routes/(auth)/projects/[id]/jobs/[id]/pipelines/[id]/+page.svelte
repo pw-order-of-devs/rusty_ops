@@ -23,6 +23,7 @@
 	let logsStage = 'all';
 	let previewLogs: string[] = [];
 	let stages: string[] = [];
+	let stageStatus: Record<string, any> = {};
 
 	export let data;
 
@@ -34,6 +35,7 @@
 		pageData = { pipeline, template: yaml.load(templateStr), logs };
 
 		buildStagesList();
+		updateStageStatus();
 		updatePreviewLogs();
 		subscribe();
 		loading.update(() => false);
@@ -47,6 +49,18 @@
 	onDestroy(() => {
 		clearInterval(interval);
 	});
+
+	const updateStageStatus = () => {
+		let statuses: Record<string, any> = pageData?.pipeline?.stageStatus ?? {};
+		Object.keys(statuses).forEach((item: any) => {
+			let status = statuses[item];
+			let stage = item;
+			if (item == 'rusty-before') stage = 'before';
+			if (item == 'rusty-after') stage = 'after';
+			stageStatus[stage] = status;
+		});
+		stageStatus['all'] = pageData?.pipeline?.status ?? 'UNDEFINED';
+	};
 
 	const updatePreviewLogs = () => {
 		if (logsStage === 'all') {
@@ -76,11 +90,12 @@
 		new WebsocketClient(
 			data.jwtToken,
 			pageData!.pipeline.jobId,
-			'pipelineUpdated { id number status branch registerDate startDate endDate jobId agentId }',
+			'pipelineUpdated { id number stageStatus status branch registerDate startDate endDate jobId agentId }',
 			(message: PipelineSubscription) => {
 				if (pageData !== undefined && message.payload.data.pipelineUpdated !== undefined) {
 					if (message.payload.data.pipelineUpdated.id === data['id']) {
 						pageData!.pipeline = message.payload.data.pipelineUpdated;
+						updateStageStatus();
 					}
 				}
 			}
@@ -93,15 +108,9 @@
 				if (pageData !== undefined && message.payload.data.pipelineLogs !== undefined) {
 					const logEntry = JSON.parse(message.payload.data.pipelineLogs);
 					let stage = logEntry['stage'];
-					if (stage == 'rusty-before') {
-						stage = 'before';
-					}
-					if (stage == 'rusty-after') {
-						stage = 'after';
-					}
-					if (!Object.keys(pageData!.logs).includes(stage)) {
-						pageData!.logs[stage] = [];
-					}
+					if (stage == 'rusty-before') stage = 'before';
+					if (stage == 'rusty-after') stage = 'after';
+					if (!Object.keys(pageData!.logs).includes(stage)) pageData!.logs[stage] = [];
 					pageData!.logs[stage].push(logEntry);
 					updatePreviewLogs();
 				}
@@ -136,14 +145,22 @@
 				<div class="tabs">
 					{#each stages as entry, index (entry)}
 						<div
-							class="wrap-text"
+							class="stage"
 							class:selected={logsStage === entry}
 							on:click={() => updateLogsStage(entry)}
 							on:keydown={() => updateLogsStage(entry)}
 							role="tab"
 							tabindex={index}
 						>
-							{entry}
+							<div
+								use:tooltip={{
+									content: (stageStatus?.[entry] ?? 'UNDEFINED').toLowerCase(),
+									placement: 'bottom'
+								}}
+								class="circle circle-{(stageStatus?.[entry] ?? 'UNDEFINED').toLowerCase()}"
+							/>
+							<div class="wrap-text">{entry}</div>
+							<div />
 						</div>
 					{/each}
 				</div>

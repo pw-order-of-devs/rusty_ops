@@ -1,8 +1,9 @@
+use std::time::Duration;
+
 use bb8_postgres::bb8::Pool;
 use bb8_postgres::tokio_postgres::{types::Type, NoTls, Row};
 use bb8_postgres::PostgresConnectionManager;
 use serde_json::{json, Map, Value};
-use std::time::Duration;
 
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;

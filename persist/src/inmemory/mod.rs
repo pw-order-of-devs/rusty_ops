@@ -1,10 +1,11 @@
-use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 use std::task::{Context, Poll};
+
+use serde_json::{json, Value};
 
 use commons::errors::RustyError;
 use domain::commons::search::SearchOptions;

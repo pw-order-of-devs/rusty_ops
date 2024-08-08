@@ -225,6 +225,36 @@ pub async fn set_running(
     }
 }
 
+pub async fn update_stage(
+    db: &DbClient,
+    cred: &Credential,
+    pipeline_id: &str,
+    agent_id: &str,
+    stage: &str,
+    status: PipelineStatus,
+) -> Result<String, RustyError> {
+    if let Some(mut pipe) = get_by_id(db, cred, pipeline_id).await? {
+        if let Some(job) = jobs::get_by_id(db, cred, &pipe.job_id, &None, &[]).await? {
+            shared::check_project_write_permission(db, cred, &job.project_id).await?;
+            if pipe.clone().agent_id.unwrap_or_else(String::new) == agent_id {
+                *pipe.stage_status.entry(stage.to_string()).or_insert(status) = status;
+                db.update(PIPELINES_INDEX, pipeline_id, &pipe.to_value()?)
+                    .await
+            } else {
+                let message = "`pipelines::updateStage` - cannot update".to_string();
+                log::debug!("{message}");
+                Err(RustyError::AsyncGraphqlError(message))
+            }
+        } else {
+            Err(RustyError::UnauthorizedError)
+        }
+    } else {
+        let message = "`pipelines::updateStage` - pipeline not found".to_string();
+        log::debug!("{message}");
+        Err(RustyError::AsyncGraphqlError(message))
+    }
+}
+
 pub async fn finalize(
     db: &DbClient,
     cred: &Credential,

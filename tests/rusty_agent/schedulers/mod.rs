@@ -1,5 +1,6 @@
-use mockito::{Mock, ServerGuard};
 use std::time::Duration;
+
+use mockito::{Mock, ServerGuard};
 use tokio::time::timeout;
 
 use rusty_agent::api::JWT_TOKEN;

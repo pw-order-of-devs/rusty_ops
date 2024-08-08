@@ -1,6 +1,7 @@
+use std::collections::HashMap;
+
 use async_graphql::indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 
 use commons::errors::RustyError;
 

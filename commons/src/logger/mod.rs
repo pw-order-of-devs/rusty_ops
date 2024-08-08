@@ -43,6 +43,7 @@ fn default_logger() {
     let config = Config::builder()
         .appender(Appender::builder().build("stdout", Box::new(stdout)))
         .logger(Logger::builder().build("hyper_util", LevelFilter::Off))
+        .logger(Logger::builder().build("lapin", LevelFilter::Off))
         .logger(Logger::builder().build("reqwest", LevelFilter::Off))
         .logger(Logger::builder().build("tokio_postgres", LevelFilter::Off))
         .build(Root::builder().appender("stdout").build(level_filter))

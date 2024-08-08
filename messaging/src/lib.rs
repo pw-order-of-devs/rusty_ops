@@ -16,8 +16,9 @@
 #![allow(clippy::similar_names)]
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
-use commons::errors::RustyError;
 use std::future::Future;
+
+use commons::errors::RustyError;
 
 use crate::mq_client::MqClient;
 use crate::mq_consumer::MqConsumer;

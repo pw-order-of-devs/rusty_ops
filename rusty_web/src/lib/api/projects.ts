@@ -23,6 +23,7 @@ const getProjectsQuery = (page: number, group: string, name: string) => {
 							id
 							number
 							status
+							stageStatus
 							registerDate
 						}
 					}

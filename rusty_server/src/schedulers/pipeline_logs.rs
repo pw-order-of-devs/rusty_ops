@@ -1,12 +1,14 @@
+use std::time::Duration;
+
+use serde_json::{json, Value};
+use tokio::time::sleep;
+
 use commons::env::var_or_default;
 use commons::errors::RustyError;
 use domain::pipelines::{Pipeline, PipelineStatus};
 use messaging::mq_client::MqClient;
 use messaging::mq_consumer::MqConsumer;
 use persist::db_client::DbClient;
-use serde_json::{json, Value};
-use std::time::Duration;
-use tokio::time::sleep;
 
 pub async fn schedule(db: &DbClient, mq: &mut MqClient) {
     let timer = var_or_default("SCHEDULER_PIPELINES_LOGS", 1);

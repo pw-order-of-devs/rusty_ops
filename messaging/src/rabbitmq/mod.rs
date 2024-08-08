@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use bb8_lapin::lapin::options::{
     BasicConsumeOptions, BasicPublishOptions, QueueDeclareOptions, QueueDeleteOptions,
 };
@@ -7,7 +9,6 @@ use bb8_lapin::{bb8, LapinConnectionManager};
 use commons::env::{var, var_or_default};
 use commons::errors::RustyError;
 use futures_lite::StreamExt;
-use std::time::Duration;
 
 use crate::mq_consumer::MqConsumer;
 use crate::{Consuming, Messaging, MessagingBuilder};
@@ -66,36 +67,57 @@ impl MessagingBuilder for RabbitMQClient {
 impl Messaging for RabbitMQClient {
     async fn create_queue(&self, name: &str) -> Result<(), RustyError> {
         let conn = self.client.get().await?;
-        let channel = conn.create_channel().await?;
-        let _ = channel
-            .queue_declare(name, QueueDeclareOptions::default(), FieldTable::default())
-            .await?;
+        match conn.create_channel().await {
+            Ok(channel) => {
+                if let Err(err) = channel
+                    .queue_declare(name, QueueDeclareOptions::default(), FieldTable::default())
+                    .await
+                {
+                    log::debug!("{err}");
+                }
+            }
+            Err(err) => log::debug!("{err}"),
+        }
 
         Ok(())
     }
 
     async fn delete_queue(&self, name: &str) -> Result<(), RustyError> {
         let conn = self.client.get().await?;
-        let channel = conn.create_channel().await?;
-        let _ = channel
-            .queue_delete(name, QueueDeleteOptions::default())
-            .await?;
+        match conn.create_channel().await {
+            Ok(channel) => {
+                if let Err(err) = channel
+                    .queue_delete(name, QueueDeleteOptions::default())
+                    .await
+                {
+                    log::debug!("{err}");
+                }
+            }
+            Err(err) => log::debug!("{err}"),
+        }
 
         Ok(())
     }
 
     async fn publish(&self, queue: &str, message: &str) -> Result<(), RustyError> {
         let conn = self.client.get().await?;
-        let channel = conn.create_channel().await?;
-        channel
-            .basic_publish(
-                "",
-                queue,
-                BasicPublishOptions::default(),
-                message.as_bytes(),
-                BasicProperties::default(),
-            )
-            .await?;
+        match conn.create_channel().await {
+            Ok(channel) => {
+                if let Err(err) = channel
+                    .basic_publish(
+                        "",
+                        queue,
+                        BasicPublishOptions::default(),
+                        message.as_bytes(),
+                        BasicProperties::default(),
+                    )
+                    .await
+                {
+                    log::debug!("{err}");
+                }
+            }
+            Err(err) => log::debug!("{err}"),
+        }
 
         Ok(())
     }

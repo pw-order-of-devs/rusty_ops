@@ -49,6 +49,7 @@ async fn get_pipeline(filter: &str) -> Result<Pipeline, RustyError> {
                         startDate
                         registerDate
                         status
+						stageStatus
                         jobId
                         agentId
                     }}
@@ -123,6 +124,45 @@ pub async fn set_running(pipeline_id: &str, agent_id: &str) -> Result<String, Ru
     let data = reqwest_post_bearer(&payload).await?;
     let json_data: serde_json::Value = serde_json::from_str(&data)?;
     let json_data = json_data["data"]["pipelines"]["setRunning"].clone();
+    parse_entries(json_data)
+}
+
+/// Function to update pipeline stage status for agent via GraphQL endpoint.
+///
+/// # Errors
+///
+/// This function can generate the following errors:
+///
+/// * `RustyError` - If there was an error during the creation of the item.
+#[allow(clippy::future_not_send)]
+pub async fn update_stage(
+    pipeline_id: &str,
+    agent_id: &str,
+    stage: &str,
+    status: PipelineStatus,
+) -> Result<String, RustyError> {
+    let status = if status == PipelineStatus::InProgress {
+        "IN_PROGRESS"
+    } else {
+        &format!("{status:?}").to_uppercase()
+    };
+    let payload = serde_json::json!({
+        "query": format!(r#"mutation {{
+            pipelines {{
+                updateStage(
+                    pipelineId: "{}",
+                    agentId: "{}",
+                    stage: "{}",
+                    status: {}
+                )
+            }}
+        }}"#, pipeline_id, agent_id, stage, status),
+        "variables": {}
+    });
+
+    let data = reqwest_post_bearer(&payload).await?;
+    let json_data: serde_json::Value = serde_json::from_str(&data)?;
+    let json_data = json_data["data"]["pipelines"]["updateStage"].clone();
     parse_entries(json_data)
 }
 

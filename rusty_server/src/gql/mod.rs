@@ -1,7 +1,8 @@
+use std::sync::Mutex;
+
 use async_graphql::{Object, Schema};
 use commons::env::var_or_default;
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
 
 use persist::db_client::DbClient;
 

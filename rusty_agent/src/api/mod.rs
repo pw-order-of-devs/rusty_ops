@@ -1,6 +1,7 @@
+use std::sync::Mutex;
+
 use base64::Engine;
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
 
 use commons::env::var;
 use commons::errors::RustyError;

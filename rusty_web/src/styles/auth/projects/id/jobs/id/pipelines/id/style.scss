@@ -41,15 +41,18 @@
 			flex-direction: row;
 			align-items: center;
 
-			height: 2rem;
+			height: 3rem;
 			box-shadow: 0 -0.03rem 0 $color-white-2 inset;
 			overflow-x: scroll;
 			overflow-y: hidden;
 
-			div {
+			.stage {
 				display: flex;
-				justify-content: center;
+				justify-content: space-evenly;
+				align-items: center;
+				gap: 1rem;
 				width: 10rem;
+				line-height: 1.8rem;
 				box-sizing: border-box;
 				background: none;
 				border: none;
@@ -71,11 +74,15 @@
 				&.selected {
 					background-color: $color-black-6;
 				}
+
+				div:last-child {
+					width: 1rem;
+				}
 			}
 		}
 
 		.logs {
-			height: calc(100vh - 13.1rem);
+			height: calc(100vh - 14rem);
 			padding: 0.5rem;
 			line-height: 1.4rem;
 			background-color: $color-black-2;

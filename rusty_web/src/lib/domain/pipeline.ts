@@ -9,6 +9,7 @@ export interface LastPipeline {
 export interface Pipeline {
 	id: string;
 	number: number;
+	stageStatus: Map<string, string> | undefined;
 	status: string;
 	branch: string;
 	registerDate: string;

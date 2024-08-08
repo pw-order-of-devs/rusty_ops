@@ -15,6 +15,7 @@ const getJobPipelinesQuery = (page: number, id: string) => {
 					id
 					number
 					status
+					stageStatus
 					branch
 					registerDate
 					startDate
@@ -104,15 +105,16 @@ const getPipelineByIdQuery = (id: string) => {
 	return `query {
 		pipelines {
 			getById(id: "${id}"){
-        id
-        number
-        branch
-        status
-        registerDate
-        startDate
-        endDate
-        jobId
-        agentId
+                id
+                number
+                branch
+                status
+				stageStatus
+                registerDate
+                startDate
+                endDate
+                jobId
+                agentId
 			}
 		}
 	}`;

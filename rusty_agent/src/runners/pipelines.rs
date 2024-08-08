@@ -13,7 +13,7 @@ use domain::templates::pipeline::{PipelineTemplate, Script, Stage};
 use messaging::mq_client::MqClient;
 
 use crate::api::jobs::get_pipeline_template;
-use crate::api::pipelines::finalize;
+use crate::api::pipelines::{finalize, update_stage};
 use crate::api::projects::get_pipeline_project;
 use crate::messaging::get_messaging;
 
@@ -119,6 +119,7 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
         &working_directory,
         uuid,
         &pipeline.id,
+        "rusty-after",
         PipelineStatus::Success,
     )
     .await;
@@ -135,8 +136,10 @@ async fn execute_stage(
     uuid: &str,
     script: &Option<Script>,
     env: &HashMap<String, String>,
-    name: &str,
+    stage_name: &str,
 ) -> Result<(), RustyError> {
+    let _ = update_stage(pipeline_id, uuid, stage_name, PipelineStatus::InProgress).await;
+
     if let Some(script) = &script {
         for command in &script.script {
             if let Err(err) = run_bash_command(
@@ -145,7 +148,7 @@ async fn execute_stage(
                 env,
                 messaging,
                 pipeline_id,
-                name,
+                stage_name,
             )
             .await
             {
@@ -155,16 +158,18 @@ async fn execute_stage(
                     working_directory,
                     uuid,
                     pipeline_id,
+                    stage_name,
                     PipelineStatus::Failure,
                 )
                 .await;
                 return Err(RustyError::IoError(format!(
-                    "`{name}` stage failed for pipeline `{pipeline_id}`"
+                    "`{stage_name}` stage failed for pipeline `{pipeline_id}`"
                 )));
             }
         }
     }
 
+    let _ = update_stage(pipeline_id, uuid, stage_name, PipelineStatus::Success).await;
     Ok(())
 }
 
@@ -250,7 +255,15 @@ async fn clone_repository(
     .await
     {
         log::error!("Error in pipeline {}: {}", &pipeline_id, err);
-        cleanup(messaging, dir, uuid, pipeline_id, PipelineStatus::Failure).await;
+        cleanup(
+            messaging,
+            dir,
+            uuid,
+            pipeline_id,
+            "rusty-before",
+            PipelineStatus::Failure,
+        )
+        .await;
         Err(err)
     } else {
         Ok(())
@@ -262,9 +275,11 @@ async fn cleanup(
     dir: &str,
     uuid: &str,
     pipeline_id: &str,
+    stage_name: &str,
     status: PipelineStatus,
 ) {
     let _ = std::fs::remove_dir_all(dir);
+    let _ = update_stage(pipeline_id, uuid, stage_name, status).await;
     let _ = finalize(pipeline_id, uuid, status).await;
     let _ = messaging
         .publish(&format!("pipeline-logs-{pipeline_id}"), "EOF")

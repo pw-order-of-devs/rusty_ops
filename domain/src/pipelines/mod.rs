@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use async_graphql::{Enum, InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
@@ -47,6 +49,9 @@ pub struct Pipeline {
     pub end_date: Option<String>,
     /// pipeline status
     pub status: PipelineStatus,
+    /// pipeline stages status
+    #[serde(rename(deserialize = "stageStatus", deserialize = "stage_status"))]
+    pub stage_status: HashMap<String, PipelineStatus>,
     /// pipeline job id
     #[serde(rename(deserialize = "jobId", deserialize = "job_id"))]
     pub job_id: String,
@@ -86,6 +91,7 @@ impl From<&RegisterPipeline> for Pipeline {
             start_date: None,
             end_date: None,
             status: PipelineStatus::Defined,
+            stage_status: HashMap::new(),
             job_id: value.clone().job_id,
             agent_id: None,
         }

@@ -1,5 +1,6 @@
-use serde_json::{json, Value};
 use std::cmp::Ordering;
+
+use serde_json::{json, Value};
 
 use commons::errors::RustyError;
 use domain::commons::search::{SearchFilter, SearchOptions, SortOptions};

@@ -1,4 +1,5 @@
 use std::time::Duration;
+
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::rabbitmq::RabbitMq;
 use testcontainers_modules::redis::Redis;
