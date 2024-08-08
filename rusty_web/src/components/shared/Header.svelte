@@ -1,15 +1,36 @@
 <script lang="ts">
+	import moment from 'moment';
 	import { goto } from '$app/navigation';
 	import { toastInfo } from '$lib/ui/toasts';
 	import { deleteTokenCookie } from '$lib/utils/token';
 	import Button from 'src/components/shared/Button.svelte';
 	import { faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
+	import { onDestroy, onMount } from 'svelte';
+
+	export let token = '';
+	$: token = token;
 
 	export let authenticated = false;
 	$: authenticated = authenticated;
 
 	export let isLoginPage = false;
 	$: isLoginPage = isLoginPage;
+
+	let interval: number;
+
+	onMount(() => {
+		interval = setInterval(() => {
+			let payload = token.split('.');
+			if (payload.length >= 2) payload = JSON.parse(atob(payload[1]));
+			const exp = moment(payload['exp'] * 1000).utc();
+			const now = moment().utc();
+			if (exp.isBefore(now)) logout();
+		}, 3000);
+	});
+
+	onDestroy(() => {
+		clearInterval(interval);
+	});
 
 	const logout = () => {
 		deleteTokenCookie();
