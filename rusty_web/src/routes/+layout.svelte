@@ -12,7 +12,7 @@
 	let isLoginPage = false;
 	let visited = false;
 
-	$: token = data.token;
+	$: token = data.token ?? '';
 	$: authenticated = data.authenticated;
 	$: isLoginPage = data.isLoginPage;
 	$: visited = data.visited;

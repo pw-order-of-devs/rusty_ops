@@ -2,30 +2,29 @@
 	import moment from 'moment';
 	import { goto } from '$app/navigation';
 	import { toastInfo } from '$lib/ui/toasts';
-	import { deleteTokenCookie } from '$lib/utils/token';
+	import { deleteTokenCookie, renewToken, setTokenCookie } from '$lib/utils/token';
 	import Button from 'src/components/shared/Button.svelte';
-	import { faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
+	import { faArrowRotateRight, faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
 	import { onDestroy, onMount } from 'svelte';
 
 	export let token = '';
-	$: token = token;
-
 	export let authenticated = false;
-	$: authenticated = authenticated;
-
 	export let isLoginPage = false;
-	$: isLoginPage = isLoginPage;
 
+	let authTimeLeft = Number.MAX_SAFE_INTEGER;
 	let interval: number;
 
 	onMount(() => {
 		interval = setInterval(() => {
-			let payload = token.split('.');
-			if (payload.length >= 2) payload = JSON.parse(atob(payload[1]));
+			let payload = {};
+			let payloadSplit = token.split('.');
+			if (payloadSplit.length >= 2) payload = JSON.parse(atob(payloadSplit[1]));
 			const exp = moment(payload['exp'] * 1000).utc();
 			const now = moment().utc();
-			if (exp.isBefore(now)) logout();
-		}, 3000);
+
+			authTimeLeft = Math.floor(exp.diff(now) / 1000);
+			if (authenticated && exp.isBefore(now)) logout();
+		}, 1000);
 	});
 
 	onDestroy(() => {
@@ -38,17 +37,31 @@
 		goto('/', { replaceState: true, invalidateAll: true });
 		return true;
 	};
+
+	const _renewToken = async () => {
+		const jwt = await renewToken(token);
+		if (jwt !== undefined) {
+			token = jwt;
+			setTokenCookie(jwt);
+		}
+	};
 </script>
 
 <nav class:bottom-line={!isLoginPage}>
 	<div class="app-name">RustyOps</div>
-	{#if !isLoginPage}
-		{#if authenticated}
-			<Button action={logout} icon={faSignOut} label="Log out" flat />
-		{:else}
-			<Button href="/login" icon={faSignIn} label="Log in" flat />
+	<div class="session-control">
+		{#if !isLoginPage}
+			{#if authenticated && authTimeLeft <= 30}
+				<div>Session expires in {authTimeLeft} seconds</div>
+				<Button action={_renewToken} icon={faArrowRotateRight} label="Renew" flat />
+			{/if}
+			{#if authenticated}
+				<Button action={logout} icon={faSignOut} label="Log out" flat />
+			{:else}
+				<Button href="/login" icon={faSignIn} label="Log in" flat />
+			{/if}
 		{/if}
-	{/if}
+	</div>
 </nav>
 
 <style lang="scss">
@@ -64,6 +77,12 @@
 
 		.app-name {
 			font-size: 2.2rem;
+		}
+
+		.session-control {
+			display: flex;
+			flex-direction: row;
+			align-items: center;
 		}
 	}
 
