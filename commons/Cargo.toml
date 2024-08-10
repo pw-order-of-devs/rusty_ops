@@ -16,6 +16,7 @@ name = "commons"
 path = "src/lib.rs"
 
 [features]
+docker = ["bollard"]
 errors = []
 logging = ["log4rs"]
 messaging = ["bb8-lapin"]
@@ -29,6 +30,7 @@ bb8-lapin = { workspace = true, optional = true }
 bb8-postgres = { workspace = true, optional = true }
 bb8-redis = { workspace = true, optional = true }
 bcrypt.workspace = true
+bollard = { workspace = true, optional = true }
 hmac.workspace = true
 jwt.workspace = true
 log.workspace = true

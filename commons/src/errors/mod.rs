@@ -20,6 +20,8 @@ pub enum RustyError {
     AsyncGraphqlError(String),
     /// Convert operation related error
     ConvertError(String),
+    /// Docker related error
+    DockerError(String),
     /// Environment variable error
     EnvVarError(String, String),
     /// Hashing error
@@ -78,6 +80,9 @@ impl Display for RustyError {
             }
             Self::ConvertError(message) => {
                 write!(f, "Convert error: {message}")
+            }
+            Self::DockerError(message) => {
+                write!(f, "Docker error: {message}")
             }
             Self::EnvVarError(key, message) => {
                 write!(f, "Env variable error: {key}: {message}")
@@ -139,6 +144,13 @@ impl From<reqwest::Error> for RustyError {
 impl<T: Send> From<tokio::sync::broadcast::error::SendError<T>> for RustyError {
     fn from(err: tokio::sync::broadcast::error::SendError<T>) -> Self {
         Self::MessagingError(err.to_string())
+    }
+}
+
+#[cfg(feature = "bollard")]
+impl From<bollard::errors::Error> for RustyError {
+    fn from(err: bollard::errors::Error) -> Self {
+        Self::DockerError(err.to_string())
     }
 }
 

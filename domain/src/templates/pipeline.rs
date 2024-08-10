@@ -25,8 +25,6 @@ impl Script {
 /// Pipeline stage
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Stage {
-    /// pipeline stage docker image
-    pub image: Option<String>,
     /// pipeline stage environment variables
     pub env: Option<HashMap<String, String>>,
     /// pipeline stage commands
