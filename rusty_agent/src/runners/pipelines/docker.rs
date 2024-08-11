@@ -66,6 +66,11 @@ pub async fn execute_docker(
             let task = spawn(async move {
                 let start = Instant::now();
                 let (name, stage) = template.stages.iter().find(|(n, _)| leaf == **n).unwrap();
+                let docker_image = if let Some(image) = stage.clone().image {
+                    image
+                } else {
+                    docker_image
+                };
                 log::debug!("running stage: {name}");
 
                 if let Err(err) = execute_stage(

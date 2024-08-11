@@ -26,13 +26,12 @@ pub async fn execute(pipeline: Pipeline, uuid: &str) -> Result<(), RustyError> {
         pipeline.branch.clone()
     };
 
-    match template.image {
-        Some(ref image) => {
-            execute_docker(
-                &messaging, &pipeline, &template, &repo_url, &branch, image, uuid,
-            )
-            .await
-        }
-        None => execute_machine(&messaging, &pipeline, &template, &repo_url, &branch, uuid).await,
+    if let Some(ref image) = template.image {
+        execute_docker(
+            &messaging, &pipeline, &template, &repo_url, &branch, image, uuid,
+        )
+        .await
+    } else {
+        execute_machine(&messaging, &pipeline, &template, &repo_url, &branch, uuid).await
     }
 }
