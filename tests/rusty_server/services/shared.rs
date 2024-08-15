@@ -4,6 +4,7 @@ use domain::pipelines::{Pipeline, PipelineStatus};
 use domain::projects::{Group, Project};
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
+use std::collections::HashMap;
 
 pub(crate) async fn create_agent(db_client: &DbClient) -> String {
     db_client
@@ -100,6 +101,7 @@ pub(crate) async fn create_pipeline(db_client: &DbClient, id: &str) -> String {
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
+                stage_status: HashMap::new(),
                 status: PipelineStatus::Defined,
                 job_id: id.to_string(),
                 agent_id: None,

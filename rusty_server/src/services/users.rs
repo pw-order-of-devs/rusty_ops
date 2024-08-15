@@ -53,24 +53,35 @@ pub async fn create(
     cred: &Credential,
     user: RegisterUser,
 ) -> Result<String, RustyError> {
-    if get_all(
+    let users_by_username = get_all(
         db,
         cred,
         &Some(json!({ "username": { "equals": user.username } })),
         &None,
     )
-    .await?
-    .is_empty()
-    {
+    .await?;
+    let users_by_email = get_all(
+        db,
+        cred,
+        &Some(json!({ "email": { "equals": user.email } })),
+        &None,
+    )
+    .await?;
+
+    if !users_by_username.is_empty() {
+        Err(RustyError::ValidationError(
+            "user already exists - username taken".to_string(),
+        ))
+    } else if !users_by_email.is_empty() {
+        Err(RustyError::ValidationError(
+            "user already exists - email address taken".to_string(),
+        ))
+    } else {
         let user_id = shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await?;
         match roles::assign(db, cred, &user_id, None, Some("USERS")).await {
             Ok(_) => log::info!("added user {user_id} to group `USERS`"),
             Err(err) => log::warn!("error while adding user `{user_id}` to group `USERS`: {err}"),
         };
         Ok(user_id)
-    } else {
-        Err(RustyError::ValidationError(
-            "user already exists".to_string(),
-        ))
     }
 }

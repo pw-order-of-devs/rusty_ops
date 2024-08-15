@@ -60,6 +60,7 @@ async fn mock_server_request_get(server: &mut ServerGuard) -> Mock {
                 "branch": "master",
                 "registerDate": "2024-05-31T11:08:36.556775405+00:00",
                 "status": "DEFINED",
+                "stageStatus": {{}},
                 "jobId": "da30423b-92bb-47f3-9710-28b106c3cb0c"
             }}] }} }} }} }}"#
         ))

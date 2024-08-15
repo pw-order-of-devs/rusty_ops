@@ -21,6 +21,7 @@ async fn get_all_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }
@@ -47,6 +48,7 @@ async fn get_by_id_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }
@@ -75,6 +77,7 @@ async fn get_by_username_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }
@@ -102,6 +105,7 @@ async fn create_test() {
         &db_client,
         &Credential::System,
         RegisterUser {
+            email: "user@test.org".to_string(),
             username: "user".to_string(),
             password: "pass".to_string(),
         },
@@ -136,6 +140,7 @@ async fn create_with_role_test() {
         &db_client,
         &Credential::System,
         RegisterUser {
+            email: "user@test.org".to_string(),
             username: "user".to_string(),
             password: "pass".to_string(),
         },
@@ -157,6 +162,7 @@ async fn create_already_exists_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }
@@ -169,6 +175,7 @@ async fn create_already_exists_test() {
         &db_client,
         &Credential::System,
         RegisterUser {
+            email: "user@test.org".to_string(),
             username: "user".to_string(),
             password: "pass".to_string(),
         },

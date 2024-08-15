@@ -77,11 +77,11 @@ pub async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
             USERS_INDEX,
             &User {
                 id: USER_ID.to_string(),
+                email: "user@test.org".to_string(),
                 username: USER_NAME.to_string(),
-                password: bcrypt::encode(USER_PASS).unwrap(),
+                password: bcrypt::encode(USER_PASS)?,
             }
-            .to_value()
-            .unwrap(),
+            .to_value()?,
         )
         .await
 }

@@ -8,8 +8,9 @@ create table if not exists rusty.versions (
 
 create table if not exists rusty.users (
     id varchar(36) primary key,
-    username varchar(128) unique not null,
-    password varchar(128) not null
+    email varchar(512) unique not null,
+    username varchar(512) unique not null,
+    password varchar(512) not null
 );
 
 create table if not exists rusty.roles (
@@ -71,6 +72,7 @@ create table if not exists rusty.pipelines (
     start_date text,
     end_date text,
     status text not null,
+    stage_status jsonb not null,
     job_id text not null,
     agent_id text,
     constraint fk_pipeline_job

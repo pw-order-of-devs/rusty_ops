@@ -21,6 +21,7 @@ async fn assign_by_id_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }
@@ -59,6 +60,7 @@ async fn assign_by_name_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }
@@ -124,6 +126,7 @@ async fn assign_no_role_test() {
             "users",
             &User {
                 id: "uuid".to_string(),
+                email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
             }

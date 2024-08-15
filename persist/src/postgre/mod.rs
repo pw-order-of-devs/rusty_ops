@@ -161,6 +161,7 @@ impl Persistence for PostgreSQLClient {
         let conn = self.client.get().await?;
         let values = parse_filter(&Some(item.clone()), false).join(", ");
         let statement = format!("insert into {}.{index} values ({values})", self.schema);
+        println!("{statement}");
         let _ = conn.execute(&statement, &[]).await?;
         let _ = messaging::internal::send(
             &json!({ "index": index, "op": "create", "item": serde_json::to_string(item)? })
@@ -273,7 +274,8 @@ fn parse_value(key: &str, value: &Value, is_where: bool) -> String {
                 .join(", ")
         ),
         Value::Null => format!("{key}null"),
-        Value::Object(_) => String::new(),
+        Value::Object(map) if map.is_empty() => format!("{key}'{{}}'::jsonb"),
+        Value::Object(v) => format!("{key}'{}'::jsonb", serde_json::to_string(&v).unwrap()),
     }
 }
 

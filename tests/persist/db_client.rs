@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use async_graphql::SimpleObject;
@@ -348,8 +349,7 @@ async fn create_project(db_client: &DbClient, name: &str) -> Result<String, Rust
                 main_branch: "master".to_string(),
                 group_id: None,
             }
-            .to_value()
-            .unwrap(),
+            .to_value()?,
         )
         .await
 }
@@ -365,8 +365,7 @@ async fn create_job(db_client: &DbClient, id: &str) -> Result<String, RustyError
                 template: "dummy".to_string(),
                 project_id: id.to_string(),
             }
-            .to_value()
-            .unwrap(),
+            .to_value()?,
         )
         .await
 }
@@ -382,12 +381,12 @@ async fn create_pipeline(db_client: &DbClient, id: &str) -> Result<String, Rusty
                 register_date: chrono::Utc::now().to_rfc3339(),
                 start_date: None,
                 end_date: None,
+                stage_status: HashMap::new(),
                 status: PipelineStatus::Defined,
                 job_id: id.to_string(),
                 agent_id: None,
             }
-            .to_value()
-            .unwrap(),
+            .to_value()?,
         )
         .await
 }

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::time::Duration;
 
 use testcontainers::runners::AsyncRunner;
@@ -70,6 +71,7 @@ async fn scheduler_pipelines_cleanup_test() {
                 register_date: "now".to_string(),
                 start_date: Some("now".to_string()),
                 end_date: None,
+                stage_status: HashMap::new(),
                 status: PipelineStatus::Assigned,
                 job_id: "uuid".to_string(),
                 agent_id: Some("uuid".to_string()),

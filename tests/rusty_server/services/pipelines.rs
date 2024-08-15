@@ -1,4 +1,5 @@
 use serde_json::json;
+use std::collections::HashMap;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
@@ -252,6 +253,7 @@ async fn set_running_positive_test() {
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
+                stage_status: HashMap::new(),
                 status: PipelineStatus::Assigned,
                 job_id: id.to_string(),
                 agent_id: Some(agent_id.clone()),
@@ -337,6 +339,7 @@ async fn finalize_positive_test() {
                 register_date: "now".to_string(),
                 start_date: None,
                 end_date: None,
+                stage_status: HashMap::new(),
                 status: PipelineStatus::InProgress,
                 job_id: id.to_string(),
                 agent_id: Some(agent_id.clone()),

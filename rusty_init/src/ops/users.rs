@@ -20,6 +20,7 @@ pub async fn create_user(db: &DbClient, user_type: &str) -> Option<String> {
         generate_password(12),
     );
     let user = RegisterUser {
+        email: format!("{}@rusty.sys", user_type.to_lowercase()),
         username: username.clone(),
         password: password.clone(),
     };

@@ -6,7 +6,7 @@ use domain::auth::user::{RegisterUser, User};
 #[test]
 fn from_register_user_test() {
     let username = "test_01";
-    let input = RegisterUser::new(username, "password");
+    let input = RegisterUser::new("user@test.org", username, "password");
     let user = User::from(&input);
     assert_eq!(36, user.id.len());
     assert_eq!(username.to_string(), user.username);
@@ -14,11 +14,15 @@ fn from_register_user_test() {
 }
 
 #[rstest]
-#[case(RegisterUser::new("user", "pass"), true)]
-#[case(RegisterUser::new("user!@#$%^&_-", "pass"), true)]
-#[case(RegisterUser::new("user", ""), false)]
-#[case(RegisterUser::new("", "pass"), false)]
-#[case(RegisterUser::new("[user]", "pass"), false)]
+#[case(RegisterUser::new("user@test.org", "user", "pass"), true)]
+#[case(RegisterUser::new("user@test.org", "user!@#$%^&_-", "pass"), true)]
+#[case(RegisterUser::new("user@test.org", "user", ""), false)]
+#[case(RegisterUser::new("user@test.org", "", "pass"), false)]
+#[case(RegisterUser::new("user@test.org", "[user]", "pass"), false)]
+#[case(RegisterUser::new("user@test", "user", "pass"), false)]
+#[case(RegisterUser::new("@test.org", "user", "pass"), false)]
+#[case(RegisterUser::new("user.test.org", "user", "pass"), false)]
+#[case(RegisterUser::new("", "user", "pass"), false)]
 fn validate_user_test(#[case] user: RegisterUser, #[case] expected: bool) {
     assert_eq!(expected, user.validate().is_ok())
 }
