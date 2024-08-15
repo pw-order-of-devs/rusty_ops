@@ -3,7 +3,7 @@ use persist::db_client::DbClient;
 use crate::ops::permissions::assign_permission;
 use crate::ops::resources::create_resource;
 use crate::ops::roles::create_role;
-use crate::ops::schema::{execute_sql, purge_db};
+use crate::ops::schema::execute_sql;
 use crate::ops::users::create_user;
 use crate::ops::versions;
 
@@ -19,7 +19,6 @@ pub async fn execute(db: &DbClient) {
         log::info!("=========================");
 
         // initialize db
-        purge_db(db).await;
         execute_sql(db, version).await;
 
         // create system resources

@@ -17,12 +17,15 @@
 #![cfg_attr(test, deny(rust_2018_idioms))]
 
 use persist::db_client::DbClient;
-use rusty_init::versions;
+use rusty_init::{ops, versions};
 
 #[tokio::main]
 async fn main() {
     commons::logger::init();
     let db = get_db_client().await;
+
+    // clear database if WIPE_DATA set to true
+    ops::schema::purge_db(&db).await;
 
     // v1.0.0
     versions::v1_0_0::execute(&db).await;
