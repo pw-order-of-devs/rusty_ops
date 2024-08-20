@@ -57,14 +57,13 @@ pub struct UsersMutation;
 
 #[Object]
 impl UsersMutation {
-    #[auth_macro::authenticate(bearer)]
     async fn register(
         &self,
         ctx: &Context<'_>,
         user: RegisterUser,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `users::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, ctx.data::<Credential>()?, user).await?;
+        let id = service::create(ctx.data::<DbClient>()?, &Credential::System, user).await?;
         log::debug!("`users::register`: registered user with id `{id}`");
         Ok(id)
     }

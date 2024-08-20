@@ -1,4 +1,4 @@
-import { basicAuthHeader, fetchPost } from '$lib/utils/api';
+import { login } from '$lib/api/auth';
 
 export const ssr = false;
 
@@ -11,42 +11,9 @@ export const load = ({ url }) => {
 export const actions = {
 	login: async ({ request }) => {
 		const credentials = await request.formData();
-
-		try {
-			const response = await fetchPost(
-				basicAuthHeader(credentials),
-				JSON.stringify({
-					query: `query { auth { login } }`
-				})
-			);
-
-			if (!response.ok) {
-				return {
-					errors: ['Authentication Failed']
-				};
-			} else {
-				const { data, errors } = await response.json();
-				if (errors && errors.length > 0) {
-					return {
-						errors: errors.map((error: { message: string }) => error.message)
-					};
-				} else if (data) {
-					const token = data?.auth?.login;
-					if (token) {
-						return {
-							token
-						};
-					} else {
-						return {
-							errors: ['Authentication Failed']
-						};
-					}
-				}
-			}
-		} catch (error) {
-			return {
-				errors: ['Authentication Failed']
-			};
-		}
+		return await login(
+			credentials.get('login')?.toString() ?? '',
+			credentials.get('password')?.toString() ?? ''
+		);
 	}
 };

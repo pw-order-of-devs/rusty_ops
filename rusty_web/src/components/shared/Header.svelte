@@ -4,12 +4,18 @@
 	import { toastInfo } from '$lib/ui/toasts';
 	import { deleteTokenCookie, renewToken, setTokenCookie } from '$lib/utils/token';
 	import Button from 'src/components/shared/Button.svelte';
-	import { faArrowRotateRight, faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
+	import {
+		faArrowRotateRight,
+		faSignIn,
+		faSignOut,
+		faUserPlus
+	} from '@fortawesome/free-solid-svg-icons';
 	import { onDestroy, onMount } from 'svelte';
 
 	export let token = '';
 	export let authenticated = false;
 	export let isLoginPage = false;
+	export let isRegisterPage = false;
 
 	let authTimeLeft = Number.MAX_SAFE_INTEGER;
 	let interval: number;
@@ -47,10 +53,10 @@
 	};
 </script>
 
-<nav class:bottom-line={!isLoginPage}>
+<nav class:bottom-line={!isLoginPage && !isRegisterPage}>
 	<div class="app-name">RustyOps</div>
 	<div class="session-control">
-		{#if !isLoginPage}
+		{#if !isLoginPage && !isRegisterPage}
 			{#if authenticated && authTimeLeft <= 30}
 				<div>Session expires in {authTimeLeft} seconds</div>
 				<Button action={_renewToken} icon={faArrowRotateRight} label="Renew" flat />
@@ -58,6 +64,7 @@
 			{#if authenticated}
 				<Button action={logout} icon={faSignOut} label="Log out" flat />
 			{:else}
+				<Button href="/register" icon={faUserPlus} label="Sign up" flat />
 				<Button href="/login" icon={faSignIn} label="Log in" flat />
 			{/if}
 		{/if}

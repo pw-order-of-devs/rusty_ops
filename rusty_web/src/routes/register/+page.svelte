@@ -1,23 +1,22 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { mobileCheck } from '$lib/utils/mobile-check';
 	import { toastError, toastSuccess } from '$lib/ui/toasts';
-	import { setTokenCookie } from '$lib/utils/token';
 	import Loader from 'src/components/shared/Loader.svelte';
 	import { faGears } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
+	import { goto } from '$app/navigation';
+	import { setTokenCookie } from '$lib/utils/token';
 
 	let loading = false;
 	export let form;
-	export let data;
 
 	$: {
 		if (form?.token) {
 			setTokenCookie(form.token);
-			toastSuccess('Welcome!');
-			goto(data.redirect, { replaceState: true, invalidateAll: true });
+			toastSuccess('Account created successfully!');
+			goto('/home', { replaceState: true, invalidateAll: true });
 		} else if (form?.errors) {
 			form?.errors.forEach((err: string) => toastError(err));
 			form = null;
@@ -40,7 +39,7 @@
 	<form
 		class="form"
 		method="POST"
-		action="?/login"
+		action="?/register"
 		use:enhance={() => {
 			loading = true;
 
@@ -50,11 +49,19 @@
 			};
 		}}
 	>
-		<div class="title">Log In</div>
+		<div class="title">Register</div>
 		<input
 			type="text"
 			placeholder="username"
-			name="login"
+			name="username"
+			autocomplete="off"
+			required
+			disabled={loading}
+		/>
+		<input
+			type="email"
+			placeholder="email"
+			name="email"
 			autocomplete="off"
 			required
 			disabled={loading}
@@ -69,12 +76,12 @@
 		/>
 		<button type="submit">Submit</button>
 		<div class="login-signup-switch">
-			<span>Not a registered user?</span>
-			<a href="/register">Sign up</a>
+			<span>Already a registered user?</span>
+			<a href="/login">Sign in</a>
 		</div>
 	</form>
 </div>
 
 <style lang="scss">
-	@import 'src/styles/signin/login';
+	@import 'src/styles/signin/register';
 </style>

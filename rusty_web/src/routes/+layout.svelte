@@ -10,11 +10,13 @@
 	let token = '';
 	let authenticated = false;
 	let isLoginPage = false;
+	let isRegisterPage = false;
 	let visited = false;
 
 	$: token = data.token ?? '';
 	$: authenticated = data.authenticated;
 	$: isLoginPage = data.isLoginPage;
+	$: isRegisterPage = data.isRegisterPage;
 	$: visited = data.visited;
 
 	const acceptCookies = () => {
@@ -24,7 +26,7 @@
 	};
 </script>
 
-<Header {token} {authenticated} {isLoginPage} />
+<Header {token} {authenticated} {isLoginPage} {isRegisterPage} />
 
 <slot />
 

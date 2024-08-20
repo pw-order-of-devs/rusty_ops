@@ -1,0 +1,65 @@
+@import 'src/styles/global';
+
+.container {
+	width: 100vw;
+	height: calc(100vh - 4rem);
+	display: grid;
+	grid-template-columns: 3fr 4fr;
+
+	.logo,
+	.form {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.logo {
+		background-color: $color-black-2;
+	}
+
+	.form {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+
+		.title {
+			font-size: 2rem;
+			font-weight: bold;
+		}
+
+		input,
+		button {
+			box-sizing: border-box;
+			margin-top: 1.5rem;
+			width: 20rem;
+			padding: 0.8rem;
+			background-color: $color-black-1;
+			color: $color-white-2;
+			font-size: 1rem;
+			border: 0.05rem $color-white-2 solid;
+			border-radius: 2rem;
+		}
+
+		button {
+			background-color: $color-black-4;
+			cursor: pointer;
+		}
+
+		button:hover {
+			background-color: $color-black-5;
+		}
+
+		button:active {
+			background-color: $color-black-6;
+		}
+
+		.login-signup-switch {
+			margin-top: 1rem;
+
+			a {
+				color: $color-white-2;
+			}
+		}
+	}
+}
