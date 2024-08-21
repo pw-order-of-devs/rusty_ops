@@ -1,0 +1,12 @@
+.account-page {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+
+  .account-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 8rem;
+  }
+}
