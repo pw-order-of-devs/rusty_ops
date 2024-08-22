@@ -55,7 +55,7 @@
 			type="text"
 			placeholder="username"
 			name="login"
-			autocomplete="off"
+			autocomplete="username"
 			required
 			disabled={loading}
 		/>
@@ -63,7 +63,7 @@
 			type="password"
 			placeholder="password"
 			name="password"
-			autocomplete="off"
+			autocomplete="current-password"
 			required
 			disabled={loading}
 		/>

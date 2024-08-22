@@ -11,6 +11,8 @@ use crate::RustyDomainItem;
 pub struct UserModel {
     /// user id
     pub id: String,
+    /// user email address
+    pub email: String,
     /// username
     pub username: String,
 }
@@ -111,6 +113,16 @@ impl From<&RegisterUser> for User {
             email: value.clone().email,
             username: value.clone().username,
             password: bcrypt::encode(&value.password).unwrap_or_default(),
+        }
+    }
+}
+
+impl From<&User> for UserModel {
+    fn from(value: &User) -> Self {
+        Self {
+            id: value.clone().id,
+            email: value.clone().email,
+            username: value.clone().username,
         }
     }
 }

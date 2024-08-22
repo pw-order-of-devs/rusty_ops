@@ -86,7 +86,7 @@ async fn get_by_username_test() {
         )
         .await;
 
-    let result = service::get_by_username(&db_client, &Credential::System, "user").await;
+    let result = service::get_by_username(&db_client, "user").await;
     let _ = db.stop().await;
     assert!(result.is_ok());
     assert!(result.clone().unwrap().is_some());
@@ -103,7 +103,6 @@ async fn create_test() {
 
     let result = service::create(
         &db_client,
-        &Credential::System,
         RegisterUser {
             email: "user@test.org".to_string(),
             username: "user".to_string(),
@@ -138,7 +137,6 @@ async fn create_with_role_test() {
 
     let result = service::create(
         &db_client,
-        &Credential::System,
         RegisterUser {
             email: "user@test.org".to_string(),
             username: "user".to_string(),
@@ -173,7 +171,6 @@ async fn create_already_exists_test() {
 
     let result = service::create(
         &db_client,
-        &Credential::System,
         RegisterUser {
             email: "user@test.org".to_string(),
             username: "user".to_string(),

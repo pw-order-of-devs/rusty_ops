@@ -1,9 +1,11 @@
 use serde_json::{json, Value};
 
 use commons::errors::RustyError;
+use commons::hashing::bcrypt;
 use domain::auth::credentials::Credential;
 use domain::auth::user::{RegisterUser, User, UserModel};
 use domain::commons::search::SearchOptions;
+use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
 use crate::services::shared::get_username_claim;
@@ -32,12 +34,18 @@ pub async fn get_by_id(
     shared::get_by_id(db, USERS_INDEX, id).await
 }
 
-pub async fn get_by_username(
+pub async fn get_current(
     db: &DbClient,
     cred: &Credential,
-    username: &str,
-) -> Result<Option<User>, RustyError> {
-    auth::authorize(db, &get_username_claim(cred)?, "USERS:READ").await?;
+) -> Result<Option<UserModel>, RustyError> {
+    if let Some(user) = get_by_username(db, &get_username_claim(cred)?).await? {
+        Ok(Some(UserModel::from(&user)))
+    } else {
+        Ok(None)
+    }
+}
+
+pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<User>, RustyError> {
     shared::get_one(
         db,
         USERS_INDEX,
@@ -48,21 +56,17 @@ pub async fn get_by_username(
 
 // mutate
 
-pub async fn create(
-    db: &DbClient,
-    cred: &Credential,
-    user: RegisterUser,
-) -> Result<String, RustyError> {
+pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyError> {
     let users_by_username = get_all(
         db,
-        cred,
+        &Credential::System,
         &Some(json!({ "username": { "equals": user.username } })),
         &None,
     )
     .await?;
     let users_by_email = get_all(
         db,
-        cred,
+        &Credential::System,
         &Some(json!({ "email": { "equals": user.email } })),
         &None,
     )
@@ -78,10 +82,35 @@ pub async fn create(
         ))
     } else {
         let user_id = shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await?;
-        match roles::assign(db, cred, &user_id, None, Some("USERS")).await {
+        match roles::assign(db, &Credential::System, &user_id, None, Some("USERS")).await {
             Ok(_) => log::info!("added user {user_id} to group `USERS`"),
             Err(err) => log::warn!("error while adding user `{user_id}` to group `USERS`: {err}"),
         };
         Ok(user_id)
+    }
+}
+
+pub async fn change_password(
+    db: &DbClient,
+    cred: &Credential,
+    username: &str,
+    old_password: &str,
+    new_password: &str,
+) -> Result<String, RustyError> {
+    let cred_username = get_username_claim(cred)?;
+    if cred_username != username {
+        return Err(RustyError::UnauthorizedError);
+    }
+
+    if let Some(mut user) = get_by_username(db, username).await? {
+        if bcrypt::validate(old_password, &user.password)? {
+            user.password = bcrypt::encode(new_password)?;
+            db.update(USERS_INDEX, &user.id, &user.to_value()?).await?;
+            Ok(user.id)
+        } else {
+            Err(RustyError::RequestError("password mismatch".to_string()))
+        }
+    } else {
+        Err(RustyError::AsyncGraphqlError("user not found".to_string()))
     }
 }

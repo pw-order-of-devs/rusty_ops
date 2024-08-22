@@ -1,12 +1,76 @@
-.account-page {
-  display: flex;
-  flex-direction: row;
-  gap: 0.5rem;
+@import 'src/styles/global';
 
-  .account-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 8rem;
-  }
+.account-page {
+	display: flex;
+	flex-direction: row;
+	gap: 0.5rem;
+
+	.account-nav {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0.5rem;
+		width: 25rem;
+
+		:global(div) {
+			cursor: pointer;
+		}
+
+		:global(.active) {
+			background-color: $color-black-2;
+		}
+	}
+
+	.account-content {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		padding: 0.5rem;
+
+		div,
+		form {
+			display: flex;
+			flex-direction: column;
+			gap: 0.3rem;
+
+			input[type='text'],
+			input[type='password'] {
+				box-sizing: border-box;
+				width: 20rem;
+				padding: 0.3rem;
+				font-size: 1rem;
+				border: 0.05rem $color-white-2 solid;
+			}
+
+			input {
+				&.disabled {
+					background-color: $color-black-2;
+					color: $color-white-2;
+				}
+
+				&.enabled {
+					background-color: $color-black-4;
+					color: $color-white-2;
+				}
+			}
+
+			input[type='button'] {
+				box-sizing: border-box;
+				width: 20rem;
+				padding: 0.4rem;
+				background-color: $color-black-2;
+				color: $color-white-2;
+				font-size: 1rem;
+				border: 0.05rem $color-white-2 solid;
+
+				&:hover {
+					background-color: $color-black-4;
+				}
+
+				&:active {
+					background-color: $color-black-6;
+				}
+			}
+		}
+	}
 }

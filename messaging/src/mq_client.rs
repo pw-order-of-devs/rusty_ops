@@ -7,6 +7,8 @@ use crate::Messaging;
 /// Wrapper for messaging client
 #[derive(Clone, Debug)]
 pub enum MqClient {
+    /// `MqClient` variant - no client
+    None,
     /// `MqClient` variant - `RabbitMQ` client
     RabbitMQ(RabbitMQClient),
 }
@@ -21,6 +23,7 @@ impl MqClient {
     /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn create_queue(&self, name: &str) -> Result<(), RustyError> {
         match self {
+            Self::None => Ok(()),
             Self::RabbitMQ(client) => client.create_queue(name).await,
         }
     }
@@ -34,6 +37,7 @@ impl MqClient {
     /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn delete_queue(&self, name: &str) -> Result<(), RustyError> {
         match self {
+            Self::None => Ok(()),
             Self::RabbitMQ(client) => client.delete_queue(name).await,
         }
     }
@@ -47,6 +51,7 @@ impl MqClient {
     /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn publish(&self, queue: &str, message: &str) -> Result<(), RustyError> {
         match self {
+            Self::None => Ok(()),
             Self::RabbitMQ(client) => client.publish(queue, message).await,
         }
     }
@@ -60,6 +65,7 @@ impl MqClient {
     /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn get_consumer(&self, queue: &str) -> Result<MqConsumer, RustyError> {
         match self {
+            Self::None => Ok(MqConsumer::None),
             Self::RabbitMQ(client) => client.get_consumer(queue).await,
         }
     }

@@ -159,6 +159,7 @@ pub trait Consuming: Send + Sync {
 /// Returns an instance of the persistence layer that implements the `Messaging` trait.
 pub async fn init() -> MqClient {
     match MqType::parse() {
+        MqType::None => MqClient::None,
         MqType::RabbitMQ => MqClient::RabbitMQ(RabbitMQClient::build().await),
     }
 }

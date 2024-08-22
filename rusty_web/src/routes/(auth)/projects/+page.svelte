@@ -48,7 +48,7 @@
 		projectsFilter = '';
 	};
 
-	const groupsFilterKeyPressed_ = async (_: KeyboardEvent) => {
+	const groupsFilterKeyPressed_ = async () => {
 		pageData = await groupsFilterKeyPressed(loadingGroups, groupsFilter, pageData);
 	};
 
@@ -67,7 +67,7 @@
 		);
 	};
 
-	const projectsFilterKeyPressed_ = async (_: KeyboardEvent) => {
+	const projectsFilterKeyPressed_ = async () => {
 		let groupId = pageData?.groups?.active?.id ?? '';
 		pageData = await projectsFilterKeyPressed(loadingProjects, groupId, projectsFilter, pageData);
 	};

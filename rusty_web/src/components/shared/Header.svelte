@@ -44,7 +44,7 @@
 		return true;
 	};
 
-	const _renewToken = async () => {
+	const renewToken_ = async () => {
 		const jwt = await renewToken(token);
 		if (jwt !== undefined) {
 			token = jwt;
@@ -59,7 +59,7 @@
 		{#if !isLoginPage && !isRegisterPage}
 			{#if authenticated && authTimeLeft <= 30}
 				<div>Session expires in {authTimeLeft} seconds</div>
-				<Button action={_renewToken} icon={faArrowRotateRight} label="Renew" flat />
+				<Button action={renewToken_} icon={faArrowRotateRight} label="Renew" flat />
 			{/if}
 			{#if authenticated}
 				<Button action={logout} icon={faSignOut} label="Log out" flat />

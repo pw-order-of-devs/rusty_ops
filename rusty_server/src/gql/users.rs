@@ -51,6 +51,18 @@ impl UsersQuery {
         log::debug!("`users::getById`: found entry by id: `{}`", id);
         Ok(entry)
     }
+
+    #[auth_macro::authenticate(bearer)]
+    async fn get_current(
+        &self,
+        ctx: &Context<'_>,
+    ) -> async_graphql::Result<Option<UserModel>, RustyError> {
+        log::debug!("handling `users::getCurrent` request");
+        let entry =
+            service::get_current(ctx.data::<DbClient>()?, ctx.data::<Credential>()?).await?;
+        log::debug!("`users::getCurrent`: found");
+        Ok(entry)
+    }
 }
 
 pub struct UsersMutation;
@@ -63,8 +75,28 @@ impl UsersMutation {
         user: RegisterUser,
     ) -> async_graphql::Result<String, RustyError> {
         log::debug!("handling `users::register` request");
-        let id = service::create(ctx.data::<DbClient>()?, &Credential::System, user).await?;
+        let id = service::create(ctx.data::<DbClient>()?, user).await?;
         log::debug!("`users::register`: registered user with id `{id}`");
+        Ok(id)
+    }
+
+    async fn change_password(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        old_password: String,
+        new_password: String,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `users::changePassword` request");
+        let id = service::change_password(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &username,
+            &old_password,
+            &new_password,
+        )
+        .await?;
+        log::debug!("`users::changePassword`: changed password for user with id `{id}`");
         Ok(id)
     }
 }

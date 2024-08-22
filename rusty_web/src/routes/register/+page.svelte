@@ -54,7 +54,7 @@
 			type="text"
 			placeholder="username"
 			name="username"
-			autocomplete="off"
+			autocomplete="username"
 			required
 			disabled={loading}
 		/>
@@ -62,7 +62,7 @@
 			type="email"
 			placeholder="email"
 			name="email"
-			autocomplete="off"
+			autocomplete="email"
 			required
 			disabled={loading}
 		/>
@@ -70,7 +70,7 @@
 			type="password"
 			placeholder="password"
 			name="password"
-			autocomplete="off"
+			autocomplete="new-password"
 			required
 			disabled={loading}
 		/>

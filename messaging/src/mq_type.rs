@@ -7,6 +7,8 @@ use commons::env::var;
 /// - `RabbitMQ`: Represents a `RabbitMQ` messaging.
 #[derive(Debug)]
 pub enum MqType {
+    /// Placeholder for no messaging support.
+    None,
     /// A `RabbitMQ` client for connecting to a `RabbitMQ` service.
     RabbitMQ,
 }
@@ -18,6 +20,7 @@ impl MqType {
     /// if the `RUSTY_MESSAGING` variable is not set or if the value is not supported.
     ///
     /// # Returns
+    /// - `MqType::None` if the `RUSTY_MESSAGING` value is `none`
     /// - `MqType::RabbitMQ` if the `RUSTY_MESSAGING` value is `rabbitmq` or `rabbit`
     #[must_use]
     pub fn parse() -> Self {
@@ -26,6 +29,7 @@ impl MqType {
             .to_lowercase();
 
         match mq_type.as_str() {
+            "none" => Self::None,
             "rabbitmq" | "rabbit" => Self::RabbitMQ,
             _ => panic!("Unsupported messaging: {mq_type}"),
         }

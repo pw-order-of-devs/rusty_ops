@@ -6,6 +6,8 @@ use crate::Consuming;
 /// Wrapper for messaging client
 #[derive(Clone, Debug)]
 pub enum MqConsumer {
+    /// `MqConsumer` variant - no consumer
+    None,
     /// `MqConsumer` variant - `RabbitMQ` consumer
     RabbitMQ(RabbitMQConsumer),
 }
@@ -20,6 +22,7 @@ impl MqConsumer {
     /// * `RustyError` - If there was an error during the creation of the item.
     pub async fn next(&mut self) -> Option<Result<Vec<u8>, RustyError>> {
         match self {
+            Self::None => None,
             Self::RabbitMQ(consumer) => consumer.next().await,
         }
     }
