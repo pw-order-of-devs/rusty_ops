@@ -81,3 +81,38 @@ export const changePassword = async (
 		};
 	}
 };
+
+const deleteAccountQuery = (username: string) => {
+	return `mutation {
+		users {
+			deleteByUsername(
+				username: "${username}"
+			)
+		}
+	}`;
+};
+
+export const deleteAccount = async (auth: string, username: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: deleteAccountQuery(username) }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Delete account failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.users?.deleteByUsername;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Delete account failed']
+		};
+	}
+};

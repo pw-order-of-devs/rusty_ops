@@ -7,6 +7,7 @@ use domain::auth::credentials::Credential;
 use domain::pipelines::{Pipeline, PipelineStatus, RegisterPipeline};
 use domain::RustyDomainItem;
 use rusty_server::services::pipelines as service;
+use rusty_server::services::shared as service_shared;
 
 use crate::rusty_server::services::shared;
 use crate::utils::db_connect;
@@ -392,9 +393,9 @@ async fn delete_many_test() {
     let _ = shared::create_pipeline(&db_client, &id).await;
     let _ = shared::create_pipeline(&db_client, &id).await;
 
-    let result = service::delete_many(
+    let result = service_shared::delete_many(
         &db_client,
-        &Credential::System,
+        "pipelines",
         &json!({ "job_id": { "equals": &id } }),
     )
     .await;

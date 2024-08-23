@@ -300,18 +300,6 @@ pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<
     }
 }
 
-pub async fn delete_many(
-    db: &DbClient,
-    cred: &Credential,
-    filter: &Value,
-) -> Result<u64, RustyError> {
-    let pipes = get_all(db, cred, &Some(filter.clone()), &None).await?;
-    for pipe in &pipes {
-        delete_by_id(db, cred, &pipe.id).await?;
-    }
-    Ok(pipes.len() as u64)
-}
-
 pub async fn delete_all(db: &DbClient) -> Result<u64, RustyError> {
     shared::delete_all(db, PIPELINES_INDEX).await
 }

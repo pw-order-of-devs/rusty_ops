@@ -80,6 +80,7 @@ impl UsersMutation {
         Ok(id)
     }
 
+    #[auth_macro::authenticate(bearer)]
     async fn change_password(
         &self,
         ctx: &Context<'_>,
@@ -98,5 +99,22 @@ impl UsersMutation {
         .await?;
         log::debug!("`users::changePassword`: changed password for user with id `{id}`");
         Ok(id)
+    }
+
+    #[auth_macro::authenticate(bearer)]
+    async fn delete_by_username(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+    ) -> async_graphql::Result<u64, RustyError> {
+        log::debug!("handling `users::deleteByUsername` request");
+        let result = service::delete_by_username(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &username,
+        )
+        .await?;
+        log::debug!("`users::deleteByUsername`: deleted user with username `{username}`");
+        Ok(result)
     }
 }

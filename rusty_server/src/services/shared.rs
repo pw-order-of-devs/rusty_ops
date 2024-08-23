@@ -85,6 +85,25 @@ pub async fn delete_by_id(db: &DbClient, index: &str, id: &str) -> Result<u64, R
         })
 }
 
+pub async fn delete_many(db: &DbClient, index: &str, filter: &Value) -> Result<u64, RustyError> {
+    let entries = db.get_all(index, &Some(filter.clone()), &None).await?;
+    let deletions: Vec<_> = entries
+        .iter()
+        .filter_map(|entry| {
+            entry
+                .as_object()
+                .and_then(|e| e.get("id"))
+                .and_then(|e| e.as_str())
+                .map(|id| delete_by_id(db, index, id))
+        })
+        .collect();
+    async_graphql::futures_util::future::join_all(deletions)
+        .await
+        .into_iter()
+        .collect::<Result<Vec<_>, _>>()?;
+    Ok(entries.len() as u64)
+}
+
 pub async fn delete_all(db: &DbClient, index: &str) -> Result<u64, RustyError> {
     if !var_or_default("RUSTY_DEBUG", false) {
         log::warn!("`delete_all` is only supported in DEBUG mode");

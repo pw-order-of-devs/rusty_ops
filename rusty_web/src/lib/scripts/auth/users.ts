@@ -15,3 +15,10 @@ export const changePassword = async (
 		body: JSON.stringify({ username, oldPassword, newPassword })
 	});
 };
+
+export const deleteAccount = async (username: string) => {
+	return await fetch('?/deleteAccount', {
+		method: 'POST',
+		body: JSON.stringify({ username })
+	});
+};

@@ -5,6 +5,7 @@ use testcontainers_modules::redis::Redis;
 use domain::auth::credentials::Credential;
 use domain::projects::RegisterProject;
 use rusty_server::services::projects as service;
+use rusty_server::services::shared as service_shared;
 
 use crate::rusty_server::services::shared;
 use crate::utils::db_connect;
@@ -113,9 +114,9 @@ async fn delete_many_test() {
     let _ = shared::create_project_in_group(&db_client, &id).await;
     let _ = shared::create_project_in_group(&db_client, &id).await;
 
-    let result = service::delete_many(
+    let result = service_shared::delete_many(
         &db_client,
-        &Credential::System,
+        "projects",
         &json!({ "group_id": { "equals": &id } }),
     )
     .await;

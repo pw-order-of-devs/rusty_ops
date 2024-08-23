@@ -27,6 +27,10 @@
 		gap: 1rem;
 		padding: 0.5rem;
 
+		form {
+			margin-top: 2rem;
+		}
+
 		div,
 		form {
 			display: flex;
@@ -45,7 +49,7 @@
 			input {
 				&.disabled {
 					background-color: $color-black-2;
-					color: $color-white-2;
+					color: $color-white-6;
 				}
 
 				&.enabled {
@@ -62,6 +66,7 @@
 				color: $color-white-2;
 				font-size: 1rem;
 				border: 0.05rem $color-white-2 solid;
+				cursor: pointer;
 
 				&:hover {
 					background-color: $color-black-4;

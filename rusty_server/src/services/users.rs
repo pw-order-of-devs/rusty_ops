@@ -12,6 +12,7 @@ use crate::services::shared::get_username_claim;
 use crate::services::{roles, shared};
 
 const USERS_INDEX: &str = "users";
+const PERMISSIONS_INDEX: &str = "permissions";
 
 // query
 
@@ -110,6 +111,29 @@ pub async fn change_password(
         } else {
             Err(RustyError::RequestError("password mismatch".to_string()))
         }
+    } else {
+        Err(RustyError::AsyncGraphqlError("user not found".to_string()))
+    }
+}
+
+pub async fn delete_by_username(
+    db: &DbClient,
+    cred: &Credential,
+    username: &str,
+) -> Result<u64, RustyError> {
+    let cred_username = get_username_claim(cred)?;
+    if cred_username != username {
+        return Err(RustyError::UnauthorizedError);
+    }
+
+    if let Some(user) = get_by_username(db, username).await? {
+        shared::delete_many(
+            db,
+            PERMISSIONS_INDEX,
+            &json!({ "user_id": { "equals": user.id } }),
+        )
+        .await?;
+        shared::delete_by_id(db, USERS_INDEX, &user.id).await
     } else {
         Err(RustyError::AsyncGraphqlError("user not found".to_string()))
     }
