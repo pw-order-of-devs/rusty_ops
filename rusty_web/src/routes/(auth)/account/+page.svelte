@@ -106,6 +106,12 @@
 		<div on:click={() => setCurrent('profile')} role="none">
 			<Card classes={current === 'profile' ? 'active' : ''}>Profile</Card>
 		</div>
+		<div on:click={() => setCurrent('personalization')} role="none">
+			<Card classes={current === 'personalization' ? 'active' : ''}>Personalization</Card>
+		</div>
+		<div on:click={() => setCurrent('permissions')} role="none">
+			<Card classes={current === 'permissions' ? 'active' : ''}>Permissions</Card>
+		</div>
 		<div on:click={() => setCurrent('credentials')} role="none">
 			<Card classes={current === 'credentials' ? 'active' : ''}>Credentials</Card>
 		</div>

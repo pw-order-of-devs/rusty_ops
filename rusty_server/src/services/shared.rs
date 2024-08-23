@@ -87,20 +87,15 @@ pub async fn delete_by_id(db: &DbClient, index: &str, id: &str) -> Result<u64, R
 
 pub async fn delete_many(db: &DbClient, index: &str, filter: &Value) -> Result<u64, RustyError> {
     let entries = db.get_all(index, &Some(filter.clone()), &None).await?;
-    let deletions: Vec<_> = entries
-        .iter()
-        .filter_map(|entry| {
-            entry
-                .as_object()
-                .and_then(|e| e.get("id"))
-                .and_then(|e| e.as_str())
-                .map(|id| delete_by_id(db, index, id))
-        })
-        .collect();
-    async_graphql::futures_util::future::join_all(deletions)
-        .await
-        .into_iter()
-        .collect::<Result<Vec<_>, _>>()?;
+    for entry in entries.iter() {
+        if let Some(id) = entry
+            .as_object()
+            .and_then(|e| e.get("id"))
+            .and_then(|e| e.as_str())
+        {
+            delete_by_id(db, index, id).await?;
+        }
+    }
     Ok(entries.len() as u64)
 }
 
