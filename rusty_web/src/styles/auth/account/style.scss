@@ -17,7 +17,7 @@
 		}
 
 		:global(.active) {
-			background-color: $color-black-2;
+			background-color: $color-primary-2;
 		}
 	}
 
@@ -43,18 +43,18 @@
 				width: 20rem;
 				padding: 0.3rem;
 				font-size: 1rem;
-				border: 0.05rem $color-white-2 solid;
+				border: 0.05rem $color-secondary-2 solid;
 			}
 
 			input {
 				&.disabled {
-					background-color: $color-black-2;
-					color: $color-white-6;
+					background-color: $color-primary-2;
+					color: $color-secondary-3;
 				}
 
 				&.enabled {
-					background-color: $color-black-4;
-					color: $color-white-2;
+					background-color: $color-primary-4;
+					color: $color-secondary-2;
 				}
 			}
 
@@ -62,18 +62,18 @@
 				box-sizing: border-box;
 				width: 20rem;
 				padding: 0.4rem;
-				background-color: $color-black-2;
-				color: $color-white-2;
+				background-color: $color-primary-2;
+				color: $color-secondary-2;
 				font-size: 1rem;
-				border: 0.05rem $color-white-2 solid;
+				border: 0.05rem $color-secondary-2 solid;
 				cursor: pointer;
 
 				&:hover {
-					background-color: $color-black-4;
+					background-color: $color-primary-4;
 				}
 
 				&:active {
-					background-color: $color-black-6;
+					background-color: $color-primary-6;
 				}
 			}
 		}

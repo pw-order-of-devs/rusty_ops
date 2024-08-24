@@ -49,7 +49,7 @@
 	.features {
 		margin-top: 6rem;
 		padding: 3rem;
-		background-color: $color-black-4;
+		background-color: $color-primary-4;
 		display: grid;
 		grid-template-columns: 1fr 1fr 1fr;
 		grid-template-rows: 1fr 1fr;

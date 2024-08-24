@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
@@ -14,39 +14,5 @@
 </html>
 
 <style lang="scss">
-	body {
-		width: 100vw;
-		height: 100vh;
-		background-color: #1b1b1b;
-		color: #e2e2e2;
-		font-family: Helvetica, serif;
-		overflow: hidden;
-		cursor: default;
-		margin: 0;
-		padding: 0;
-		font-size: 1rem;
-		user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		-webkit-user-select: none;
-		box-sizing: border-box;
-	}
-
-	::-webkit-scrollbar {
-		width: 0.7rem;
-	}
-
-	::-webkit-scrollbar-track {
-		background-color: #5b5b5b;
-	}
-
-	::-webkit-scrollbar-thumb {
-		background-color: #2e2e2e;
-		border-radius: 0.3rem;
-		border: 0.15rem solid #5b5b5b;
-	}
-
-	::-webkit-scrollbar-thumb:hover {
-		background-color: #1f1f1f;
-	}
+	@import '/src/styles/app.scss';
 </style>

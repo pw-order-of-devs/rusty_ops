@@ -1,7 +1,9 @@
+@import 'src/styles/global';
+
 .circle {
 	width: 1rem;
 	height: 1rem;
-	border: 0.1rem solid $color-black-6;
+	border: 0.1rem solid $color-primary-6;
 	border-radius: 50%;
 }
 

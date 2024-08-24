@@ -32,32 +32,32 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.5rem 1rem;
-		background-color: $color-white-2;
+		background-color: $color-secondary-2;
 		border-radius: 0.2rem;
 		cursor: pointer;
-		color: $color-black-1;
+		color: $color-primary-1;
 		text-decoration: none;
 		font-size: 1.2rem;
 
 		&.flat {
 			background-color: transparent;
-			color: $color-white-2;
+			color: $color-secondary-2;
 
 			&:hover {
-				background-color: $color-black-3;
+				background-color: $color-primary-3;
 			}
 
 			&:active {
-				background-color: $color-black-5;
+				background-color: $color-primary-5;
 			}
 		}
 
 		&:hover {
-			background-color: $color-white-4;
+			background-color: $color-secondary-4;
 		}
 
 		&:active {
-			background-color: $color-white-6;
+			background-color: $color-secondary-6;
 		}
 	}
 </style>

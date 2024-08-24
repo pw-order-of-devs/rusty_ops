@@ -94,6 +94,6 @@
 	}
 
 	.bottom-line {
-		box-shadow: 0 -0.02rem 0 $color-white-2 inset;
+		box-shadow: 0 -0.02rem 0 $color-secondary-2 inset;
 	}
 </style>
