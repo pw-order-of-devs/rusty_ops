@@ -55,7 +55,7 @@
 	}
 
 	.modal {
-		background: $color-primary-2;
+		background: var(--color-primary-2);
 		font-size: 1.5rem;
 		font-weight: bold;
 		padding: 1rem 3rem;

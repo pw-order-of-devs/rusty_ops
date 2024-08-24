@@ -14,7 +14,7 @@
 	}
 
 	.logo {
-		background-color: $color-primary-2;
+		background-color: var(--color-primary-2);
 	}
 
 	.form {
@@ -34,31 +34,31 @@
 			margin-top: 1.5rem;
 			width: 20rem;
 			padding: 0.8rem;
-			background-color: $color-primary-1;
-			color: $color-secondary-2;
+			background-color: var(--color-primary-1);
+			color: var(--color-secondary-2);
 			font-size: 1rem;
-			border: 0.05rem $color-secondary-2 solid;
+			border: 0.05rem var(--color-secondary-2) solid;
 			border-radius: 2rem;
 		}
 
 		button {
-			background-color: $color-primary-4;
+			background-color: var(--color-primary-3);
 			cursor: pointer;
 		}
 
 		button:hover {
-			background-color: $color-primary-5;
+			background-color: var(--color-primary-5);
 		}
 
 		button:active {
-			background-color: $color-primary-6;
+			background-color: var(--color-primary-7);
 		}
 
 		.login-signup-switch {
 			margin-top: 1rem;
 
 			a {
-				color: $color-secondary-2;
+				color: var(--color-secondary-3);
 			}
 		}
 	}

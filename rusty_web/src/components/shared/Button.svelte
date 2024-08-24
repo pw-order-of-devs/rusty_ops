@@ -32,32 +32,32 @@
 		align-items: center;
 		gap: 0.5rem;
 		padding: 0.5rem 1rem;
-		background-color: $color-secondary-2;
+		background-color: var(--color-secondary-2);
 		border-radius: 0.2rem;
 		cursor: pointer;
-		color: $color-primary-1;
+		color: var(--color-primary-1);
 		text-decoration: none;
 		font-size: 1.2rem;
 
 		&.flat {
 			background-color: transparent;
-			color: $color-secondary-2;
+			color: var(--color-secondary-2);
 
 			&:hover {
-				background-color: $color-primary-3;
+				background-color: var(--color-primary-3);
 			}
 
 			&:active {
-				background-color: $color-primary-5;
+				background-color: var(--color-primary-5);
 			}
 		}
 
 		&:hover {
-			background-color: $color-secondary-4;
+			background-color: var(--color-secondary-4);
 		}
 
 		&:active {
-			background-color: $color-secondary-6;
+			background-color: var(--color-secondary-6);
 		}
 	}
 </style>

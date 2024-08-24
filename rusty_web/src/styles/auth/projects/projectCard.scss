@@ -54,11 +54,11 @@
 
 			a {
 				padding: 0.5rem;
-				border: 0.1rem $color-secondary-2 solid;
+				border: 0.1rem var(--color-secondary-2) solid;
 				border-radius: 0.5rem;
 				cursor: pointer;
 				text-decoration: none;
-				color: $color-secondary-2;
+				color: var(--color-secondary-2);
 			}
 		}
 	}

@@ -17,7 +17,7 @@
 		}
 
 		:global(.active) {
-			background-color: $color-primary-2;
+			background-color: var(--color-primary-2);
 		}
 	}
 
@@ -43,18 +43,18 @@
 				width: 20rem;
 				padding: 0.3rem;
 				font-size: 1rem;
-				border: 0.05rem $color-secondary-2 solid;
+				border: 0.05rem var(--color-secondary-2) solid;
 			}
 
 			input {
 				&.disabled {
-					background-color: $color-primary-2;
-					color: $color-secondary-3;
+					background-color: var(--color-primary-2);
+					color: var(--color-secondary-3);
 				}
 
 				&.enabled {
-					background-color: $color-primary-4;
-					color: $color-secondary-2;
+					background-color: var(--color-primary-4);
+					color: var(--color-secondary-2);
 				}
 			}
 
@@ -62,18 +62,18 @@
 				box-sizing: border-box;
 				width: 20rem;
 				padding: 0.4rem;
-				background-color: $color-primary-2;
-				color: $color-secondary-2;
+				background-color: var(--color-primary-2);
+				color: var(--color-secondary-2);
 				font-size: 1rem;
-				border: 0.05rem $color-secondary-2 solid;
+				border: 0.05rem var(--color-secondary-2) solid;
 				cursor: pointer;
 
 				&:hover {
-					background-color: $color-primary-4;
+					background-color: var(--color-primary-4);
 				}
 
 				&:active {
-					background-color: $color-primary-6;
+					background-color: var(--color-primary-6);
 				}
 			}
 		}

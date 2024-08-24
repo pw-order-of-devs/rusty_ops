@@ -10,10 +10,10 @@
 		margin: 0.5rem;
 		width: 25rem;
 		padding: 0.4rem;
-		background-color: $color-primary-1;
-		color: $color-secondary-2;
+		background-color: var(--color-primary-1);
+		color: var(--color-secondary-2);
 		font-size: 1rem;
-		border: 0.05rem $color-secondary-2 solid;
+		border: 0.05rem var(--color-secondary-2) solid;
 		border-radius: 0.5rem;
 	}
 
@@ -23,7 +23,7 @@
 		padding: 0.5rem;
 
 		:global(.active) {
-			background-color: $color-primary-2;
+			background-color: var(--color-primary-2);
 		}
 	}
 
@@ -54,7 +54,7 @@
 		}
 
 		:global(.active) {
-			background-color: $color-primary-2;
+			background-color: var(--color-primary-2);
 		}
 	}
 

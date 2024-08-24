@@ -24,6 +24,12 @@
 		visited = true;
 		return true;
 	};
+
+	import { afterNavigate } from '$app/navigation';
+	afterNavigate(() => {
+		const theme = import.meta.env.VITE_THEME ?? 'dark';
+		document.documentElement.setAttribute('data-theme', theme);
+	});
 </script>
 
 <Header {token} {authenticated} {isLoginPage} {isRegisterPage} />

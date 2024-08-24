@@ -42,7 +42,7 @@
 			align-items: center;
 
 			height: 3rem;
-			box-shadow: 0 -0.03rem 0 $color-secondary-2 inset;
+			box-shadow: 0 -0.03rem 0 var(--color-secondary-2) inset;
 			overflow-x: scroll;
 			overflow-y: hidden;
 
@@ -56,23 +56,23 @@
 				box-sizing: border-box;
 				background: none;
 				border: none;
-				color: $color-secondary-2;
+				color: var(--color-secondary-2);
 				font-size: 1rem;
 
 				&:not(:last-child) {
-					border-right: 0.03rem $color-secondary-2 solid;
+					border-right: 0.03rem var(--color-secondary-2) solid;
 				}
 
 				&:hover {
-					background-color: $color-primary-3;
+					background-color: var(--color-primary-3);
 				}
 
 				&:active {
-					background-color: $color-primary-5;
+					background-color: var(--color-primary-5);
 				}
 
 				&.selected {
-					background-color: $color-primary-6;
+					background-color: var(--color-primary-6);
 				}
 
 				div:last-child {
@@ -85,7 +85,7 @@
 			height: calc(100vh - 14rem);
 			padding: 0.5rem;
 			line-height: 1.4rem;
-			background-color: $color-primary-2;
+			background-color: var(--color-primary-2);
 			overflow: auto;
 			user-select: text;
 			-moz-user-select: text;

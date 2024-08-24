@@ -91,6 +91,6 @@
 	}
 
 	a {
-		color: $color-secondary-2;
+		color: var(--color-secondary-2);
 	}
 </style>
