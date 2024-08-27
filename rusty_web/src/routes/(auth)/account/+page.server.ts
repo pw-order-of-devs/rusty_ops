@@ -1,5 +1,5 @@
 import { login } from '$lib/api/auth';
-import { changePassword, deleteAccount, getCurrentUser } from '$lib/api/users';
+import { changePassword, deleteAccount, getCurrentUser, updatePreferences } from '$lib/api/users';
 import { bearerAuthHeader } from '$lib/utils/api';
 
 export const actions = {
@@ -28,6 +28,13 @@ export const actions = {
 		const body = await request.json();
 		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');
 		const result = await deleteAccount(jwtToken, body.username);
+
+		return JSON.stringify(result);
+	},
+	updatePreferences: async ({ request, cookies }) => {
+		const body = await request.json();
+		const jwtToken = bearerAuthHeader(cookies.get('rustyToken') ?? '');
+		const result = await updatePreferences(jwtToken, body.username, body.preferences);
 
 		return JSON.stringify(result);
 	}

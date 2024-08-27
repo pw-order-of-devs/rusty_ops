@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
@@ -12,6 +12,11 @@
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>
+
+<script>
+	const theme = localStorage.getItem('theme') ?? 'dark';
+	document.documentElement.setAttribute('data-theme', theme);
+</script>
 
 <style lang="scss">
 	@import '/src/styles/app.scss';

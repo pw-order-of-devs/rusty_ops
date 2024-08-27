@@ -1,4 +1,39 @@
-import { basicAuthHeader, fetchPost } from '$lib/utils/api';
+import { basicAuthHeader, bearerAuthHeader, fetchPost } from '$lib/utils/api';
+
+const getPreferencesQuery = () => {
+	return `query {
+		users {
+			getCurrent {
+				preferences
+			}
+		}
+	}`;
+};
+
+export const getPreferences = async (auth: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: getPreferencesQuery() }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Get user preferences failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.users?.getCurrent?.preferences;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Get user preferences failed']
+		};
+	}
+};
 
 export const login = async (login: string, password: string) => {
 	try {
@@ -22,9 +57,8 @@ export const login = async (login: string, password: string) => {
 			} else if (data) {
 				const token = data?.auth?.login;
 				if (token) {
-					return {
-						token
-					};
+					const preferences = await getPreferences(bearerAuthHeader(token));
+					return { preferences, token };
 				} else {
 					return {
 						errors: ['Authentication Failed']

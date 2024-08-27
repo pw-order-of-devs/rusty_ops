@@ -1,4 +1,5 @@
 use mockito::ServerGuard;
+use serde_json::Value;
 use testcontainers::{ContainerAsync, Image};
 
 use commons::errors::RustyError;
@@ -80,6 +81,7 @@ pub async fn create_user(db_client: &DbClient) -> Result<String, RustyError> {
                 email: "user@test.org".to_string(),
                 username: USER_NAME.to_string(),
                 password: bcrypt::encode(USER_PASS)?,
+                preferences: Value::Null,
             }
             .to_value()?,
         )

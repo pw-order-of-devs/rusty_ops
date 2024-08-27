@@ -39,6 +39,8 @@
 
 	const logout = () => {
 		deleteTokenCookie();
+		localStorage.clear();
+		localStorage.setItem('theme', import.meta.env.VITE_THEME);
 		toastInfo('Session has ended');
 		goto('/', { replaceState: true, invalidateAll: true });
 		return true;

@@ -116,6 +116,25 @@ pub async fn change_password(
     }
 }
 
+pub async fn update_preferences(
+    db: &DbClient,
+    cred: &Credential,
+    username: &str,
+    preferences: &str,
+) -> Result<String, RustyError> {
+    let cred_username = get_username_claim(cred)?;
+    if cred_username != username {
+        return Err(RustyError::UnauthorizedError);
+    }
+
+    if let Some(mut user) = get_by_username(db, username).await? {
+        user.preferences = Value::String(preferences.to_string());
+        db.update(USERS_INDEX, &user.id, &user.to_value()?).await
+    } else {
+        Err(RustyError::AsyncGraphqlError("user not found".to_string()))
+    }
+}
+
 pub async fn delete_by_username(
     db: &DbClient,
     cred: &Credential,

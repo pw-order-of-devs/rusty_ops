@@ -1,3 +1,4 @@
+use serde_json::Value;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
@@ -24,6 +25,7 @@ async fn get_all_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),
@@ -51,6 +53,7 @@ async fn get_by_id_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),
@@ -80,6 +83,7 @@ async fn get_by_username_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),
@@ -163,6 +167,7 @@ async fn create_already_exists_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),

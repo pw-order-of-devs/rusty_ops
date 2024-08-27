@@ -116,3 +116,42 @@ export const deleteAccount = async (auth: string, username: string) => {
 		};
 	}
 };
+
+const updatePreferencesQuery = (username: string, preferences: string) => {
+	return `mutation {
+		users {
+			updatePreferences(
+				username: "${username}",
+				preferences: ${JSON.stringify(preferences)},
+			)
+		}
+	}`;
+};
+
+export const updatePreferences = async (auth: string, username: string, preferences: string) => {
+	try {
+		const response = await fetchPost(
+			auth,
+			JSON.stringify({ query: updatePreferencesQuery(username, preferences) })
+		);
+
+		if (!response.ok) {
+			return {
+				errors: ['Update user preferences failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.users?.updatePreferences;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Update user preferences failed']
+		};
+	}
+};

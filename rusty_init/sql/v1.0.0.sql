@@ -10,7 +10,8 @@ create table if not exists rusty.users (
     id varchar(36) primary key,
     email varchar(512) unique not null,
     username varchar(512) unique not null,
-    password varchar(512) not null
+    password varchar(512) not null,
+    preferences text
 );
 
 create table if not exists rusty.roles (

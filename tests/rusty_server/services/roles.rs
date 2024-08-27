@@ -1,3 +1,4 @@
+use serde_json::Value;
 use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
@@ -24,6 +25,7 @@ async fn assign_by_id_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),
@@ -63,6 +65,7 @@ async fn assign_by_name_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),
@@ -129,6 +132,7 @@ async fn assign_no_role_test() {
                 email: "user@test.org".to_string(),
                 username: "user".to_string(),
                 password: "pass".to_string(),
+                preferences: Value::Null,
             }
             .to_value()
             .unwrap(),

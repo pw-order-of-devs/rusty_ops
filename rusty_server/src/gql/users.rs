@@ -102,6 +102,25 @@ impl UsersMutation {
     }
 
     #[auth_macro::authenticate(bearer)]
+    async fn update_preferences(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        preferences: String,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `users::updatePreferences` request");
+        let id = service::update_preferences(
+            ctx.data::<DbClient>()?,
+            ctx.data::<Credential>()?,
+            &username,
+            &preferences,
+        )
+        .await?;
+        log::debug!("`users::updatePreferences`: updated preferences for user with id `{id}`");
+        Ok(id)
+    }
+
+    #[auth_macro::authenticate(bearer)]
     async fn delete_by_username(
         &self,
         ctx: &Context<'_>,

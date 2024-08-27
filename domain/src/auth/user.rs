@@ -1,5 +1,6 @@
 use async_graphql::{InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 use serde_valid::{validation, Validate};
 
 use commons::hashing::bcrypt;
@@ -15,6 +16,8 @@ pub struct UserModel {
     pub email: String,
     /// username
     pub username: String,
+    /// preferences
+    pub preferences: Value,
 }
 
 /// A struct representing a User.
@@ -28,6 +31,9 @@ pub struct User {
     pub username: String,
     /// password
     pub password: String,
+    /// preferences
+    #[serde(default = "default_preferences")]
+    pub preferences: Value,
 }
 
 /// A struct representing the registration of a user.
@@ -48,6 +54,10 @@ pub struct RegisterUser {
     #[validate(max_length = 512)]
     #[validate(custom(validate_password))]
     pub password: String,
+}
+
+fn default_preferences() -> Value {
+    Value::Object(Map::new())
 }
 
 fn validate_email(email: &str) -> Result<(), validation::Error> {
@@ -113,6 +123,7 @@ impl From<&RegisterUser> for User {
             email: value.clone().email,
             username: value.clone().username,
             password: bcrypt::encode(&value.password).unwrap_or_default(),
+            preferences: Value::Object(Map::new()),
         }
     }
 }
@@ -123,6 +134,7 @@ impl From<&User> for UserModel {
             id: value.clone().id,
             email: value.clone().email,
             username: value.clone().username,
+            preferences: value.clone().preferences,
         }
     }
 }

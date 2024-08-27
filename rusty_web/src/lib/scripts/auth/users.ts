@@ -22,3 +22,10 @@ export const deleteAccount = async (username: string) => {
 		body: JSON.stringify({ username })
 	});
 };
+
+export const updatePreferences = async (username: string, preferences: string) => {
+	return await fetch('?/updatePreferences', {
+		method: 'POST',
+		body: JSON.stringify({ username, preferences })
+	});
+};

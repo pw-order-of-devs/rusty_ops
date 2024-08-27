@@ -15,6 +15,7 @@
 	$: {
 		if (form?.token) {
 			setTokenCookie(form.token);
+			localStorage.setItem('preferences', form.preferences);
 			toastSuccess('Account created successfully!');
 			goto('/home', { replaceState: true, invalidateAll: true });
 		} else if (form?.errors) {

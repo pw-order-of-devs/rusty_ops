@@ -5,6 +5,8 @@
 	import { faCookieBite } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { SvelteToast } from '@zerodevx/svelte-toast';
+	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 
 	export let data;
 	let token = '';
@@ -25,9 +27,12 @@
 		return true;
 	};
 
-	import { afterNavigate } from '$app/navigation';
 	afterNavigate(() => {
-		const theme = import.meta.env.VITE_THEME ?? 'dark';
+		const theme =
+			JSON.parse(localStorage.getItem('preferences') ?? '{}')?.theme ??
+			import.meta.env.VITE_THEME ??
+			'dark';
+		localStorage.setItem('theme', theme);
 		document.documentElement.setAttribute('data-theme', theme);
 	});
 </script>

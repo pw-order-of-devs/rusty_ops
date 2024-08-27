@@ -16,6 +16,7 @@
 	$: {
 		if (form?.token) {
 			setTokenCookie(form.token);
+			localStorage.setItem('preferences', form.preferences);
 			toastSuccess('Welcome!');
 			goto(data.redirect, { replaceState: true, invalidateAll: true });
 		} else if (form?.errors) {
