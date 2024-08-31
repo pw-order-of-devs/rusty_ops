@@ -1,6 +1,6 @@
 [workspace]
-members = ["rusty_*", "auth*", "commons", "domain", "messaging", "persist", "tests"]
-default-members = ["rusty_*", "auth*", "commons", "domain", "messaging", "persist"]
+members = ["rusty_*", "auth*", "commons", "domain", "messaging", "persist", "secret", "tests"]
+default-members = ["rusty_*", "auth*", "commons", "domain", "messaging", "persist", "secret"]
 exclude = ["rusty_web"]
 resolver = "2"
 
@@ -31,6 +31,7 @@ bollard = "0.17"
 chrono = "0.4"
 futures-lite = "2.3"
 futures-util = "0.3"
+hashicorp_vault = "2.1"
 hmac = "0.12"
 jwt = "0.16"
 log = "0.4"

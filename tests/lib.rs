@@ -17,6 +17,9 @@ mod messaging;
 mod persist;
 
 #[cfg(test)]
+mod secret;
+
+#[cfg(test)]
 mod rusty_agent;
 
 #[cfg(test)]

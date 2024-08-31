@@ -13,6 +13,7 @@
 - [domain](domain.md)
 - [messaging](messaging.md)
 - [persist](persist.md)
+- [secret](secret.md)
 
 ### Macros:
 - [auth_macro](auth_macro.md)

@@ -413,8 +413,7 @@ async fn create_test_entry(
                 date: chrono::Utc::now().to_rfc3339(),
                 number,
             }
-            .to_value()
-            .unwrap(),
+            .to_value()?,
         )
         .await
 }
