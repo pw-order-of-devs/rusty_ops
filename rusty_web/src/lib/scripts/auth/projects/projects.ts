@@ -3,13 +3,18 @@ import type { Group } from '$lib/domain/group';
 import { toastError } from '$lib/ui/toasts';
 import { parseResponse } from '$lib/scripts/utils/parse';
 
-export const groupClicked = async (entry: Group, loading: Writable<boolean>, data: any) => {
+export const groupClicked = async (
+	entry: Group,
+	loading: Writable<boolean>,
+	source: string,
+	data: any
+) => {
 	if (entry.id === data.groups?.active?.id) {
 		return;
 	}
 	loading.update(() => true);
 	data.groups!.active = entry;
-	const response = await fetchProjects(entry.id, '', 1);
+	const response = await fetchProjects(entry.id, source, '', 1);
 
 	if (!response.ok) {
 		toastError('Error while fetching projects');
@@ -21,14 +26,15 @@ export const groupClicked = async (entry: Group, loading: Writable<boolean>, dat
 	return data;
 };
 
-export const projectsFilterKeyPressed = async (
+export const projectsFilterChanged = async (
 	loading: Writable<boolean>,
 	groupId: string,
 	filter: string,
+	source: string,
 	data: any
 ) => {
 	loading.update(() => true);
-	const response = await fetchProjects(groupId, filter, 1);
+	const response = await fetchProjects(groupId, source, filter, 1);
 
 	if (!response.ok) {
 		toastError('Error while fetching projects');
@@ -44,6 +50,7 @@ export const projectsListScrolled = async (
 	loading: Writable<boolean>,
 	groupId: string,
 	filter: string,
+	source: string,
 	data: any
 ) => {
 	if (scrollable.scrollTop + scrollable.clientHeight >= scrollable.scrollHeight) {
@@ -52,7 +59,7 @@ export const projectsListScrolled = async (
 		}
 
 		loading.update(() => true);
-		const response = await fetchProjects(groupId, filter, data.projects!.page + 1);
+		const response = await fetchProjects(groupId, source, filter, data.projects!.page + 1);
 
 		if (!response.ok) {
 			toastError('Error while fetching projects');
@@ -66,10 +73,10 @@ export const projectsListScrolled = async (
 	return data;
 };
 
-export const fetchProjects = async (id: string, name: string, pageNumber: number) => {
+export const fetchProjects = async (id: string, source: string, name: string, pageNumber: number) => {
 	return await fetch('?/fetchProjects', {
 		method: 'POST',
-		body: JSON.stringify({ groupId: `"${id}"`, pageNumber, name })
+		body: JSON.stringify({ groupId: `"${id}"`, pageNumber, source, name })
 	});
 };
 

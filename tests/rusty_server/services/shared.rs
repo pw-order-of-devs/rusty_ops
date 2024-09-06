@@ -1,7 +1,7 @@
 use domain::agents::Agent;
 use domain::jobs::Job;
 use domain::pipelines::{Pipeline, PipelineStatus};
-use domain::projects::{Group, Project};
+use domain::projects::{Group, Project, Source};
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 use std::collections::HashMap;
@@ -27,9 +27,10 @@ pub(crate) async fn create_project(db_client: &DbClient) -> String {
             "projects",
             &Project {
                 id: uuid::Uuid::new_v4().to_string(),
-                name: "sample".to_string(),
+                source: Source::Internal,
+                name: Some("sample".to_string()),
                 url: None,
-                main_branch: "master".to_string(),
+                main_branch: Some("master".to_string()),
                 group_id: None,
             }
             .to_value()
@@ -45,9 +46,10 @@ pub(crate) async fn create_project_in_group(db_client: &DbClient, id: &str) -> S
             "projects",
             &Project {
                 id: uuid::Uuid::new_v4().to_string(),
-                name: "sample".to_string(),
+                source: Source::Internal,
+                name: Some("sample".to_string()),
                 url: None,
-                main_branch: "master".to_string(),
+                main_branch: Some("master".to_string()),
                 group_id: Some(id.to_string()),
             }
             .to_value()

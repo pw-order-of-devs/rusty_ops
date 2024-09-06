@@ -16,7 +16,7 @@ pub async fn cleanup(
     stage_name: &str,
     status: PipelineStatus,
 ) {
-    let _ = std::fs::remove_dir_all(&format!("{WORKING_DIR}/{pipeline_id}"));
+    let _ = std::fs::remove_dir_all(format!("{WORKING_DIR}/{pipeline_id}"));
     let _ = update_stage(pipeline_id, uuid, stage_name, status).await;
     let _ = finalize(pipeline_id, uuid, status).await;
     let _ = messaging

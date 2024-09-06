@@ -14,6 +14,14 @@ create table if not exists rusty.users (
     preferences text
 );
 
+create table if not exists rusty.user_credential (
+    id varchar(36) primary key,
+    user_id text not null,
+    constraint fk_credential_user
+        foreign key(user_id)
+            references rusty.users(id)
+);
+
 create table if not exists rusty.roles (
     id varchar(36) primary key,
     name text not null,
@@ -48,9 +56,10 @@ create table if not exists rusty.project_groups (
 
 create table if not exists rusty.projects (
     id varchar(36) primary key,
-    name text not null,
-    url text not null,
-    main_branch varchar(256) not null,
+    source varchar(16) not null,
+    name text,
+    url text,
+    main_branch varchar(256),
     group_id varchar(36)
 );
 

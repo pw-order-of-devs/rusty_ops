@@ -1,10 +1,11 @@
 import { fetchPost } from '$lib/utils/api';
 import type { Project } from '$lib/domain/project';
 
-const getProjectsQuery = (page: number, group: string, name: string) => {
+const getProjectsQuery = (page: number, group: string, source: string, name: string) => {
 	const groupMatch = group.match(/[a-z-]/gi);
 	const groupIdFilter = `group_id: ${groupMatch === null ? null : `{ equals: ${group} }`}`;
-	const filter = `filter: { ${groupIdFilter}, name: { contains: "${name}" } }, `;
+	const nameFilter = `name: { contains: "${name === undefined ? "" : name}" }`;
+	const filter = `filter: { ${groupIdFilter}, ${nameFilter}, source: { equals: ${source} } }, `;
 	const options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
 
 	return `query {
@@ -15,6 +16,7 @@ const getProjectsQuery = (page: number, group: string, name: string) => {
 				pageSize
 				entries {
 					id
+					source
 					name
 					url
 					jobs {
@@ -33,11 +35,12 @@ const getProjectsQuery = (page: number, group: string, name: string) => {
 	}`;
 };
 
-export const fetchProjects = async (auth: string, page: number, group: string, name: string) => {
+export const fetchProjects = async (auth: string, page: number, group: string, source: string, name: string) => {
 	try {
+		console.log(getProjectsQuery(page, group, source, name))
 		const response = await fetchPost(
 			auth,
-			JSON.stringify({ query: getProjectsQuery(page, group, name) })
+			JSON.stringify({ query: getProjectsQuery(page, group, source, name) })
 		);
 
 		if (!response.ok) {
@@ -92,6 +95,7 @@ const getProjectByIdQuery = (id: string) => {
 		projects {
 			getById(id: "${id}"){
 				id
+				source
 				name
 				url
 			}

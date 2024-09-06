@@ -11,7 +11,7 @@
 	} from '$lib/scripts/auth/projects/groups';
 	import {
 		fetchProjects,
-		projectsFilterKeyPressed,
+		projectsFilterChanged,
 		projectsListScrolled
 	} from '$lib/scripts/auth/projects/projects';
 	import { groupClicked } from '$lib/scripts/auth/projects/projects';
@@ -28,13 +28,14 @@
 
 	let groupsFilter = '';
 	let projectsFilter = '';
+	let projectsSource = import.meta.env.VITE_DEFAULT_PROJECT_SOURCE ?? 'INTERNAL';
 
 	let pageData: ProjectsData | undefined = undefined;
 
 	onMount(async () => {
 		loading.update(() => true);
 		let groups = await parseResponse(await fetchGroups('', 1));
-		let projects = await parseResponse(await fetchProjects('', '', 1));
+		let projects = await parseResponse(await fetchProjects('', projectsSource, '', 1));
 		pageData = { groups, projects };
 		loading.update(() => false);
 	});
@@ -44,7 +45,7 @@
 			return;
 		}
 
-		pageData = await groupClicked(entry, loading, pageData);
+		pageData = await groupClicked(entry, loading, projectsSource, pageData);
 		projectsFilter = '';
 	};
 
@@ -62,6 +63,7 @@
 			scrollableProjects,
 			loadingProjects,
 			groupId,
+			projectsSource,
 			projectsFilter,
 			pageData
 		);
@@ -69,7 +71,12 @@
 
 	const projectsFilterKeyPressed_ = async () => {
 		let groupId = pageData?.groups?.active?.id ?? '';
-		pageData = await projectsFilterKeyPressed(loadingProjects, groupId, projectsFilter, pageData);
+		pageData = await projectsFilterChanged(loadingProjects, groupId, projectsFilter, projectsSource, pageData);
+	};
+
+	const projectsSourceChanged_ = async () => {
+		let groupId = pageData?.groups?.active?.id ?? '';
+		pageData = await projectsFilterChanged(loadingProjects, groupId, projectsFilter, projectsSource, pageData);
 	};
 </script>
 
@@ -107,6 +114,14 @@
 	</div>
 
 	<div>
+		<select
+			class="projects-source"
+			bind:value={projectsSource}
+			on:change={projectsSourceChanged_}
+		>
+		    <option value="INTERNAL" selected={projectsSource === 'Internal'}>Internal</option>
+		    <option value="GITHUB" selected={projectsSource === 'GitHub'}>GitHub</option>
+		</select>
 		<input
 			class="projects-filter"
 			type="text"

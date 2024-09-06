@@ -92,7 +92,7 @@ impl Persistence for RedisClient {
     async fn create(&self, index: &str, item: &Value) -> Result<String, RustyError> {
         let (id, item) = (get_value_id(item), serde_json::to_string(item)?);
         let mut conn = self.client.get().await?;
-        conn.set(format!("{index}_{id}"), &item).await?;
+        let _: () = conn.set(format!("{index}_{id}"), &item).await?;
         let _ = messaging::internal::send(
             &json!({ "index": index, "op": "create", "item": item }).to_string(),
         )
@@ -107,7 +107,7 @@ impl Persistence for RedisClient {
             .get_one(index, json!({ "id": { "equals": id } }))
             .await?;
         if found.is_some() {
-            conn.set(format!("{index}_{id}"), &item).await?;
+            let _: () = conn.set(format!("{index}_{id}"), &item).await?;
             let _ = messaging::internal::send(
                 &json!({ "index": index, "op": "update", "item": item }).to_string(),
             )
@@ -122,7 +122,7 @@ impl Persistence for RedisClient {
 
     async fn append(&self, index: &str, id: &str, entry: &str) -> Result<u64, RustyError> {
         let mut conn = self.client.get().await?;
-        conn.rpush(format!("{index}_{id}"), entry).await?;
+        let _: () = conn.rpush(format!("{index}_{id}"), entry).await?;
         Ok(1)
     }
 
@@ -131,7 +131,7 @@ impl Persistence for RedisClient {
         let filter = delete_one_filter(&filter);
         let item: Option<Value> = self.get_one(index, filter).await?;
         if let Some(item) = item {
-            conn.del(format!("{index}_{}", get_value_id(&item))).await?;
+            let _: () = conn.del(format!("{index}_{}", get_value_id(&item))).await?;
             Ok(1)
         } else {
             Ok(0)
@@ -142,7 +142,7 @@ impl Persistence for RedisClient {
         let mut conn = self.client.get().await?;
         let keys: Vec<String> = conn.keys(format!("{index}_*")).await?;
         for key in &keys {
-            conn.del(key).await?;
+            let _: () = conn.del(key).await?;
         }
         Ok(keys.len() as u64)
     }

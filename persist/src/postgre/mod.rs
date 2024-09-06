@@ -82,7 +82,7 @@ impl PostgreSQLClient {
         for entry in std::fs::read_dir(base_path)? {
             let name = entry?.file_name();
             let name = name.to_string_lossy();
-            let script = std::fs::read_to_string(&format!("{base_path}/{name}"))?;
+            let script = std::fs::read_to_string(format!("{base_path}/{name}"))?;
             self.execute_sql(&script).await?;
         }
 

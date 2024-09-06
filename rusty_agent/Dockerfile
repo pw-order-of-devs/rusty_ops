@@ -14,6 +14,7 @@ COPY commons/ commons/
 COPY domain/ domain/
 COPY messaging/ messaging/
 COPY persist/ persist/
+COPY secret/ secret/
 COPY rusty_agent/ rusty_agent/
 COPY rusty_init/ rusty_init/
 COPY rusty_server/ rusty_server/
