@@ -72,7 +72,7 @@ pub async fn create(
         )));
     }
 
-    shared::create(db, AGENTS_INDEX, agent, |r| {
+    shared::create_parse(db, AGENTS_INDEX, agent, |r| {
         Agent::from(&r, var_or_default("AGENT_TTL", 300))
     })
     .await

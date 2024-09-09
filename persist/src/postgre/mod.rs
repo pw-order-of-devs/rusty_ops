@@ -161,7 +161,6 @@ impl Persistence for PostgreSQLClient {
         let conn = self.client.get().await?;
         let values = parse_filter(&Some(item.clone()), false).join(", ");
         let statement = format!("insert into {}.{index} values ({values})", self.schema);
-        println!("{statement}");
         let _ = conn.execute(&statement, &[]).await?;
         let _ = messaging::internal::send(
             &json!({ "index": index, "op": "create", "item": serde_json::to_string(item)? })

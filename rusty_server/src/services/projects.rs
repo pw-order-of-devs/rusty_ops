@@ -113,7 +113,7 @@ pub async fn create(
             "project group not found".to_string(),
         ))
     } else {
-        shared::create(db, PROJECTS_INDEX, project, |r| Project::from(&r)).await
+        shared::create_parse(db, PROJECTS_INDEX, project, |r| Project::from(&r)).await
     }
 }
 

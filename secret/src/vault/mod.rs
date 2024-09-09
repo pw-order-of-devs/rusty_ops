@@ -61,7 +61,7 @@ impl Secret for VaultClient {
     }
 
     async fn put(&self, key: &str, value: &str) -> Result<(), RustyError> {
-        let res = self
+        let _ = self
             .client
             .post(format!("{}v1/secret/data/{key}", &self.vault_url))
             .header("X-Vault-Token", &self.token)
@@ -69,7 +69,6 @@ impl Secret for VaultClient {
             .json(&json!({ "data": { "key": value } }))
             .send()
             .await?;
-        println!("{res:?}");
         Ok(())
     }
 }

@@ -50,7 +50,25 @@ pub async fn get_one<T: RustyDomainItem>(
     Ok(serde_json::from_value(value)?)
 }
 
-pub async fn create<S, T, F>(
+pub async fn create(
+    db: &DbClient,
+    index: &str,
+    base: impl Validate,
+    item: impl RustyDomainItem,
+) -> Result<String, RustyError> {
+    base.validate().map_err(|err| {
+        log::error!("`{index}::create`: {err}");
+        err
+    })?;
+
+    let id = db.create(index, &item.to_value()?).await.map_err(|err| {
+        log::error!("`{index}::create`: {err}");
+        err
+    })?;
+    Ok(id)
+}
+
+pub async fn create_parse<S, T, F>(
     db: &DbClient,
     index: &str,
     item: T,

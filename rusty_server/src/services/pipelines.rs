@@ -113,7 +113,7 @@ pub async fn create(
             if pipeline.branch.is_empty() {
                 pipeline.branch = project.main_branch;
             }
-            shared::create(db, PIPELINES_INDEX, register, |_| pipeline).await
+            shared::create_parse(db, PIPELINES_INDEX, register, |_| pipeline).await
         } else {
             Err(RustyError::ValidationError("project not found".to_string()))
         }

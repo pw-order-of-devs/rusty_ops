@@ -103,7 +103,7 @@ pub async fn create(
 ) -> Result<String, RustyError> {
     let username = get_username_claim(cred)?;
     auth::authorize(db, &username, "PROJECT_GROUPS:CREATE").await?;
-    shared::create(db, GROUPS_INDEX, group, |r| Group::from(&r)).await
+    shared::create_parse(db, GROUPS_INDEX, group, |r| Group::from(&r)).await
 }
 
 pub async fn delete_by_id(db: &DbClient, cred: &Credential, id: &str) -> Result<u64, RustyError> {

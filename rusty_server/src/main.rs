@@ -27,9 +27,10 @@ async fn main() {
     commons::logger::init();
     let db = persist::init().await;
     let mq = messaging::init().await;
+    let sc = secret::init().await;
     schedulers::init(&db, &mq);
     gql::public_gql_endpoints_init();
-    let schema = gql::build_schema(&db);
+    let schema = gql::build_schema(&db, &sc);
 
     // start the http server
     let app = Router::new()

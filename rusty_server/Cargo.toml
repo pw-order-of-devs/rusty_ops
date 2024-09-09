@@ -26,6 +26,7 @@ commons = { path = "../commons", features = ["errors", "logging"] }
 domain = { path = "../domain" }
 messaging = { path = "../messaging", features = ["external", "internal"] }
 persist = { path = "../persist" }
+secret = { path = "../secret" }
 
 async-graphql.workspace = true
 async-graphql-axum.workspace = true

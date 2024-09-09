@@ -56,6 +56,42 @@ pub struct RegisterUser {
     pub password: String,
 }
 
+/// A struct representing a User Credential.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct UserCredential {
+    /// credential id
+    pub id: String,
+    /// credential name
+    pub name: String,
+    /// credential token value
+    pub token: String,
+    /// credential user id
+    pub user_id: String,
+}
+
+/// A struct representing a User Credential Model.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct UserCredentialModel {
+    /// credential id
+    pub id: String,
+    /// credential name
+    pub name: String,
+    /// credential user id
+    pub user_id: String,
+}
+
+/// A struct representing a User Credential.
+#[derive(Clone, Debug, InputObject, Serialize, Deserialize, Validate)]
+pub struct RegisterUserCredential {
+    /// credential name
+    #[validate(min_length = 1)]
+    #[validate(max_length = 128)]
+    pub name: String,
+    /// credential token value
+    #[validate(min_length = 1)]
+    pub token: String,
+}
+
 fn default_preferences() -> Value {
     Value::Object(Map::new())
 }
@@ -143,6 +179,10 @@ impl RustyDomainItem for UserModel {}
 
 impl RustyDomainItem for User {}
 
+impl RustyDomainItem for UserCredential {}
+
+impl RustyDomainItem for UserCredentialModel {}
+
 /// A struct representing a paged result Users.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct PagedUsers {
@@ -154,4 +194,17 @@ pub struct PagedUsers {
     pub page_size: usize,
     /// data returned by query
     pub entries: Vec<UserModel>,
+}
+
+/// A struct representing a paged result Users.
+#[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
+pub struct PagedUserCredentials {
+    /// total amount of entries found
+    pub total: usize,
+    /// current page
+    pub page: usize,
+    /// size of a page
+    pub page_size: usize,
+    /// data returned by query
+    pub entries: Vec<UserCredential>,
 }

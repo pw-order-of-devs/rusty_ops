@@ -1,14 +1,16 @@
 use async_graphql::{Context, Object};
 use serde_json::Value;
 
-use commons::errors::RustyError;
-use domain::auth::credentials::Credential;
-use domain::auth::user::{PagedUsers, RegisterUser, UserModel};
-use domain::commons::search::SearchOptions;
-use persist::db_client::DbClient;
-
 use crate::gql::{get_public_gql_endpoints, shared::paginate};
 use crate::services::users as service;
+use commons::errors::RustyError;
+use domain::auth::credentials::Credential;
+use domain::auth::user::{
+    PagedUserCredentials, PagedUsers, RegisterUser, RegisterUserCredential, UserModel,
+};
+use domain::commons::search::SearchOptions;
+use persist::db_client::DbClient;
+use secret::sc_client::ScClient;
 
 pub struct UsersQuery;
 
@@ -62,6 +64,32 @@ impl UsersQuery {
             service::get_current(ctx.data::<DbClient>()?, ctx.data::<Credential>()?).await?;
         log::debug!("`users::getCurrent`: found");
         Ok(entry)
+    }
+
+    #[auth_macro::authenticate(bearer)]
+    async fn get_user_credentials(
+        &self,
+        ctx: &Context<'_>,
+        options: Option<SearchOptions>,
+        username: String,
+    ) -> async_graphql::Result<PagedUserCredentials, RustyError> {
+        log::debug!("handling `users::credentials::get` request");
+        let entries = service::get_credentials(
+            ctx.data::<DbClient>()?,
+            ctx.data::<ScClient>()?,
+            ctx.data::<Credential>()?,
+            &options,
+            &username,
+        )
+        .await?;
+        let (total, page, page_size, entries) = paginate(&entries, None);
+        log::debug!("`users::credentials::get`: found {} entries", total);
+        Ok(PagedUserCredentials {
+            total,
+            page,
+            page_size,
+            entries,
+        })
     }
 }
 
@@ -117,6 +145,29 @@ impl UsersMutation {
         )
         .await?;
         log::debug!("`users::updatePreferences`: updated preferences for user with id `{id}`");
+        Ok(id)
+    }
+
+    #[auth_macro::authenticate(bearer)]
+    async fn add_credential(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        credential: RegisterUserCredential,
+    ) -> async_graphql::Result<String, RustyError> {
+        log::debug!("handling `users::addCredential` request");
+        let id = service::add_credential(
+            ctx.data::<DbClient>()?,
+            ctx.data::<ScClient>()?,
+            ctx.data::<Credential>()?,
+            &username,
+            &credential,
+        )
+        .await?;
+        log::debug!(
+            "`users::addCredential`: registered new credential `{}` for user with id `{id}`",
+            credential.name
+        );
         Ok(id)
     }
 

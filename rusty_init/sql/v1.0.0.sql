@@ -14,8 +14,9 @@ create table if not exists rusty.users (
     preferences text
 );
 
-create table if not exists rusty.user_credential (
+create table if not exists rusty.credentials (
     id varchar(36) primary key,
+    name varchar(128) not null,
     user_id text not null,
     constraint fk_credential_user
         foreign key(user_id)

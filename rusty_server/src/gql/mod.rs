@@ -4,9 +4,9 @@ use async_graphql::{Object, Schema};
 use commons::env::var_or_default;
 use once_cell::sync::Lazy;
 
-use persist::db_client::DbClient;
-
 use crate::gql::pipelines::PipelineSubscription;
+use persist::db_client::DbClient;
+use secret::sc_client::ScClient;
 
 mod agents;
 mod auth;
@@ -35,9 +35,10 @@ pub fn get_public_gql_endpoints() -> Vec<String> {
 
 pub type RustySchema = Schema<Query, Mutation, PipelineSubscription>;
 
-pub fn build_schema(database: &DbClient) -> RustySchema {
+pub fn build_schema(database: &DbClient, secret: &ScClient) -> RustySchema {
     Schema::build(Query, Mutation, PipelineSubscription)
         .data(database.clone())
+        .data(secret.clone())
         .finish()
 }
 

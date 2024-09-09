@@ -1,17 +1,20 @@
 use serde_json::{json, Value};
 
+use crate::services::shared::get_username_claim;
+use crate::services::{roles, shared};
 use commons::errors::RustyError;
 use commons::hashing::bcrypt;
 use domain::auth::credentials::Credential;
-use domain::auth::user::{RegisterUser, User, UserModel};
+use domain::auth::user::{
+    RegisterUser, RegisterUserCredential, User, UserCredential, UserCredentialModel, UserModel,
+};
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
-
-use crate::services::shared::get_username_claim;
-use crate::services::{roles, shared};
+use secret::sc_client::ScClient;
 
 const USERS_INDEX: &str = "users";
+const CREDENTIALS_INDEX: &str = "credentials";
 const PERMISSIONS_INDEX: &str = "permissions";
 
 // query
@@ -55,6 +58,39 @@ pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<Use
     .await
 }
 
+pub async fn get_credentials(
+    db: &DbClient,
+    sc: &ScClient,
+    cred: &Credential,
+    options: &Option<SearchOptions>,
+    username: &str,
+) -> Result<Vec<UserCredential>, RustyError> {
+    assert_same_user(cred, username)?;
+
+    if let Some(user) = get_by_username(db, username).await? {
+        let mut credentials = vec![];
+        for item in shared::get_all::<UserCredentialModel>(
+            db,
+            CREDENTIALS_INDEX,
+            &Some(json!({ "user_id": { "equals": user.id } })),
+            options,
+        )
+        .await?
+        {
+            let credential = UserCredential {
+                id: item.id.clone(),
+                name: item.name,
+                token: sc.get(&item.id).await?.unwrap_or_default(),
+                user_id: item.user_id,
+            };
+            credentials.push(credential);
+        }
+        Ok(credentials)
+    } else {
+        Err(RustyError::AsyncGraphqlError("user not found".to_string()))
+    }
+}
+
 // mutate
 
 pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyError> {
@@ -82,7 +118,7 @@ pub async fn create(db: &DbClient, user: RegisterUser) -> Result<String, RustyEr
             "user already exists - email address taken".to_string(),
         ))
     } else {
-        let user_id = shared::create(db, USERS_INDEX, user, |r| User::from(&r)).await?;
+        let user_id = shared::create_parse(db, USERS_INDEX, user, |r| User::from(&r)).await?;
         match roles::assign(db, &Credential::System, &user_id, None, Some("USERS")).await {
             Ok(_) => log::info!("added user {user_id} to group `USERS`"),
             Err(err) => log::warn!("error while adding user `{user_id}` to group `USERS`: {err}"),
@@ -98,10 +134,7 @@ pub async fn change_password(
     old_password: &str,
     new_password: &str,
 ) -> Result<String, RustyError> {
-    let cred_username = get_username_claim(cred)?;
-    if cred_username != username {
-        return Err(RustyError::UnauthorizedError);
-    }
+    assert_same_user(cred, username)?;
 
     if let Some(mut user) = get_by_username(db, username).await? {
         if bcrypt::validate(old_password, &user.password)? {
@@ -122,14 +155,34 @@ pub async fn update_preferences(
     username: &str,
     preferences: &str,
 ) -> Result<String, RustyError> {
-    let cred_username = get_username_claim(cred)?;
-    if cred_username != username {
-        return Err(RustyError::UnauthorizedError);
-    }
+    assert_same_user(cred, username)?;
 
     if let Some(mut user) = get_by_username(db, username).await? {
         user.preferences = Value::String(preferences.to_string());
         db.update(USERS_INDEX, &user.id, &user.to_value()?).await
+    } else {
+        Err(RustyError::AsyncGraphqlError("user not found".to_string()))
+    }
+}
+
+pub async fn add_credential(
+    db: &DbClient,
+    sc: &ScClient,
+    cred: &Credential,
+    username: &str,
+    input: &RegisterUserCredential,
+) -> Result<String, RustyError> {
+    assert_same_user(cred, username)?;
+
+    if let Some(user) = get_by_username(db, username).await? {
+        let credential = UserCredentialModel {
+            id: UserCredential::generate_id(),
+            name: input.name.to_string(),
+            user_id: user.id,
+        };
+        let id = shared::create(db, CREDENTIALS_INDEX, input.clone(), credential).await?;
+        sc.put(&id, &input.token).await?;
+        Ok(id)
     } else {
         Err(RustyError::AsyncGraphqlError("user not found".to_string()))
     }
@@ -140,10 +193,7 @@ pub async fn delete_by_username(
     cred: &Credential,
     username: &str,
 ) -> Result<u64, RustyError> {
-    let cred_username = get_username_claim(cred)?;
-    if cred_username != username {
-        return Err(RustyError::UnauthorizedError);
-    }
+    assert_same_user(cred, username)?;
 
     if let Some(user) = get_by_username(db, username).await? {
         shared::delete_many(
@@ -155,5 +205,14 @@ pub async fn delete_by_username(
         shared::delete_by_id(db, USERS_INDEX, &user.id).await
     } else {
         Err(RustyError::AsyncGraphqlError("user not found".to_string()))
+    }
+}
+
+fn assert_same_user(cred: &Credential, username: &str) -> Result<(), RustyError> {
+    let cred_username = get_username_claim(cred)?;
+    if cred_username == username {
+        Ok(())
+    } else {
+        Err(RustyError::UnauthorizedError)
     }
 }

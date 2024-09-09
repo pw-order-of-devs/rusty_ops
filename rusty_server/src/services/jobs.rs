@@ -115,7 +115,7 @@ pub async fn create(
 ) -> Result<String, RustyError> {
     if let Some(project) = projects::get_by_id(db, cred, &job.project_id, &None, &[]).await? {
         shared::check_project_write_permission(db, cred, &project.id).await?;
-        shared::create(db, JOBS_INDEX, job, |r| Job::from(&r)).await
+        shared::create_parse(db, JOBS_INDEX, job, |r| Job::from(&r)).await
     } else {
         Err(RustyError::ValidationError("project not found".to_string()))
     }
