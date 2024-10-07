@@ -49,6 +49,9 @@ precommit:
 docker_build_server:
 	docker build -t rusty-server -f rusty_server/Dockerfile .
 
+docker_build_server_release:
+	docker build -t rusty-server -f rusty_server/Dockerfile.release .
+
 docker_build_agent:
 	docker build -t rusty-agent -f rusty_agent/Dockerfile .
 

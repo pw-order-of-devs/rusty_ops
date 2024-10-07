@@ -3,7 +3,7 @@ use testcontainers::runners::AsyncRunner;
 use testcontainers_modules::redis::Redis;
 
 use domain::auth::credentials::Credential;
-use domain::projects::{RegisterProject, Source};
+use domain::projects::{RegisterProject, ProjectSource};
 use rusty_server::services::projects as service;
 use rusty_server::services::shared as service_shared;
 
@@ -53,7 +53,7 @@ async fn create_test() {
         &db_client,
         &Credential::System,
         RegisterProject {
-            source: Source::Internal,
+            source: ProjectSource::Internal,
             name: Some("sample".to_string()),
             url: Some("http://dummy.ext".to_string()),
             main_branch: None,
@@ -77,7 +77,7 @@ async fn create_no_group_test() {
         &db_client,
         &Credential::System,
         RegisterProject {
-            source: Source::Internal,
+            source: ProjectSource::Internal,
             name: Some("sample".to_string()),
             url: Some("http://dummy.ext".to_string()),
             main_branch: None,

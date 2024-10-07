@@ -1,13 +1,13 @@
 use rstest::rstest;
 use serde_valid::Validate;
 
-use domain::projects::{Project, RegisterProject, Source};
+use domain::projects::{Project, RegisterProject, ProjectSource};
 
 #[test]
 fn from_register_project_test() {
     let name = "test_01";
     let url = "http://dummy";
-    let input = RegisterProject::new(&Source::Internal, &Some(name.to_string()), url);
+    let input = RegisterProject::new(&ProjectSource::Internal, &Some(name.to_string()), url);
     let project = Project::from(&input);
     assert_eq!(36, project.id.len());
     assert_eq!(Some(name.to_string()), project.name);

@@ -1,4 +1,4 @@
-use async_graphql::{InputObject, SimpleObject};
+use async_graphql::{Enum, InputObject, SimpleObject};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use serde_valid::{validation, Validate};
@@ -56,6 +56,13 @@ pub struct RegisterUser {
     pub password: String,
 }
 
+/// An enum representing a credential source (repository).
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Enum, Serialize, Deserialize)]
+pub enum CredSource {
+    /// credential referencing GitHub
+    GitHub,
+}
+
 /// A struct representing a User Credential.
 #[derive(Clone, Debug, SimpleObject, Serialize, Deserialize)]
 pub struct UserCredential {
@@ -63,6 +70,8 @@ pub struct UserCredential {
     pub id: String,
     /// credential name
     pub name: String,
+    /// credential source
+    pub source: CredSource,
     /// credential token value
     pub token: String,
     /// credential user id
@@ -76,6 +85,8 @@ pub struct UserCredentialModel {
     pub id: String,
     /// credential name
     pub name: String,
+    /// credential source
+    pub source: CredSource,
     /// credential user id
     pub user_id: String,
 }
@@ -87,6 +98,8 @@ pub struct RegisterUserCredential {
     #[validate(min_length = 1)]
     #[validate(max_length = 128)]
     pub name: String,
+    /// credential source
+    pub source: CredSource,
     /// credential token value
     #[validate(min_length = 1)]
     pub token: String,

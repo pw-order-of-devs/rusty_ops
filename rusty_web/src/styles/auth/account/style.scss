@@ -10,7 +10,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		padding: 0.5rem;
-		width: 25rem;
+		width: 22rem;
 
 		:global(div) {
 			cursor: pointer;
@@ -127,6 +127,17 @@
 			.active {
 				box-shadow: 0 0 0 0.2rem red;
 			}
+		}
+
+		.credentials-wrapper {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			align-content: start;
+			gap: 1rem;
+			padding: 1rem;
+			width: 72vw;
+			height: calc(100vh - 10rem);
+			overflow-y: scroll;
 		}
 	}
 }

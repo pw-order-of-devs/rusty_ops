@@ -5,9 +5,7 @@ use crate::services::{roles, shared};
 use commons::errors::RustyError;
 use commons::hashing::bcrypt;
 use domain::auth::credentials::Credential;
-use domain::auth::user::{
-    RegisterUser, RegisterUserCredential, User, UserCredential, UserCredentialModel, UserModel,
-};
+use domain::auth::user::{RegisterUser, RegisterUserCredential, CredSource, User, UserCredential, UserCredentialModel, UserModel};
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
@@ -80,6 +78,7 @@ pub async fn get_credentials(
             let credential = UserCredential {
                 id: item.id.clone(),
                 name: item.name,
+                source: CredSource::GitHub,
                 token: sc.get(&item.id).await?.unwrap_or_default(),
                 user_id: item.user_id,
             };
@@ -178,6 +177,7 @@ pub async fn add_credential(
         let credential = UserCredentialModel {
             id: UserCredential::generate_id(),
             name: input.name.to_string(),
+            source: input.source,
             user_id: user.id,
         };
         let id = shared::create(db, CREDENTIALS_INDEX, input.clone(), credential).await?;

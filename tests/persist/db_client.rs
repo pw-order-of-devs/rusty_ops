@@ -12,7 +12,7 @@ use testcontainers_modules::{mongo::Mongo, postgres::Postgres, redis::Redis};
 use commons::errors::RustyError;
 use domain::jobs::Job;
 use domain::pipelines::{Pipeline, PipelineStatus};
-use domain::projects::{Project, Source};
+use domain::projects::{Project, ProjectSource};
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
 
@@ -171,7 +171,7 @@ where
             &result,
             &Project {
                 id: result.clone(),
-                source: Source::Internal,
+                source: ProjectSource::Internal,
                 name: Some("project_1_u".to_string()),
                 url: Some("url://project_1.ext".to_string()),
                 main_branch: Some("master".to_string()),
@@ -345,7 +345,7 @@ async fn create_project(db_client: &DbClient, name: &str) -> Result<String, Rust
             PROJECTS_INDEX,
             &Project {
                 id: uuid::Uuid::new_v4().to_string(),
-                source: Source::Internal,
+                source: ProjectSource::Internal,
                 name: Some(name.to_string()),
                 url: Some(format!("url://{name}.ext")),
                 main_branch: Some("master".to_string()),

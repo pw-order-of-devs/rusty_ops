@@ -3,3 +3,11 @@ export interface User {
 	email: string;
 	username: string;
 }
+
+export interface UserCredential {
+	id: string;
+	name: string;
+	source: 'GitHub' | 'Gitlab' | 'Bitbucket';
+	token: string;
+	userId: string;
+}

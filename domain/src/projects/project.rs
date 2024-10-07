@@ -7,7 +7,7 @@ use crate::RustyDomainItem;
 
 /// An enum representing a project source (internal or from repository).
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Enum, Serialize, Deserialize)]
-pub enum Source {
+pub enum ProjectSource {
     /// project hosted internally
     Internal,
     /// project referencing GitHub
@@ -20,7 +20,7 @@ pub struct ProjectModel {
     /// project id
     pub id: String,
     /// project source
-    pub source: Source,
+    pub source: ProjectSource,
     /// project name
     pub name: String,
     /// project url
@@ -41,7 +41,7 @@ pub struct Project {
     /// project id
     pub id: String,
     /// project source
-    pub source: Source,
+    pub source: ProjectSource,
     /// project name
     pub name: Option<String>,
     /// project url
@@ -58,7 +58,7 @@ pub struct Project {
 #[derive(Clone, Debug, InputObject, Serialize, Deserialize, Validate)]
 pub struct RegisterProject {
     /// project source
-    pub source: Source,
+    pub source: ProjectSource,
     /// project name
     #[validate(min_length = 1)]
     #[validate(max_length = 512)]
@@ -89,7 +89,7 @@ fn validate_url(url: &Option<String>) -> Result<(), validation::Error> {
 impl RegisterProject {
     /// constructor
     #[must_use]
-    pub fn new(source: &Source, name: &Option<String>, url: &str) -> Self {
+    pub fn new(source: &ProjectSource, name: &Option<String>, url: &str) -> Self {
         Self {
             source: *source,
             name: name.clone(),

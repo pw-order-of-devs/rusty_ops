@@ -29,3 +29,10 @@ export const updatePreferences = async (username: string, preferences: string) =
 		body: JSON.stringify({ username, preferences })
 	});
 };
+
+export const getCredentials = async (username: string) => {
+	return await fetch('?/getCredentials', {
+		method: 'POST',
+		body: JSON.stringify({ username })
+	});
+};

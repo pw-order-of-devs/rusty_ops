@@ -1,4 +1,5 @@
 import { fetchPost } from '$lib/utils/api';
+import type { UserCredential } from '$lib/domain/user';
 
 const getCurrentUserQuery = () => {
 	return `query {
@@ -33,6 +34,56 @@ export const getCurrentUser = async (auth: string) => {
 	} catch (error) {
 		return {
 			errors: ['Get user data failed']
+		};
+	}
+};
+
+const getCredentialsQuery = (username: string) => {
+	return `query {
+		users {
+			getUserCredentials(username: "${username}") {
+				total
+				page
+				pageSize
+				entries {
+					id
+					name
+					token
+					userId
+				}
+			}
+		}
+	}`;
+};
+
+export const getCredentials = async (auth: string, username: string) => {
+	try {
+		const response = await fetchPost(auth, JSON.stringify({ query: getCredentialsQuery(username) }));
+
+		if (!response.ok) {
+			return {
+				errors: ['Get user credentials failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				const paged = data?.users?.getUserCredentials;
+				const credentials: UserCredential[] = paged?.entries ?? [];
+				return {
+					total: paged?.total ?? 0,
+					page: paged?.page ?? 1,
+					pageSize: paged?.pageSize ?? 20,
+					entries: credentials
+				}
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Get user credentials failed']
 		};
 	}
 };

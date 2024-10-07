@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Card from 'src/components/auth/Card.svelte';
+	import Credentials from 'src/components/auth/account/Credentials.svelte';
 	import Profile from 'src/components/auth/account/Profile.svelte';
 	import Personalization from 'src/components/auth/account/Personalization.svelte';
 	import Loader from 'src/components/shared/Loader.svelte';
@@ -38,9 +39,6 @@
 		<div on:click={() => setCurrent('personalization')} role="none">
 			<Card classes={current === 'personalization' ? 'active' : ''}>Personalization</Card>
 		</div>
-		<div on:click={() => setCurrent('permissions')} role="none">
-			<Card classes={current === 'permissions' ? 'active' : ''}>Permissions</Card>
-		</div>
 		<div on:click={() => setCurrent('credentials')} role="none">
 			<Card classes={current === 'credentials' ? 'active' : ''}>Credentials</Card>
 		</div>
@@ -51,7 +49,7 @@
 		{:else if current === 'personalization'}
 			<Personalization {pageData} {loading} />
 		{:else if current === 'credentials'}
-			credentials list
+			<Credentials {pageData} {loading} />
 		{/if}
 	</div>
 </div>
