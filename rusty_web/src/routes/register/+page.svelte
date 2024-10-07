@@ -3,11 +3,11 @@
 	import { onMount } from 'svelte';
 	import { mobileCheck } from '$lib/utils/mobile-check';
 	import { toastError, toastSuccess } from '$lib/ui/toasts';
+	import { setTokenCookie } from '$lib/utils/token';
 	import Loader from 'src/components/shared/Loader.svelte';
 	import { faGears } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { goto } from '$app/navigation';
-	import { setTokenCookie } from '$lib/utils/token';
 
 	let loading = false;
 	export let form;

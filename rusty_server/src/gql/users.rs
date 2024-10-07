@@ -76,7 +76,6 @@ impl UsersQuery {
         log::debug!("handling `users::credentials::get` request");
         let entries = service::get_credentials(
             ctx.data::<DbClient>()?,
-            ctx.data::<ScClient>()?,
             ctx.data::<Credential>()?,
             &options,
             &username,

@@ -1,4 +1,4 @@
-use reqwest::Url;
+use reqwest::{StatusCode, Url};
 use serde_json::json;
 
 use commons::env::var_or_default;
@@ -61,14 +61,17 @@ impl Secret for VaultClient {
     }
 
     async fn put(&self, key: &str, value: &str) -> Result<(), RustyError> {
-        let _ = self
+        match self
             .client
             .post(format!("{}v1/secret/data/{key}", &self.vault_url))
             .header("X-Vault-Token", &self.token)
             .header("X-Vault-Namespace", "/rusty/ops")
             .json(&json!({ "data": { "key": value } }))
             .send()
-            .await?;
-        Ok(())
+            .await?
+            .status() {
+            StatusCode::OK => Ok(()),
+            _ => Err(RustyError::RequestError("Failed to save secret in vault".to_string()))
+        }
     }
 }

@@ -48,7 +48,7 @@ const getCredentialsQuery = (username: string) => {
 				entries {
 					id
 					name
-					token
+					source
 					userId
 				}
 			}
@@ -73,6 +73,19 @@ export const getCredentials = async (auth: string, username: string) => {
 			} else if (data) {
 				const paged = data?.users?.getUserCredentials;
 				const credentials: UserCredential[] = paged?.entries ?? [];
+				credentials.forEach(cred => {
+					switch (cred.source) {
+						case 'GIT_HUB':
+							cred.sourceDisplay = 'GitHub';
+							break;
+						case 'GITLAB':
+							cred.sourceDisplay = 'Gitlab';
+							break;
+						case 'BITBUCKET':
+							cred.sourceDisplay = 'BitBucket';
+							break;
+					}
+				});
 				return {
 					total: paged?.total ?? 0,
 					page: paged?.page ?? 1,

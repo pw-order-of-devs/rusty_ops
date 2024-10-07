@@ -4,10 +4,13 @@ export interface User {
 	username: string;
 }
 
+export type CredSource = 'GIT_HUB' | 'GITLAB' | 'BITBUCKET';
+
 export interface UserCredential {
 	id: string;
 	name: string;
-	source: 'GitHub' | 'Gitlab' | 'Bitbucket';
+	source: CredSource;
+	sourceDisplay: string;
 	token: string;
 	userId: string;
 }

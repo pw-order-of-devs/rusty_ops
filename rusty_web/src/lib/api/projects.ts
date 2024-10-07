@@ -37,7 +37,6 @@ const getProjectsQuery = (page: number, group: string, source: string, name: str
 
 export const fetchProjects = async (auth: string, page: number, group: string, source: string, name: string) => {
 	try {
-		console.log(getProjectsQuery(page, group, source, name))
 		const response = await fetchPost(
 			auth,
 			JSON.stringify({ query: getProjectsQuery(page, group, source, name) })

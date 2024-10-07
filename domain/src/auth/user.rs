@@ -219,5 +219,5 @@ pub struct PagedUserCredentials {
     /// size of a page
     pub page_size: usize,
     /// data returned by query
-    pub entries: Vec<UserCredential>,
+    pub entries: Vec<UserCredentialModel>,
 }

@@ -95,9 +95,9 @@
 			align-content: start;
 			gap: 1rem;
 			padding: 1rem;
-			width: 72vw;
+			width: 75.5vw;
 			height: calc(100vh - 10rem);
-			overflow-y: scroll;
+			overflow-y: auto;
 
 			.theme-wrapper > div {
 				border: 0.1rem solid var(--color-secondary-1);
@@ -135,9 +135,19 @@
 			align-content: start;
 			gap: 1rem;
 			padding: 1rem;
-			width: 72vw;
+			width: 75.5vw;
 			height: calc(100vh - 10rem);
-			overflow-y: scroll;
+			overflow-y: auto;
+
+			.credential-card {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				align-items: center;
+				padding: 0.5rem;
+				border: 0.1rem var(--color-secondary-2) solid;
+				border-radius: 0.5rem;
+			}
 		}
 	}
 }

@@ -5,7 +5,7 @@ use crate::services::{roles, shared};
 use commons::errors::RustyError;
 use commons::hashing::bcrypt;
 use domain::auth::credentials::Credential;
-use domain::auth::user::{RegisterUser, RegisterUserCredential, CredSource, User, UserCredential, UserCredentialModel, UserModel};
+use domain::auth::user::{RegisterUser, RegisterUserCredential, User, UserCredential, UserCredentialModel, UserModel};
 use domain::commons::search::SearchOptions;
 use domain::RustyDomainItem;
 use persist::db_client::DbClient;
@@ -58,33 +58,20 @@ pub async fn get_by_username(db: &DbClient, username: &str) -> Result<Option<Use
 
 pub async fn get_credentials(
     db: &DbClient,
-    sc: &ScClient,
     cred: &Credential,
     options: &Option<SearchOptions>,
     username: &str,
-) -> Result<Vec<UserCredential>, RustyError> {
+) -> Result<Vec<UserCredentialModel>, RustyError> {
     assert_same_user(cred, username)?;
 
     if let Some(user) = get_by_username(db, username).await? {
-        let mut credentials = vec![];
-        for item in shared::get_all::<UserCredentialModel>(
+        shared::get_all::<UserCredentialModel>(
             db,
             CREDENTIALS_INDEX,
             &Some(json!({ "user_id": { "equals": user.id } })),
             options,
         )
-        .await?
-        {
-            let credential = UserCredential {
-                id: item.id.clone(),
-                name: item.name,
-                source: CredSource::GitHub,
-                token: sc.get(&item.id).await?.unwrap_or_default(),
-                user_id: item.user_id,
-            };
-            credentials.push(credential);
-        }
-        Ok(credentials)
+        .await
     } else {
         Err(RustyError::AsyncGraphqlError("user not found".to_string()))
     }
@@ -181,8 +168,12 @@ pub async fn add_credential(
             user_id: user.id,
         };
         let id = shared::create(db, CREDENTIALS_INDEX, input.clone(), credential).await?;
-        sc.put(&id, &input.token).await?;
-        Ok(id)
+        if sc.put(&id, &input.token).await.is_err() {
+            shared::delete_by_id(db, CREDENTIALS_INDEX, id.as_str()).await?;
+            Err(RustyError::RequestError("failed to create a token secret".to_string()))
+        } else {
+            Ok(id)
+        }
     } else {
         Err(RustyError::AsyncGraphqlError("user not found".to_string()))
     }

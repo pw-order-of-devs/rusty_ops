@@ -1,10 +1,12 @@
 <script lang="ts">
+	import Button from 'src/components/shared/Button.svelte';
 	import type { User, UserCredential } from '$lib/domain/user';
 	import { parseResponse } from '$lib/scripts/utils/parse.js';
 	import { getCredentials } from '$lib/scripts/auth/users';
+	import { toastError } from '$lib/ui/toasts';
 	import type { Writable } from 'svelte/store';
 	import { onMount } from 'svelte';
-	import Button from 'src/components/shared/Button.svelte';
+	import { faBan } from '@fortawesome/free-solid-svg-icons';
 
 	export let loading: Writable<boolean>;
 	export let pageData: { user: User } | undefined = undefined;
@@ -13,7 +15,14 @@
 	onMount(async () => {
 		loading.update(() => true);
 		let credentials = await parseResponse(await getCredentials(pageData?.user?.username ?? ''));
-		entries = credentials.entries
+		if (credentials.errors) {
+			credentials.errors.forEach((e: string) => {
+				toastError("Failed to fetch credential: " + e);
+			})
+		}
+		if (credentials.entries) {
+			entries = credentials.entries;
+		}
 		loading.update(() => false);
 	});
 
@@ -28,7 +37,20 @@
 		</div>
 		<div class="credentials-wrapper">
 			{#each entries as cred}
-				{cred}
+				<div class="credential-card">
+					<div>
+						<div>name {cred.name}</div>
+						<div>source: {cred.sourceDisplay}</div>
+					</div>
+					<div>
+						<Button
+							action={() => {}}
+							icon={faBan}
+							tooltipOpts={{ content: 'Revoke credential', placement: 'bottom' }}
+							flat
+						/>
+					</div>
+				</div>
 			{/each}
 		</div>
 	</div>
