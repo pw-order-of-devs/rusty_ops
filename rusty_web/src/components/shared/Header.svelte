@@ -37,12 +37,13 @@
 		clearInterval(interval);
 	});
 
-	const logout = () => {
+	const logout = async () => {
 		deleteTokenCookie();
 		localStorage.clear();
 		localStorage.setItem('theme', import.meta.env.VITE_THEME);
 		toastInfo('Session has ended');
-		goto('/', { replaceState: true, invalidateAll: true });
+		await goto('/', { replaceState: true, invalidateAll: true });
+		window.location.href = '/';
 		return true;
 	};
 
