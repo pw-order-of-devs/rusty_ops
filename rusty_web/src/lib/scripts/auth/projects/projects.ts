@@ -73,10 +73,15 @@ export const projectsListScrolled = async (
 	return data;
 };
 
-export const fetchProjects = async (id: string, source: string, name: string, pageNumber: number) => {
+export const fetchProjects = async (
+	id: string,
+	source: string,
+	name: string,
+	pageNumber: number
+) => {
 	return await fetch('?/fetchProjects', {
 		method: 'POST',
-		body: JSON.stringify({ groupId: `"${id}"`, pageNumber, source, name })
+		body: JSON.stringify({ groupId: id, pageNumber, source, name })
 	});
 };
 

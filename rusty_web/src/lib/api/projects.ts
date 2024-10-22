@@ -1,11 +1,11 @@
 import { fetchPost } from '$lib/utils/api';
-import type { Project } from '$lib/domain/project';
+import { type Project, projectSourceMap } from '$lib/domain/project';
 
 const getProjectsQuery = (page: number, group: string, source: string, name: string) => {
 	const groupMatch = group.match(/[a-z-]/gi);
 	const groupIdFilter = `group_id: ${groupMatch === null ? null : `{ equals: ${group} }`}`;
-	const nameFilter = `name: { contains: "${name === undefined ? "" : name}" }`;
-	const filter = `filter: { ${groupIdFilter}, ${nameFilter}, source: { equals: ${source} } }, `;
+	const nameFilter = `name: { contains: "${name === undefined ? '' : name}" }`;
+	const filter = `filter: { ${groupIdFilter}, ${nameFilter}, source: { equals: "${projectSourceMap[source]}" } }, `;
 	const options = `options: { pageNumber: ${page}, pageSize: 30, sortMode: ASCENDING, sortField: "name" }`;
 
 	return `query {
@@ -35,7 +35,13 @@ const getProjectsQuery = (page: number, group: string, source: string, name: str
 	}`;
 };
 
-export const fetchProjects = async (auth: string, page: number, group: string, source: string, name: string) => {
+export const fetchProjects = async (
+	auth: string,
+	page: number,
+	group: string,
+	source: string,
+	name: string
+) => {
 	try {
 		const response = await fetchPost(
 			auth,

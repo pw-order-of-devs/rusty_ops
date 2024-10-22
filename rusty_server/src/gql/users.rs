@@ -171,6 +171,26 @@ impl UsersMutation {
     }
 
     #[auth_macro::authenticate(bearer)]
+    async fn revoke_credential(
+        &self,
+        ctx: &Context<'_>,
+        username: String,
+        id: String,
+    ) -> async_graphql::Result<u64, RustyError> {
+        log::debug!("handling `users::revokeCredential` request");
+        let result = service::revoke_credential(
+            ctx.data::<DbClient>()?,
+            ctx.data::<ScClient>()?,
+            ctx.data::<Credential>()?,
+            &username,
+            &id,
+        )
+        .await?;
+        log::debug!("`users::addCredential`: revoked credential `{id}`",);
+        Ok(result)
+    }
+
+    #[auth_macro::authenticate(bearer)]
     async fn delete_by_username(
         &self,
         ctx: &Context<'_>,

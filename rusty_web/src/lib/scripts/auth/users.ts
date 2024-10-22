@@ -36,3 +36,22 @@ export const getCredentials = async (username: string) => {
 		body: JSON.stringify({ username })
 	});
 };
+
+export const addCredential = async (
+	username: string,
+	name: string,
+	source: string,
+	token: string
+) => {
+	return await fetch('?/addCredential', {
+		method: 'POST',
+		body: JSON.stringify({ username, name, source, token })
+	});
+};
+
+export const revokeCredential = async (username: string, id: string) => {
+	return await fetch('?/revokeCredential', {
+		method: 'POST',
+		body: JSON.stringify({ username, id })
+	});
+};

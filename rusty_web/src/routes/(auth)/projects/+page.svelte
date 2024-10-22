@@ -71,12 +71,24 @@
 
 	const projectsFilterKeyPressed_ = async () => {
 		let groupId = pageData?.groups?.active?.id ?? '';
-		pageData = await projectsFilterChanged(loadingProjects, groupId, projectsFilter, projectsSource, pageData);
+		pageData = await projectsFilterChanged(
+			loadingProjects,
+			groupId,
+			projectsFilter,
+			projectsSource,
+			pageData
+		);
 	};
 
 	const projectsSourceChanged_ = async () => {
 		let groupId = pageData?.groups?.active?.id ?? '';
-		pageData = await projectsFilterChanged(loadingProjects, groupId, projectsFilter, projectsSource, pageData);
+		pageData = await projectsFilterChanged(
+			loadingProjects,
+			groupId,
+			projectsFilter,
+			projectsSource,
+			pageData
+		);
 	};
 </script>
 
@@ -114,13 +126,9 @@
 	</div>
 
 	<div>
-		<select
-			class="projects-source"
-			bind:value={projectsSource}
-			on:change={projectsSourceChanged_}
-		>
-		    <option value="INTERNAL" selected={projectsSource === 'Internal'}>Internal</option>
-		    <option value="GITHUB" selected={projectsSource === 'GitHub'}>GitHub</option>
+		<select class="projects-source" bind:value={projectsSource} on:change={projectsSourceChanged_}>
+			<option value="INTERNAL" selected={projectsSource === 'Internal'}>Internal</option>
+			<option value="GIT_HUB" selected={projectsSource === 'GitHub'}>GitHub</option>
 		</select>
 		<input
 			class="projects-filter"

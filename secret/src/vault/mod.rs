@@ -74,4 +74,33 @@ impl Secret for VaultClient {
             _ => Err(RustyError::RequestError("Failed to save secret in vault".to_string()))
         }
     }
+
+    async fn delete(&self, key: &str) -> Result<u64, RustyError> {
+        self
+            .client
+            .delete(format!("{}v1/secret/data/{key}", &self.vault_url))
+            .header("X-Vault-Token", &self.token)
+            .header("X-Vault-Namespace", "/rusty/ops")
+            .send()
+            .await?;
+
+        self
+            .client
+            .post(format!("{}v1/secret/destroy/{key}", &self.vault_url))
+            .header("X-Vault-Token", &self.token)
+            .header("X-Vault-Namespace", "/rusty/ops")
+            .json(&json!({ "versions": [1] }))
+            .send()
+            .await?;
+
+        self
+            .client
+            .delete(format!("{}v1/secret/metadata/{key}", &self.vault_url))
+            .header("X-Vault-Token", &self.token)
+            .header("X-Vault-Namespace", "/rusty/ops")
+            .send()
+            .await?;
+
+        Ok(1)
+    }
 }

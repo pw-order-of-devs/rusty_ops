@@ -5,7 +5,6 @@
 	import { faCookieBite } from '@fortawesome/free-solid-svg-icons';
 	import { FontAwesomeIcon } from '@fortawesome/svelte-fontawesome';
 	import { SvelteToast } from '@zerodevx/svelte-toast';
-	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 
 	export let data;

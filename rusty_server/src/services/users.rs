@@ -179,6 +179,31 @@ pub async fn add_credential(
     }
 }
 
+pub async fn revoke_credential(
+    db: &DbClient,
+    sc: &ScClient,
+    cred: &Credential,
+    username: &str,
+    id: &str,
+) -> Result<u64, RustyError> {
+    assert_same_user(cred, username)?;
+
+    if let Ok(Some(secret)) = sc.get(id).await {
+        if sc.del(id).await.is_ok() {
+            if shared::delete_by_id(db, CREDENTIALS_INDEX, id).await.is_err() {
+                sc.put(id, &secret).await?;
+                Err(RustyError::RequestError("failed to delete a token secret".to_string()))
+            } else {
+                Ok(1)
+            }
+        } else {
+            Err(RustyError::RequestError("failed to delete a token secret".to_string()))
+        }
+    } else {
+        Err(RustyError::RequestError("token secret not found".to_string()))
+    }
+}
+
 pub async fn delete_by_username(
     db: &DbClient,
     cred: &Credential,

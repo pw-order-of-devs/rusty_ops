@@ -94,6 +94,23 @@ pub trait Secret: Send + Sync {
     ///
     /// * `RustyError` - If there was an error during the creation of the item.
     fn put(&self, key: &str, value: &str) -> impl Future<Output = Result<(), RustyError>> + Send;
+
+    /// Deletes a value into the storage with the specified key.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The key for which the value will be deleted.
+    ///
+    /// # Returns
+    ///
+    /// A future that resolves to a `Result` indicating whether the operation was successful or returned an error.
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    fn delete(&self, key: &str) -> impl Future<Output = Result<u64, RustyError>> + Send;
 }
 
 /// Initializes the secret layer.

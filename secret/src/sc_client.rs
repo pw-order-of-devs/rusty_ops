@@ -35,4 +35,17 @@ impl ScClient {
             Self::Vault(client) => client.put(key, value).await,
         }
     }
+
+    /// Wrapper for `del` function
+    ///
+    /// # Errors
+    ///
+    /// This function can generate the following errors:
+    ///
+    /// * `RustyError` - If there was an error during the creation of the item.
+    pub async fn del(&self, key: &str) -> Result<u64, RustyError> {
+        match self {
+            Self::Vault(client) => client.delete(key).await,
+        }
+    }
 }

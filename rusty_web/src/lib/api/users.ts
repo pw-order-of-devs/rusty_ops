@@ -1,5 +1,4 @@
 import { fetchPost } from '$lib/utils/api';
-import type { UserCredential } from '$lib/domain/user';
 
 const getCurrentUserQuery = () => {
 	return `query {
@@ -58,7 +57,10 @@ const getCredentialsQuery = (username: string) => {
 
 export const getCredentials = async (auth: string, username: string) => {
 	try {
-		const response = await fetchPost(auth, JSON.stringify({ query: getCredentialsQuery(username) }));
+		const response = await fetchPost(
+			auth,
+			JSON.stringify({ query: getCredentialsQuery(username) })
+		);
 
 		if (!response.ok) {
 			return {
@@ -72,31 +74,105 @@ export const getCredentials = async (auth: string, username: string) => {
 				};
 			} else if (data) {
 				const paged = data?.users?.getUserCredentials;
-				const credentials: UserCredential[] = paged?.entries ?? [];
-				credentials.forEach(cred => {
-					switch (cred.source) {
-						case 'GIT_HUB':
-							cred.sourceDisplay = 'GitHub';
-							break;
-						case 'GITLAB':
-							cred.sourceDisplay = 'Gitlab';
-							break;
-						case 'BITBUCKET':
-							cred.sourceDisplay = 'BitBucket';
-							break;
-					}
-				});
 				return {
 					total: paged?.total ?? 0,
 					page: paged?.page ?? 1,
 					pageSize: paged?.pageSize ?? 20,
-					entries: credentials
-				}
+					entries: paged?.entries ?? []
+				};
 			}
 		}
 	} catch (error) {
 		return {
 			errors: ['Get user credentials failed']
+		};
+	}
+};
+
+const addCredentialQuery = (username: string, name: string, source: string, token: string) => {
+	return `mutation {
+		users {
+			addCredential(
+				username: "${username}",
+				credential: {
+					name: "${name}"
+					source: ${source}
+					token: "${token}"
+				}
+			)
+		}
+	}`;
+};
+
+export const addCredential = async (
+	auth: string,
+	username: string,
+	name: string,
+	source: string,
+	token: string
+) => {
+	try {
+		const response = await fetchPost(
+			auth,
+			JSON.stringify({ query: addCredentialQuery(username, name, source, token) })
+		);
+
+		if (!response.ok) {
+			return {
+				errors: ['Add credential failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return data?.users?.addCredential;
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Add credential failed']
+		};
+	}
+};
+
+const revokeCredentialQuery = (username: string, id: string) => {
+	return `mutation {
+		users {
+			revokeCredential(
+				username: "${username}",
+				id: "${id}"
+			)
+		}
+	}`;
+};
+
+export const revokeCredential = async (auth: string, username: string, id: string) => {
+	try {
+		const response = await fetchPost(
+			auth,
+			JSON.stringify({ query: revokeCredentialQuery(username, id) })
+		);
+
+		if (!response.ok) {
+			return {
+				errors: ['Revoke credential failed']
+			};
+		} else {
+			const { data, errors } = await response.json();
+			if (errors && errors.length > 0) {
+				return {
+					errors: errors.map((error: { message: string }) => error.message)
+				};
+			} else if (data) {
+				return 'ok';
+			}
+		}
+	} catch (error) {
+		return {
+			errors: ['Revoke credential failed']
 		};
 	}
 };
